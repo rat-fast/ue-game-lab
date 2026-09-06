@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Documentation"
+  short_description: "Organize project code maps and AI-readable documentation"
+  default_prompt: "Use $project-documentation to organize project documentation and code-to-feature mappings."

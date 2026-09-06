@@ -1,0 +1,4 @@
+interface:
+  display_name: "Unreal Engine Project Context"
+  short_description: "Read UE project scope and asset rules first"
+  default_prompt: "Use $ue-project-context before working in an Unreal Engine project in this repository."

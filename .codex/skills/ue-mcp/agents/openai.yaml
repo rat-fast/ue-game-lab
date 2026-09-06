@@ -1,0 +1,7 @@
+interface:
+  display_name: "UE MCP"
+  short_description: "按需连接、诊断和使用 Unreal Editor 的 MCP 能力"
+  default_prompt: "Use $ue-mcp 读取端口登记和 MCP 使用规则，先验证目标 Unreal Editor 的 MCP 连接，再按授权执行 UE 勘察或操作。"
+
+policy:
+  allow_implicit_invocation: false

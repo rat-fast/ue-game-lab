@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Repository Management"
+  short_description: "Manage Git and Git LFS safely"
+  default_prompt: "Use $git-repository-management to inspect and safely manage Git/LFS changes in this repository."

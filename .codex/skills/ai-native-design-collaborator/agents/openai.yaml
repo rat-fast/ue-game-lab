@@ -1,0 +1,7 @@
+interface:
+  display_name: "AI Native 工作流设计陪跑"
+  short_description: "区分设计层与实践层，探索可验证的 AI Native 游戏生产工作流"
+  default_prompt: "Use $ai-native-design-collaborator 从设计层、实践层和能力成熟度出发，陪我讨论这个 AI Native 游戏研发工作流。"
+
+policy:
+  allow_implicit_invocation: false

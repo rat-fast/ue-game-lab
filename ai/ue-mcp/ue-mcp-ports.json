@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "description": "UE MCP local server port registry. This file is informational; Unreal Editor reads each project's own Config file.",
+  "projects": [
+    {
+      "name": "AINativeRoguelite",
+      "projectPath": "E:/agent/game/ue/AINativeRoguelite",
+      "port": 8000,
+      "endpoint": "http://127.0.0.1:8000/mcp"
+    },
+    {
+      "name": "SkillLab",
+      "projectPath": "E:/agent/game/ue/SkillLab",
+      "port": 8001,
+      "endpoint": "http://127.0.0.1:8001/mcp"
+    }
+  ]
+}

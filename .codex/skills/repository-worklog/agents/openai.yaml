@@ -1,0 +1,4 @@
+interface:
+  display_name: "Repository Worklog"
+  short_description: "Organize important repository work and discussion history"
+  default_prompt: "Use $repository-worklog to organize important work and discussion records for this repository."

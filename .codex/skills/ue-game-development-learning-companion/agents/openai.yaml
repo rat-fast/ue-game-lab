@@ -1,0 +1,7 @@
+interface:
+  display_name: "UE 游戏开发学习陪跑"
+  short_description: "从真实 UE 项目现象出发建立完整游戏研发知识地图"
+  default_prompt: "Use $ue-game-development-learning-companion 结合当前 UE 项目和学习地图，继续带我学习这个游戏开发模块。"
+
+policy:
+  allow_implicit_invocation: false

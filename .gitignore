@@ -1,0 +1,35 @@
+# Unreal Engine generated files (applies to every project under ue/)
+**/Binaries/
+**/DerivedDataCache/
+**/Intermediate/
+**/Saved/
+**/.vs/
+*.sln
+*.slnx
+*.VC.db
+*.opensdf
+*.sdf
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Re-downloadable external UE content. Project-owned derivatives belong outside
+# these folders and remain eligible for version control.
+**/Content/Vendor/
+**/Content/Marketplace/
+**/Content/ThirdParty/
+
+# Build outputs
+/dist/
+/out/
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.obsidian/workspace.json
