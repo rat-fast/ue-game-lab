@@ -15,17 +15,20 @@ description: "进入或处理本仓库 Unreal Engine 项目时，作为必读入
 
 1. 根目录 `AGENTS.md`。
 2. 当前项目的 `ue/<ProjectName>/Docs/README.md`（存在时）。
-3. `ue/<ProjectName>/Docs/<ProjectName>CodeArchitecture.md`（存在时）。
-4. 根据任务从 `ue/<ProjectName>/Docs/Modules/` 读取匹配的模块文档，不要默认读取全部模块。
+3. 当前项目文档中标记为通用项目上下文的入口（例如 `Docs/ProjectContext/README.md` 和代码架构地图）。
+4. 根据任务从项目文档的模块目录读取匹配的模块文档，不要默认读取全部模块。
 5. 最后读取任务涉及的源码、配置、资产和验证证据。
+
+如果任务进入程序实现、架构、集成、编译或运行验证，再读取仓库 `.codex/skills/ai-native-programming/SKILL.md` 和对应的程序工作流 Skill。普通 UE 学习或文档浏览不自动加载程序约束 Skill。
 
 如果项目缺少上述文档，明确记录“文档不存在”，再以真实源码、配置和资产为依据，不要假装已经读取。
 
 当前仓库的已知入口：
 
 - `ue/SkillLab/Docs/README.md`
-- `ue/SkillLab/Docs/SkillLabCodeArchitecture.md`
-- `ue/SkillLab/Docs/Modules/<与任务匹配的模块>.md`
+- `ue/SkillLab/Docs/ProjectContext/README.md`
+- `ue/SkillLab/Docs/ProjectContext/SkillLabCodeArchitecture.md`
+- `ue/SkillLab/Docs/ProjectContext/Modules/<与任务匹配的模块>.md`
 - `ue/AINativeRoguelite/` 当前没有 `Docs/README.md`，进入该项目时必须明确记录这一点。
 
 ## Documentation Routing

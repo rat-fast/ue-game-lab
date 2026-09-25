@@ -13,6 +13,8 @@ description: 用于从真实 Unreal Engine 项目和可运行现象出发，以�
 
 具体项目事实来自项目本地文档、代码、Blueprint、资产、配置和运行结果，不根据学习地图虚构实现。
 
+进入或读取 `ue/` 下的具体项目时，先读取 `.codex/skills/ue-project-context/SKILL.md`，按它的项目文档路由获取上下文。学习任务不自动加载 `ai-native-programming` 或程序工作流 Skill；只有用户明确把任务转为程序实现、架构、集成或验证时，才切换到对应程序路由。
+
 ## 教学方式
 
 读取学习地图后，按照当前模块和用户实际理解动态调整深度：

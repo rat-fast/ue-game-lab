@@ -25,29 +25,11 @@
 
 不要把 UE 项目的 `Content/`、`Source/`、`Config/` 直接放在仓库根目录。
 
-## AI Native 原则
+## AI Native 原则路由
 
-需要讨论 AI Native 方法论时，按当前问题读取根目录 `AI_NATIVE_GAME_DEV_PRINCIPLES.md` 的相关章节，不默认全文加载。以下内容只保留仓库执行所需的简要约束。
+根目录 `AI_NATIVE_GAME_DEV_PRINCIPLES.md` 是跨项目 AI Native 原则的唯一正文。只有明确讨论 AI Native 方法论、生产架构或领域生产接口时，才读取其中相关章节，不默认全文加载。
 
-优先使用结构化产物，而不是自由散文。
-
-优先把重要语义和约束显式表达。重复需求和边界稳定后，再使用 schema 固化；不要把结构化只理解为固定 schema。
-
-优先使用数据配置，而不是把玩法内容硬编码。
-
-优先使用工具可调用的操作，而不是只能手工点编辑器的流程。
-
-优先做小范围、边界明确、可 review 的改动，而不是大范围重写。
-
-在 UE 项目中，新建的核心逻辑默认优先使用 C++；新参数、可变内容和重复内容默认优先使用配置或结构化数据。Blueprint 默认作为兼容层、资源容器、组件组装和必要的 UE 编辑器对象使用，不作为新的核心业务逻辑默认入口。
-
-已有 Blueprint 主导的项目采用渐进迁移，不因 AI 偏好文本产物而进行无必要的整体重写；迁移时保留必要的业务语义，并优先处理可文本化、可测试、可验证的逻辑。
-
-角色和其他 Actor 的功能增长时，按职责拆分为独立类或组件，避免把不相关行为持续堆积到单个 Character 类或 Blueprint 图中。
-
-不要把“取消 Blueprint”理解为把原有业务表达和内容生产全部合并进 C++。先识别 Blueprint、专用图编辑器和其他工具当前承担的配置、组装、业务编排、资源连接与领域表达职责，再为重复且稳定的内容建立人类和 AI 都能使用的领域生产接口。
-
-AI 可以在明确边界内辅助修改代码，但任意源码修改不是默认的内容生产接口。重复内容优先通过配置、领域模型和受控工具生产；只有当现有框架缺少必要能力时，才进入经过测试和 review 的代码扩展。
+程序实现、架构、集成和验证任务不直接读取原则正文，统一读取 `.codex/skills/ai-native-programming/SKILL.md`。如果原则正文发生与程序实现有关的变化，维护者需要同步检查该 Skill；具体项目事实和任务规则放在项目文档与任务工作流目录中。
 
 ## 上下文规则
 
@@ -79,9 +61,10 @@ AI 可以在明确边界内辅助修改代码，但任意源码修改不是默�
 
 - `.codex/skills/ue-game-development-learning-companion/SKILL.md`：用于 UE 与完整游戏研发学习，读取学习地图并根据当前模块教学。
 - `.codex/skills/ai-native-design-collaborator/SKILL.md`：用于 AI Native 工作流探索与设计，读取 AI Native 原则的相关章节。
+- `.codex/skills/ai-native-programming/SKILL.md`：用于程序 Agent 的 AI Native 编码、配置、Blueprint、上下文和验证约束；由程序工作流总控及程序专项 Skill 路由读取。
 - `.codex/skills/ue-mcp/SKILL.md`：仅在明确使用 UE MCP 时加载，读取 `ai/ue-mcp/ue-mcp-ports.json` 并执行 MCP 连接、能力发现和权限边界检查。
 
-普通学习任务只读取学习 Skill；明确进入 AI Native 工作流设计时才读取设计 Skill；只有明确使用 UE MCP 时才加载 UE MCP Skill。不要因为学习中出现一个相关术语，就默认加载所有 Skill。
+普通学习任务只读取学习 Skill；明确进入 AI Native 工作流设计时才读取设计 Skill；程序实现、架构、集成或验证任务读取 `ai-native-programming`；只有明确使用 UE MCP 时才加载 UE MCP Skill。不要因为学习中出现一个相关术语，就默认加载所有 Skill。
 
 进入或处理 `ue/` 下的 Unreal Engine 项目时，必须先读取 `.codex/skills/ue-project-context/SKILL.md`；UE 项目的文档读取顺序和后续 Skill 路由由该入口 Skill 统一规定。涉及 Git、GitHub 或 Git LFS 的任务，使用 `.codex/skills/git-repository-management/SKILL.md`；如果同时涉及 UE 项目，先读取 UE 项目上下文 Skill。两个 Skill 都不自动授权修改文件、提交或推送远端。
 

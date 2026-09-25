@@ -19,6 +19,8 @@ description: 用于在 Unreal Editor 运行时连接、诊断和使用 UE 的 Mo
 
 本 Skill 不代替项目文档，也不记录具体 Blueprint、关卡或玩法实现事实。
 
+如果目标是某个 `ue/` 项目，先读取 `.codex/skills/ue-project-context/SKILL.md`，获得项目入口、文档路由和资产边界；然后再读取本 Skill 的 MCP 连接规则。UE MCP 不替代项目上下文入口。
+
 ## 何时加载
 
 仅在以下情况加载：

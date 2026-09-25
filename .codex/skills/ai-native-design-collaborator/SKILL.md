@@ -17,6 +17,8 @@ description: 用于讨论和设计 AI Native 游戏研发工作流，区分工�
 
 普通 UE 模块学习使用 `.codex/skills/ue-game-development-learning-companion/SKILL.md`，不要默认同时加载本 Skill。
 
+本 Skill 只负责设计讨论。若用户确认进入实际 UE 程序任务，交接顺序为：`.codex/skills/ue-project-context/SKILL.md` → `.codex/skills/ai-native-programming/SKILL.md` → 对应的程序工作流 Skill；本 Skill 不替代这条实现路由。
+
 ## 讨论方法
 
 先确认真实问题和现有流程，再进入方案设计：

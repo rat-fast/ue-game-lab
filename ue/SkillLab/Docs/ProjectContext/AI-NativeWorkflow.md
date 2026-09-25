@@ -2,7 +2,7 @@
 
 ## 文档职责
 
-本文档记录 `SkillLab` 作为技能领域实验项目的范围、假设、证据和下一步。跨项目原则以仓库根目录 `AI_NATIVE_GAME_DEV_PRINCIPLES.md` 为准；历史对话索引见 `docs/AI Native对话与决策索引.md`。
+本文档记录 `SkillLab` 作为技能领域实验项目的范围、假设、证据和下一步。跨项目原则以仓库根目录 `AI_NATIVE_GAME_DEV_PRINCIPLES.md` 为准；历史对话索引见 `docs/AI Native对话与决策索引.md`（如该历史索引存在）。
 
 ## 项目目标
 
@@ -81,9 +81,10 @@
 ## 验证入口
 
 - 项目整体入口：`ue/SkillLab/Docs/README.md`
-- 代码地图：`ue/SkillLab/Docs/SkillLabCodeArchitecture.md`
-- 运行和调试：`ue/SkillLab/Docs/Modules/LevelAndDebug.md`
-- 导航验证：`ue/SkillLab/Docs/Modules/Navigation.md`
-- Gameplay 基础对象：`ue/SkillLab/Docs/Modules/GameplayFramework.md`
+- 代码地图：`ue/SkillLab/Docs/ProjectContext/SkillLabCodeArchitecture.md`
+- 运行和调试：`ue/SkillLab/Docs/ProjectContext/Modules/LevelAndDebug.md`
+- 导航验证：`ue/SkillLab/Docs/ProjectContext/Modules/Navigation.md`
+- Gameplay 基础对象：`ue/SkillLab/Docs/ProjectContext/Modules/GameplayFramework.md`
 
 每次进入下一阶段，都应补充实际修改的产物、运行证据、失败样本和仍未验证的假设。
+

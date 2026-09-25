@@ -18,6 +18,8 @@ description: "整理和维护具体项目当前有效的 AI 可读文档，包�
 
 不要因普通代码修改自动加载本 Skill；只有任务包含项目文档整理、维护或代码地图需求时使用。
 
+如果任务涉及 `ue/` 下的 Unreal Engine 项目，先读取 `.codex/skills/ue-project-context/SKILL.md`，再根据其路由读取项目文档。本 Skill 负责维护文档，不负责替代 UE 项目入口或程序工作流 Skill。
+
 重要工作、讨论和历史判断的回顾由 `repository-worklog` Skill 负责；本 Skill 只维护项目当前有效状态。
 
 ## Source Of Truth
@@ -31,10 +33,12 @@ description: "整理和维护具体项目当前有效的 AI 可读文档，包�
 ```text
 <Project>/Docs/
 ├── README.md
-├── <Project>CodeArchitecture.md
-└── Modules/
-    ├── <Module>.md
-    └── ...
+├── Planning/
+├── ProjectContext/
+│   ├── README.md
+│   ├── <Project>CodeArchitecture.md
+│   └── Modules/
+└── ProgramWorkflow/
 ```
 
 不要把具体项目事实写进仓库根目录的原则文档、学习地图或通用 Skill。跨项目稳定原则应进入原则文档；学习进度应进入学习地图；一次性实验可进入项目实验记录。

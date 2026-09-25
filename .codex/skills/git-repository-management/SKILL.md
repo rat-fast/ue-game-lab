@@ -11,7 +11,7 @@ description: "管理本仓库的 Git 和 Git LFS，包括仓库检查、UE 资�
 
 ## Required Context
 
-开始操作前先读取根目录 `AGENTS.md`。如果任务涉及 `ue/` 下的 Unreal Engine 项目，还必须先读取 `$ue-project-context` 的规则以及相关项目文档。
+开始操作前先读取根目录 `AGENTS.md`。如果任务涉及 `ue/` 下的 Unreal Engine 项目，还必须先读取 `.codex/skills/ue-project-context/SKILL.md` 的规则以及它路由到的相关项目文档。
 
 ## Core Rules
 
