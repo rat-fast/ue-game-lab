@@ -4,15 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "AbilitySystemInterface.h"
 #include "SkillLabCharacter.generated.h"
 
 UCLASS()
-class SKILLLAB_API ASkillLabCharacter : public ACharacter
+class SKILLLAB_API ASkillLabCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
 	ASkillLabCharacter();
+	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	void AddCameraZoomInput(float Value);
 	void AddCameraRotationInput(const FVector2D& Value);
 
@@ -26,5 +28,14 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "SkillLab|Camera")
 	TObjectPtr<class USkillLabCameraRigComponent> CameraRig;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Abilities", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USkillLabAbilitySystemComponent> SkillAbilitySystemComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Abilities", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USkillLabAttributeSet> SkillAttributeSet;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Abilities", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USkillLabSkillComponent> SkillComponent;
 
 };

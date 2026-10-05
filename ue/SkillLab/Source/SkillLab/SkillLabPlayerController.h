@@ -16,6 +16,13 @@ class SKILLLAB_API ASkillLabPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+	UFUNCTION(Exec)
+	void SkillTest();
+
+	UFUNCTION(Exec)
+	void SkillReset();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

@@ -16,6 +16,29 @@
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
 #include "SkillLabCharacter.h"
+#include "SkillLabSkillComponent.h"
+
+void ASkillLabPlayerController::SkillTest()
+{
+	if (ASkillLabCharacter* SkillLabCharacter = Cast<ASkillLabCharacter>(GetPawn()))
+	{
+		if (USkillLabSkillComponent* SkillComponent = SkillLabCharacter->FindComponentByClass<USkillLabSkillComponent>())
+		{
+			SkillComponent->RequestTestPulse();
+		}
+	}
+}
+
+void ASkillLabPlayerController::SkillReset()
+{
+	if (ASkillLabCharacter* SkillLabCharacter = Cast<ASkillLabCharacter>(GetPawn()))
+	{
+		if (USkillLabSkillComponent* SkillComponent = SkillLabCharacter->FindComponentByClass<USkillLabSkillComponent>())
+		{
+			SkillComponent->ResetUnit();
+		}
+	}
+}
 
 void ASkillLabPlayerController::BeginPlay()
 {

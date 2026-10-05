@@ -7,6 +7,10 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "SkillLabCameraRigComponent.h"
+#include "SkillLabAbilitySystemComponent.h"
+#include "SkillLabAttributeSet.h"
+#include "SkillLabSkillComponent.h"
+#include "AbilitySystemComponent.h"
 
 ASkillLabCharacter::ASkillLabCharacter()
 {
@@ -31,6 +35,16 @@ ASkillLabCharacter::ASkillLabCharacter()
 
 	CameraRig = CreateDefaultSubobject<USkillLabCameraRigComponent>(TEXT("CameraRig"));
 	CameraRig->InitializeCameraBoom(CameraBoom);
+
+	SkillAbilitySystemComponent = CreateDefaultSubobject<USkillLabAbilitySystemComponent>(TEXT("SkillAbilitySystem"));
+	SkillAttributeSet = CreateDefaultSubobject<USkillLabAttributeSet>(TEXT("SkillAttributes"));
+	SkillAbilitySystemComponent->AddAttributeSetSubobject(SkillAttributeSet.Get());
+	SkillComponent = CreateDefaultSubobject<USkillLabSkillComponent>(TEXT("SkillComponent"));
+}
+
+UAbilitySystemComponent* ASkillLabCharacter::GetAbilitySystemComponent() const
+{
+	return SkillAbilitySystemComponent;
 }
 
 void ASkillLabCharacter::AddCameraZoomInput(float Value)
