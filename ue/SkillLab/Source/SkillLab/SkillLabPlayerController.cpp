@@ -17,6 +17,7 @@
 #include "NavigationSystem.h"
 #include "SkillLabCharacter.h"
 #include "SkillLabSkillComponent.h"
+#include "SkillLabSkillDefinitionProvider.h"
 
 void ASkillLabPlayerController::SkillTest()
 {
@@ -24,7 +25,38 @@ void ASkillLabPlayerController::SkillTest()
 	{
 		if (USkillLabSkillComponent* SkillComponent = SkillLabCharacter->FindComponentByClass<USkillLabSkillComponent>())
 		{
-			SkillComponent->RequestTestPulse();
+			FSkillLabSkillRequest Request;
+			Request.Source = ESkillLabRequestSource::Test;
+			Request.CasterObject = SkillLabCharacter;
+			Request.CasterUnitId = SkillComponent->GetUnitId();
+			Request.SkillId = FSkillLabSkillDefinitionProvider::GetDefaultSkillId();
+			Request.TargetType = ESkillLabTargetType::Self;
+			Request.TargetObject = SkillLabCharacter;
+			Request.TargetUnitId = SkillComponent->GetUnitId();
+			Request.TargetLocation = SkillLabCharacter->GetActorLocation();
+			Request.TargetDirection = SkillLabCharacter->GetActorForwardVector();
+			SkillComponent->SubmitSkillRequest(Request);
+		}
+	}
+}
+
+void ASkillLabPlayerController::SkillTestRecover()
+{
+	if (ASkillLabCharacter* SkillLabCharacter = Cast<ASkillLabCharacter>(GetPawn()))
+	{
+		if (USkillLabSkillComponent* SkillComponent = SkillLabCharacter->FindComponentByClass<USkillLabSkillComponent>())
+		{
+			FSkillLabSkillRequest Request;
+			Request.Source = ESkillLabRequestSource::Test;
+			Request.CasterObject = SkillLabCharacter;
+			Request.CasterUnitId = SkillComponent->GetUnitId();
+			Request.SkillId = FSkillLabSkillDefinitionProvider::GetRecoverEnergySkillId();
+			Request.TargetType = ESkillLabTargetType::Self;
+			Request.TargetObject = SkillLabCharacter;
+			Request.TargetUnitId = SkillComponent->GetUnitId();
+			Request.TargetLocation = SkillLabCharacter->GetActorLocation();
+			Request.TargetDirection = SkillLabCharacter->GetActorForwardVector();
+			SkillComponent->SubmitSkillRequest(Request);
 		}
 	}
 }

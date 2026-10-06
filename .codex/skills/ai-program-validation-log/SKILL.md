@@ -17,9 +17,9 @@ description: 记录 AI 程序实现中的运行结果、失败事实和待判断
 
 默认使用以下相对仓库路径：
 
-- 领域验收依据：`ue/SkillLab/Docs/Planning/<TaskName>/`；
-- 项目运行说明：`ue/SkillLab/Docs/ProjectContext/Modules/LevelAndDebug.md` 及相关模块文档；
-- 长期验证记录和待判断事项：`ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/Validation/`。
+- 领域验收依据：`<UEProjectRoot>/Docs/Planning/<TaskName>/`；
+- 项目运行说明：`<UEProjectRoot>/Docs/ProjectContext/` 中的运行和调试文档；
+- 长期验证记录和待判断事项：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Validation/`。
 
 `<TaskName>` 是当前功能任务名，策划目录和程序工作流目录必须使用同一个任务名。验证依据来自当前任务的 `Planning/<TaskName>/`，项目运行事实来自 `ProjectContext/`，记录只写入当前任务的 `ProgramWorkflow/<TaskName>/Validation/`；不读取或写入其他任务目录。
 
@@ -32,7 +32,7 @@ description: 记录 AI 程序实现中的运行结果、失败事实和待判断
 - 相关实现摘要、运行入口和测试地图/配置说明；
 - 已有失败记录和需要复现的步骤。
 
-进入验证任务时，先读 `ue/SkillLab/Docs/ProjectContext/README.md`、相关运行入口和当前任务的 `ProgramWorkflow/<TaskName>/Validation/`，再按验收行为读取 `Planning/<TaskName>/` 的相关章节。
+进入验证任务时，先读 `<UEProjectRoot>/Docs/ProjectContext/` 中的项目入口和相关运行说明，再读当前任务的 `ProgramWorkflow/<TaskName>/Validation/`，最后按验收行为读取 `Planning/<TaskName>/` 的相关章节。
 
 ## 按需读取
 
@@ -51,6 +51,7 @@ description: 记录 AI 程序实现中的运行结果、失败事实和待判断
 - 不把一次成功运行写成稳定能力，指出尚未覆盖的场景。
 - 将证据至少分成：静态文档/源码证据、编译证据、启动/初始化证据、实际功能运行证据、失败/回归证据。编译成功不能替代功能运行证据，预期日志不能替代实际日志。
 - 按当前任务验收清单逐项标记“已证实 / 部分证实 / 未证实 / 本阶段不要求”，并给出实际路径、命令、日志或截图来源。
+- 只提供事实证据和可复现的观察结果；不替代架构 Agent 或 Review Agent 判断架构符合性，也不能把编译通过或一次运行成功写成架构通过。
 
 ## 交付
 

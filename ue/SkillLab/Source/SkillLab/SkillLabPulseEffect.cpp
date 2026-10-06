@@ -9,6 +9,8 @@ USkillLabPulseEffect::USkillLabPulseEffect()
 	FGameplayModifierInfo Modifier;
 	Modifier.Attribute = USkillLabAttributeSet::GetTestValueAttribute();
 	Modifier.ModifierOp = EGameplayModOp::Additive;
-	Modifier.ModifierMagnitude = FScalableFloat(1.0f);
+	FSetByCallerFloat SetByCallerMagnitude;
+	SetByCallerMagnitude.DataName = FName(TEXT("SkillLab.EffectMagnitude"));
+	Modifier.ModifierMagnitude = FGameplayEffectModifierMagnitude(SetByCallerMagnitude);
 	Modifiers.Add(Modifier);
 }

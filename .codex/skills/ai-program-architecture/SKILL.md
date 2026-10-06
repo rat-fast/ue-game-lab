@@ -17,10 +17,10 @@ description: 为 UE 功能建立或修订程序架构基线、公共接口和职
 
 默认使用以下相对仓库路径：
 
-- 领域输入：`ue/SkillLab/Docs/Planning/<TaskName>/`；
-- 当前代码地图：`ue/SkillLab/Docs/ProjectContext/SkillLabCodeArchitecture.md`；
-- 全局架构基线：`ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
-- 专题架构产物：`ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/Architecture/`。
+- 领域输入：`<UEProjectRoot>/Docs/Planning/<TaskName>/`；
+- 当前代码地图：`<UEProjectRoot>/Docs/ProjectContext/`；
+- 全局架构基线：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
+- 专题架构产物：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Architecture/`。
 
 路径含义固定为：`Planning/` 是项目策划知识，`ProjectContext/` 是项目通用事实，`ProgramWorkflow/<TaskName>/` 是当前任务的程序中间产物。策划目录和程序工作流目录使用同一个任务名。
 
@@ -30,10 +30,10 @@ description: 为 UE 功能建立或修订程序架构基线、公共接口和职
 - `.codex/skills/ai-native-programming/SKILL.md` 中与当前任务相关的程序约束；
 
 - 当前架构任务和用户目标；
-- `ue/SkillLab/Docs/ProjectContext/README.md`、`SkillLabCodeArchitecture.md` 和相关模块文档；
-- 当前任务的 `ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/` 基线和已有结论；
+- `<UEProjectRoot>/Docs/ProjectContext/` 中的项目入口、代码地图和相关模块文档；
+- 当前任务的 `<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/` 基线和已有结论；
 - 当前架构基线及其变更记录（如果存在）；
-- `ue/SkillLab/Docs/Planning/<TaskName>/` 中与任务直接相关的策划总览和模块文档；
+- `<UEProjectRoot>/Docs/Planning/<TaskName>/` 中与任务直接相关的策划总览和模块文档；
 - 相关真实代码入口。
 
 ## 按需读取
@@ -50,7 +50,7 @@ description: 为 UE 功能建立或修订程序架构基线、公共接口和职
 
 - 负责模块、排除项和上下游依赖；
 - 对象身份、生命周期、清理、重置和错误结果；
-- 引擎原生能力、SkillLab C++、配置/结构化资产和 Blueprint 外壳的职责边界；
+- 引擎原生能力、项目 C++、配置/结构化资产和 Blueprint 外壳的职责边界；
 - 哪些是已确认规则、AI 建议默认值、未决问题和风险；
 - 哪些接口供实现 Agent 使用，哪些仍是候选方案；
 - 这次结论是局部专题还是会改变全局架构基线。
@@ -60,11 +60,26 @@ description: 为 UE 功能建立或修订程序架构基线、公共接口和职
 
 不要为尚未证明的需求设计过度通用框架。不要把最终 C++ 类名、配置格式或 引擎能力映射假设成已确认事实。专题结论不能绕过总控直接成为全局事实。
 
+## 内容与运行机制的分层
+
+无论当前任务是正式功能还是测试样例，都必须把以下职责分开，并在架构交接中标明边界：
+
+- **运行机制**：请求、激活检查、运行对象身份、生命周期、资源/冷却归属、结果应用、事件和清理；由引擎原生能力或项目 C++ 承载。
+- **内容定义**：内容标识、数值、目标类型、结果参数、频繁调整的规则和表现绑定；由配置/结构化数据承载，或先由一个独立的 C++ 定义提供器承载。
+- **测试适配**：控制台、开发按键、固定测试样例和测试数据；只能通过正式请求、结果和事件接口进入运行机制。
+- **表现适配**：动画、特效、音频、飘字和 UI 的资源接线；只订阅运行事实，不能重新判断内容规则。
+
+测试用途不构成把内容定义写进运行机制的例外。允许暂时使用 C++、DataTable、JSON、C# 或其他载体，但架构交付必须说明当前载体、稳定接口、未来迁移目标和迁移边界；不得因为“以后再迁移”而省略现在的分层。若外部语言或数据载体会显著增加当前项目复杂度，优先选择最小的类型化 C++ 定义提供器，但必须放在独立边界内，不能把内容专用常量和分支写进通用生命周期代码。
+
+如果本次架构声明某个接口、模块或内容机制可复用/可扩展，架构交付必须定义一个由当前项目工作流选择的代表性复用验证案例，并说明新增案例只需增加定义、配置或必要载体，不应复制公共生命周期；如果架构没有作出可复用/可扩展声明，则不强制新增案例。
+
 ## 交付
 
 按共享 `ai-native-programming` 的分层规则组织产物：`ArchitectureBaseline.md` 保留本阶段范围、公共约束、状态和专题索引；可独立交接的模块或专题放在当前任务 `Architecture/` 下；未来候选单独标识并按需读取。不预建固定数量的文件，不把实施偏离直接改写为允许项。交付时指出各任务必读的基线章节和对应专题，而非要求所有实现对话读取所有架构材料。
 
-架构交付必须附带“实现约束清单”：当前任务必须满足的接口、生命周期、配置边界、Blueprint 边界和验收行为；以及允许的临时适配、适用范围和替换条件。没有这份清单，实现 Agent 不应开始修改代码。
+架构 Agent 在实现开始前必须交付一个完整的放行包，至少包括：当前冻结的架构基线；公共接口和不变量；实现约束清单；正式入口与测试入口边界；配置/内容权威来源；未决问题和禁止实现 Agent 自行决定的事项。放行包必须附带当前任务必须满足的接口、生命周期、配置边界、Blueprint 边界和验收行为，以及允许的临时适配、适用范围和替换条件。没有这份放行包，实现 Agent 不应开始修改代码。
+
+实现约束清单必须额外列出：哪些内容允许暂时由 C++ 提供、这些内容必须位于哪个独立提供器/测试适配边界、哪些文件或核心流程禁止出现内容专用标识、数值和结果分支，以及如何验证样例确实走了公共接口。
 
 返回一份可交接的架构产物：目标、读取依据、职责和依赖、对象/生命周期模型、公共接口和不变量、技术映射、假设、风险、未决问题、影响范围和建议的实现任务。若更新基线，明确版本变化和被替换的旧结论。
 

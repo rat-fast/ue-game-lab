@@ -17,22 +17,22 @@ description: 在已有架构基线和模块约定下，实现一个边界明确�
 
 默认使用以下相对仓库路径：
 
-- 领域规格：`ue/SkillLab/Docs/Planning/<TaskName>/` 中与当前模块对应的文档；
-- 架构基线：`ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
-- 相关专题结论：`ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/Architecture/`；
-- 实际实现：`ue/SkillLab/Source/SkillLab/`、`ue/SkillLab/Config/` 和任务明确授权的 `ue/SkillLab/Content/` 资产。
+- 领域规格：`<UEProjectRoot>/Docs/Planning/<TaskName>/` 中与当前模块对应的文档；
+- 架构基线：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
+- 相关专题结论：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Architecture/`；
+- 实际实现：`<UEProjectRoot>/Source/`、`<UEProjectRoot>/Config/` 和任务明确授权的 `<UEProjectRoot>/Content/` 资产。
 
 `<TaskName>` 是当前功能名，策划目录和程序工作流目录必须使用同一个任务名。`Planning/<TaskName>/`、`ProjectContext/` 和 `ProgramWorkflow/<TaskName>/` 分别表示策划知识、项目通用事实和当前任务交接；它们不是同一类上下文。
 
-任务上下文包和本次交付默认通过对话传递，不要求为每个实现任务新建文档。若接口或实现说明需要跨多个后续对话复用，交由总控决定是否写入 `ue/SkillLab/Docs/ProgramWorkflow/`。
+任务上下文包和本次交付默认通过对话传递，不要求为每个实现任务新建文档。若接口或实现说明需要跨多个后续对话复用，交由总控决定是否写入 `<UEProjectRoot>/Docs/ProgramWorkflow/`。
 ## 必须读取
 
 - `.codex/skills/ai-native-programming/SKILL.md` 中与当前任务相关的程序约束；
 
 - 总控给出的任务上下文包；
-- `ue/SkillLab/Docs/ProjectContext/README.md`、架构地图和负责模块的项目文档；
-- 当前任务 `ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md` 及适用专题结论；
-- `ue/SkillLab/Docs/Planning/<TaskName>/` 中负责模块的策划文档；
+- `<UEProjectRoot>/Docs/ProjectContext/` 中的项目入口、架构地图和负责模块的项目文档；
+- 当前任务 `<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md` 及适用专题结论；
+- `<UEProjectRoot>/Docs/Planning/<TaskName>/` 中负责模块的策划文档；
 - 直接依赖的上游交付摘要；
 - 任务涉及的源码、配置、资产入口和现有验证入口。
 
@@ -48,11 +48,27 @@ description: 在已有架构基线和模块约定下，实现一个边界明确�
 ## 工作
 
 - 按基线实现任务范围内的代码、配置、结构化资产连接或必要 Blueprint 外壳；
-- 开始修改前，先把当前基线中的身份模型、请求入口、生命周期、配置边界和 Blueprint 边界列成符合性清单，并逐项标记“已满足 / 本轮临时适配 / 明确偏离”；明确偏离必须先回交总控，不得静默选择更快的硬编码方案。
+- 开始修改前，必须提交“架构符合性对应表”。表格至少包含：架构要求；对应的接口、结构体、模块或代码落点；验证方式；当前状态（满足、允许的临时适配或明确偏离）。任一架构要求没有代码落点、验证方式或明确允许的临时适配时，必须停止并回交总控，不得自行按最短路径实现。
+- 对身份模型、请求入口、生命周期、配置边界和 Blueprint 边界逐项建立上述对应关系；明确偏离必须先回交总控，不得静默选择更快的硬编码方案。
 - 优先复用已确认接口，保持身份、生命周期、清理和错误结果一致；
-- 稳定运行逻辑优先放在 引擎原生能力/SkillLab C++，可变内容放在配置或结构化资产；Blueprint 只承担必要的外壳、组装和资源绑定；
+- 稳定运行逻辑优先放在引擎原生能力或项目 C++，可变内容放在配置或结构化资产；Blueprint 只承担必要的外壳、组装和资源绑定；
 - 对公共接口变化、跨模块修改和临时默认值做明确记录。
 - 临时测试适配仅能在当前基线允许或总控在授权范围内确认后采用；标注“临时”不豁免现有配置或接口要求。交接说明适用范围、确认依据和替换条件，不得把适配描述成已完成的通用能力。
+
+### 测试样例和内容载体边界
+
+每次实现前，必须把新增内容标记为“运行机制、内容定义、测试适配、表现适配”之一，并确认它通过哪个接口连接。测试样例也必须走正式的请求、结果和事件出口；不能因为它只用于测试，就在通用生命周期代码中加入内容专用分支。
+
+允许暂时把内容数值、结果参数或样例身份写在 C++ 中，但只能放在独立的定义提供器、测试适配器、测试 fixture 或等价边界内。以下做法不合格：
+
+- 在通用请求/生命周期代码中出现某个具体内容标识的分支；
+- 在通用组件中直接保存某个内容条目的消耗、冷却或结果强度；
+- 让角色、控制器或运行对象直接拥有某个样例的内容规则；
+- 用日志或注释声明“临时”，但实际绕过统一接口。
+
+当前不引入 C#、JSON、DataTable 或脚本运行时也可以接受，但必须保留相同的内容定义接口，并在交付中说明将来如何替换当前载体。不要为了证明可迁移而提前引入复杂外部语言；先保证载体可替换、内容与机制已分开。
+
+实现完成前必须做一次静态检查：搜索当前任务的专用身份、数值和结果构造，确认它们只出现在允许的定义/测试边界内；如果架构交付定义了代表性复用案例，说明该案例是否复用同一公共运行路径。
 
 ## 停止与回交
 

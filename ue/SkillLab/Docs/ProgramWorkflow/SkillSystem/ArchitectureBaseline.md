@@ -25,7 +25,7 @@
 - `ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/README.md`
 - 当前真实代码：`Source/SkillLab/SkillLabCharacter.*`、`SkillLabPlayerController.*`、`SkillLabSkillComponent.*`、`SkillLabAbilitySystemComponent.*`、`SkillLabAttributeSet.*`、`SkillLabPulseAbility.*`、`SkillLabPulseEffect.*`、`SkillLab.Build.cs`、`SkillLab.uproject`
 
-当前项目事实：基础运行入口仍是 `GameMode → PlayerController → Character → CharacterMovementComponent`；Character 保留移动和镜头职责，并已挂载 `USkillLabAbilitySystemComponent` 与 `USkillLabAttributeSet`，实现 `IAbilitySystemInterface`。`SkillLab.Build.cs` 已依赖 `GameplayAbilities`、`GameplayTags`、`GameplayTasks`，`.uproject` 已启用 `GameplayAbilities` 插件。`USkillLabSkillComponent` 已完成最小单位初始化、`Skill_TestPulse` 的硬编码授予、请求门控、GAS 激活、瞬时效果、控制台测试入口和重置。因此，“GAS 是否接入”不再是首阶段前置条件；后续工作是修正公共时序/追踪契约并验证运行证据。
+当前项目事实：基础运行入口仍是 `GameMode → PlayerController → Character → CharacterMovementComponent`；Character 保留移动和镜头职责，并已挂载 `USkillLabAbilitySystemComponent` 与 `USkillLabAttributeSet`，实现 `IAbilitySystemInterface`。`SkillLab.Build.cs` 已依赖 `GameplayAbilities`、`GameplayTags`、`GameplayTasks`，`.uproject` 已启用 `GameplayAbilities` 插件。`USkillLabSkillComponent` 已完成最小单位初始化、Provider 默认 SkillId 列表遍历、按 SkillId 保存 AbilitySpecHandle 的通用授予、请求门控、GAS 激活、瞬时效果、控制台测试入口和重置。因此，“GAS 是否接入”不再是首阶段前置条件；当前剩余工作是扩大定义/装配覆盖并补充运行证据。
 
 首阶段只实现能够重复验证的最小样本：一个可授予的技能、一个有效施法者、一个简单目标、一个瞬时效果和显式重置。复杂目标预览、投射物、区域、持续引导、多段、复杂属性公式、完整槽位 UI 和网络同步属于后续扩展；接口应保留扩展位置，但不为它们提前建立过度通用框架。
 
@@ -134,7 +134,7 @@ LoadoutVersion（如果经槽位装配）
 TargetId/TargetSpec（当前样本为自身目标；来源和目标语义不能只藏在日志文本中）
 ```
 
-`SubmitSkillRequest(Request)` 返回即时结果对象，至少包括 `RequestId`、状态、原因、可选 `CastId`、技能身份和可读诊断信息。后续阶段通过 `CastId` 发送结果事件。
+`SubmitSkillRequest(Request)` 返回即时结果对象，至少包括 `RequestId`、状态、原因、可选 `CastId`、`GrantedAbilityId`、技能身份、TargetUnitId/TargetSpec 快照和可读诊断信息。请求若已解析到有效授予记录，即使随后在目标、资源、冷却或 GAS 激活门控被拒绝，其结果和事件仍保留真实业务 `GrantedAbilityId`；技能未授予或身份无法解析时为 `0`。成功链事件也携带该业务身份；后续施法阶段通过 `CastId` 关联结果事件。
 
 ### 5.3 请求结果
 
@@ -143,19 +143,19 @@ TargetId/TargetSpec（当前样本为自身目标；来源和目标语义不能�
 - `Rejected`：未开始；原因至少能区分无效施法者/未初始化、未授予、死亡/状态阻塞、资源不足、冷却中、目标无效和配置错误。
 - `Buffered`：首阶段默认关闭，保留扩展位。
 - `Started`：激活成功并创建 `CastId`；不等于已经命中。
-- `Completed`：达到结束条件；首阶段效果成功与否需在效果结果中另行记录。
+- `Completed`：生命周期达到结束条件，不代表效果一定成功；通过 `bEffectSucceeded` 和 `EffectResult.Status` 读取效果结果。
 - `Cancelled`：已开始后被明确取消。
 - `Interrupted`：已开始后因死亡、重置或其他中断终结。
 - `Expired`：缓冲/目标上下文过期时使用；首阶段可不产生。
 
-效果应用还应区分 `Applied`、`Immune`、`InvalidTarget`、`Failed` 等结果，避免把“命中候选存在”冒充“效果已生效”。
+效果应用还应区分 `Applied`、`Immune`、`InvalidTarget`、`Failed` 等结果，避免把“命中候选存在”冒充“效果已生效”。Unit 目标必须解析到已初始化且 `UnitId != 0` 的 `USkillLabSkillComponent`；无组件、未初始化或零 ID 都返回 `Rejected(TargetUnitIdUnavailable)`。
 
 ## 6. 首阶段最小样本默认值
 
 以下是为可重复 PIE/测试闭环提出的 AI 建议默认值，除非用户后续修改，不应被实现 Agent 误写成永久策划规则：
 
 - 一个玩家战斗单位，使用当前 `ASkillLabCharacter` 作为 Avatar 外壳；ASC/单位能力组件独立承载能力逻辑。
-- 一个可授予技能 `Skill_TestPulse`（名称为建议标识），目标为自身或一个指定有效单位；首阶段优先自身目标以减少场景资产依赖，也可在已有两个单位时切换为单位目标。
+- 两个可授予技能：`Skill_TestPulse`（自身 `TestValue +1`）和 `Skill_RecoverEnergy`（自身 `SkillEnergy +20`）；二者均通过同一请求、授予、CastId、效果结果、事件和表现路由。
 - 技能为瞬发、无前摇、无持续阶段；激活成功即扣除少量资源并启动短冷却（建议资源 10、冷却 0.5 秒，具体属性名/数值由实现与样本决定）。
 - 效果为一次可观察的固定属性变化（建议对目标施加 `+1` 测试值或对自身生命/测试属性施加可回退修改），必须经过统一效果应用入口并写入日志。
 - 首阶段可提供一个受控测试调用（BeginPlay 后自动试放、控制台命令或开发按键三者择一），并在同一流程末尾执行 `ResetUnit`，再提交第二次请求；最终证据需要能证明两次均独立完成，没有残留冷却/标签/效果。
@@ -208,6 +208,7 @@ TargetId/TargetSpec（当前样本为自身目标；来源和目标语义不能�
 - 当前 `ASC` Owner/Avatar 均使用单位 Actor，且编译已通过；仍需由运行验证确认 PIE 中的生命周期和重置结果。
 - 当前只有一个默认 Character 和一个测试地图；首阶段继续使用自身目标，不把第二单位、多单位目标或复杂目标变成阻塞项。
 - 当前 `Skill_TestPulse`、能量/冷却数值、`TestValue +1` 效果和控制台入口仍是代码内临时适配，必须保留可追踪身份和统一请求路径，但不应被当作最终内容配置方案。
+- 当前 `Skill_RecoverEnergy` 已作为第二个无资产瞬时样本接入；其命令行复用证据已记录，PIE、激活失败和运行时恢复数值仍未验证。
 
 ### 需要总控/用户判断的体验问题
 
@@ -249,7 +250,9 @@ TargetId/TargetSpec（当前样本为自身目标；来源和目标语义不能�
 - 来源至少区分 `Player`、`AI`、`Test` 语义；目标至少记录 `Self`/目标身份语义。当前自身目标和控制台入口是临时适配，不得改变公共请求契约。
 - `ResetUnit` 必须阻止新请求、终结活跃实例、恢复资源/属性/冷却并可重复调用；复杂目标、DataAsset、多单位和完整 SkillSystem 不属于本阶段阻塞项。
 
-当前实现偏离：`USkillLabSkillComponent::RequestTestPulse` 已接入 GAS，但现有代码在 `TryActivateAbility` 前设置 `CastId`、扣费和冷却，且请求结果/日志尚未完整携带 `SkillId`、来源和目标身份。实现 Agent 必须按上述不变量修正；不得通过放宽基线来保留该偏离。
+> **历史基线记录（已修复，2026-10-06）**：早期实现曾由 `USkillLabSkillComponent::RequestTestPulse` 走技能专用路径，并在 `TryActivateAbility` 前设置 `CastId`、扣费和冷却，且请求结果/日志缺少完整的 `SkillId`、来源和目标身份。该段只保留用于解释本基线的迁移背景，不代表当前源码状态。
+
+当前实现已改为 `SubmitSkillRequest` 统一入口；Provider 默认装配通过 `GetDefaultSkillIds` 驱动通用 `GrantSkill`，授予记录分开保存业务 `GrantedAbilityId` 与 GAS `SpecHandle`，有效授予身份在后续目标、资源、冷却和激活门控前写入请求上下文；GAS 激活成功后才创建 `CastId`、扣费和启动冷却。结果/事件携带来源、目标、TargetSpec 快照和定义身份。`Skill_RecoverEnergy` 已作为第二个无资产瞬时技能接入同一路径。
 
 实现 Agent 可直接使用本基线中的身份和结果语义。需要单独专题结论时，优先拆分：
 

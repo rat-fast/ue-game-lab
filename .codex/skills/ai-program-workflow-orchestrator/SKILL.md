@@ -44,17 +44,17 @@ description: 协调大型 UE 功能的多对话程序实现；读取最小必要
 
 ## 项目路径约定
 
-以下路径相对仓库根目录；如果项目名称不同，将 `ue/SkillLab/` 替换为实际 UE 项目目录：
+以下路径相对仓库根目录。`<UEProjectRoot>` 表示当前 UE 项目目录（例如 `ue/<ProjectName>/`），由总控根据项目入口具体替换：
 
-- 项目入口和总体代码地图：`ue/SkillLab/Docs/README.md`、`ue/SkillLab/Docs/ProjectContext/SkillLabCodeArchitecture.md`；
-- 策划和领域规格：`ue/SkillLab/Docs/Planning/<TaskName>/`；
-- 程序工作流任务根目录：`ue/SkillLab/Docs/ProgramWorkflow/`；每个具体任务必须使用自己的同级目录 `<TaskName>/`；
-- 当前架构基线：`ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
-- 专题架构结论：`ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/Architecture/`；
-- 集成和验证记录：`ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/Validation/`；
+- 项目入口和总体代码地图：`<UEProjectRoot>/Docs/README.md`、`<UEProjectRoot>/Docs/ProjectContext/`；
+- 策划和领域规格：`<UEProjectRoot>/Docs/Planning/<TaskName>/`；
+- 程序工作流任务根目录：`<UEProjectRoot>/Docs/ProgramWorkflow/`；每个具体任务必须使用自己的同级目录 `<TaskName>/`；
+- 当前架构基线：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
+- 专题架构结论：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Architecture/`；
+- 集成和验证记录：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Validation/`；
 - 任务状态、上下文包和子 Agent 交付默认通过对话传递，不为每个子任务新建文档；只有需要跨对话长期复用的结论才写入上述目录。
 
-当前功能的长期产物限定在 `ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/`，包括 `ArchitectureBaseline.md`、`Architecture/` 和 `Validation/`。`<TaskName>` 必须与 `Planning/<TaskName>/` 的任务名一致；具体任务名不在本通用 Skill 中写死。
+当前功能的长期产物限定在 `<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/`，包括 `ArchitectureBaseline.md`、`Architecture/` 和 `Validation/`。`<TaskName>` 必须与 `Planning/<TaskName>/` 的任务名一致；具体项目和任务名不在本通用 Skill 中写死。
 ## 必须读取的通用上下文
 
 每次启动总控时必须确认：
@@ -76,7 +76,7 @@ description: 协调大型 UE 功能的多对话程序实现；读取最小必要
 6. 当前任务的 `ProgramWorkflow/<TaskName>/`；
 7. 与当前子任务直接相关的源码、配置、资产和运行入口。
 
-其中第 4 项是项目通用上下文，第 5 项是当前任务策划知识，第 6 项是当前任务程序中间产物。不得把具体任务路径写入通用 Skill 规则，也不得读取其他任务目录。
+其中第 4 项是项目通用上下文，第 5 项是当前任务策划知识，第 6 项是当前任务程序中间产物。不得把具体项目或任务路径写入通用 Skill 规则，也不得读取其他任务目录。
 
 总控需要知道其他 Skill 能做什么、需要什么输入、会交付什么，但不需要把其他 Skill 的全部业务文档内容复制进自己的上下文。
 
@@ -114,6 +114,8 @@ description: 协调大型 UE 功能的多对话程序实现；读取最小必要
 上游文档和架构基线属于“必须给到”的材料；与当前任务无直接关系的模块文档、历史对话和全部源码属于“不要默认给到”的材料。总控根据任务进度补充新的按需材料，不让子 Agent 自行猜测缺失上下文。
 
 如果架构 Agent 没有交付实现约束清单，或者当前验收边界尚未确定，总控不得直接把任务交给实现 Agent；应先补充架构交接或把未决问题列出来。实现交付后先安排 Review，验证交付后再用 Review 确认证据是否足以支持阶段结论。
+
+总控把架构放行作为阶段门禁：架构 Agent 必须先交付冻结基线、公共接口和不变量、实现约束清单、正式/测试入口边界、配置/内容来源及未决和禁止自行决定事项；实现 Agent 必须先提交架构符合性对应表；Review 必须按“架构符合性、代码正确性、集成与验证证据”的顺序审查。架构符合性未通过时，状态固定为“先修复后继续”，总控不得推进正式集成或下一阶段。
 
 ## 任务判断
 

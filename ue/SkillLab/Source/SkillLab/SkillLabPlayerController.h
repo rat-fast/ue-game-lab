@@ -21,6 +21,9 @@ public:
 	void SkillTest();
 
 	UFUNCTION(Exec)
+	void SkillTestRecover();
+
+	UFUNCTION(Exec)
 	void SkillReset();
 
 protected:

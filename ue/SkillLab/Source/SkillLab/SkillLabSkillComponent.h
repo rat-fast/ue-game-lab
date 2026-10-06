@@ -1,64 +1,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayAbilitySpec.h"
 #include "Components/ActorComponent.h"
+#include "SkillLabSkillTypes.h"
 #include "SkillLabSkillComponent.generated.h"
 
 class USkillLabAbilitySystemComponent;
 class USkillLabAttributeSet;
-class USkillLabPulseAbility;
+class USkillLabPresentationRouter;
+class USkillLabSkillAbility;
 
-UENUM(BlueprintType)
-enum class ESkillLabRequestSource : uint8
+DECLARE_MULTICAST_DELEGATE_OneParam(FSkillLabEventDelegate, const FSkillLabEventData&);
+
+struct FSkillLabGrantedSkillRecord
 {
-	Test,
-	Player,
-	AI
-};
-
-UENUM(BlueprintType)
-enum class ESkillLabTargetType : uint8
-{
-	Self,
-	Unit
-};
-
-UENUM(BlueprintType)
-enum class ESkillLabRequestStatus : uint8
-{
-	Rejected,
-	Started,
-	Completed
-};
-
-USTRUCT(BlueprintType)
-struct FSkillLabRequestResult
-{
-	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadOnly)
-	ESkillLabRequestStatus Status = ESkillLabRequestStatus::Rejected;
-
-	UPROPERTY(BlueprintReadOnly)
-	FString Reason;
-
-	UPROPERTY(BlueprintReadOnly)
-	int32 RequestId = 0;
-
-	UPROPERTY(BlueprintReadOnly)
-	int32 CastId = 0;
-
-	UPROPERTY(BlueprintReadOnly)
-	int32 UnitId = 0;
-
-	UPROPERTY(BlueprintReadOnly)
 	FName SkillId = NAME_None;
-
-	UPROPERTY(BlueprintReadOnly)
-	ESkillLabRequestSource Source = ESkillLabRequestSource::Test;
-
-	UPROPERTY(BlueprintReadOnly)
-	ESkillLabTargetType TargetType = ESkillLabTargetType::Self;
+	int32 GrantedAbilityId = 0;
+	FGameplayAbilitySpecHandle SpecHandle;
 };
 
 UCLASS(ClassGroup = (SkillLab), meta = (BlueprintSpawnableComponent))
@@ -74,8 +33,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "SkillLab|Skill")
 	void InitializeUnit();
 
+	bool GrantSkill(FName SkillId);
+
 	UFUNCTION(BlueprintCallable, Category = "SkillLab|Skill")
-	FSkillLabRequestResult RequestTestPulse(AActor* Target = nullptr);
+	FSkillLabRequestResult SubmitSkillRequest(const FSkillLabSkillRequest& Request);
 
 	UFUNCTION(BlueprintCallable, Category = "SkillLab|Skill")
 	void ResetUnit();
@@ -86,9 +47,14 @@ public:
 	UFUNCTION(BlueprintPure, Category = "SkillLab|Skill")
 	float GetSkillEnergy() const;
 
-	void NotifyPulseAbilityActivationPending(USkillLabPulseAbility* Ability);
-	bool ExecutePulseActivation(USkillLabPulseAbility* Ability, FSkillLabRequestResult& Result);
-	void NotifyPulseEffectApplied();
+	UFUNCTION(BlueprintPure, Category = "SkillLab|Skill")
+	int32 GetUnitId() const { return UnitId; }
+
+	int32 AllocateEffectApplicationId() { return NextEffectApplicationId++; }
+
+	void NotifySkillAbilityActivationPending(USkillLabSkillAbility* Ability);
+
+	FSkillLabEventDelegate OnSkillEvent;
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Skill")
@@ -98,13 +64,16 @@ protected:
 	bool bInitialized = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Skill")
-	bool bSkillGranted = false;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Skill")
 	int32 NextRequestId = 1;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Skill")
 	int32 NextCastId = 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Skill")
+	int32 NextEffectApplicationId = 1;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Skill")
+	int32 NextEventId = 1;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Skill")
 	int32 ActiveCastId = 0;
@@ -113,16 +82,19 @@ protected:
 	int32 CurrentRequestId = 0;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Skill")
-	FName CurrentSkillId = TEXT("Skill_TestPulse");
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Skill")
-	ESkillLabRequestSource CurrentSource = ESkillLabRequestSource::Test;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Skill")
-	ESkillLabTargetType CurrentTargetType = ESkillLabTargetType::Self;
+	int32 CurrentGrantedAbilityId = 0;
 
 	UPROPERTY(Transient)
-	TObjectPtr<USkillLabPulseAbility> PendingPulseAbility;
+	FSkillLabSkillRequest CurrentRequest;
+
+	UPROPERTY(Transient)
+	FSkillLabSkillDefinition CurrentDefinitionSnapshot;
+
+	UPROPERTY(Transient)
+	ESkillLabDefinitionStatus CurrentDefinitionStatus = ESkillLabDefinitionStatus::Missing;
+
+	UPROPERTY(Transient)
+	TObjectPtr<USkillLabSkillAbility> PendingSkillAbility;
 
 	UPROPERTY(Transient)
 	TObjectPtr<USkillLabAbilitySystemComponent> AbilitySystemComponent;
@@ -130,12 +102,17 @@ protected:
 	UPROPERTY(Transient)
 	TObjectPtr<USkillLabAttributeSet> AttributeSet;
 
-	float CooldownEndTime = 0.0f;
-	float InitialEnergy = 100.0f;
-	float InitialTestValue = 0.0f;
-	float PulseCost = 10.0f;
-	float PulseCooldown = 0.5f;
+	UPROPERTY(Transient)
+	TObjectPtr<USkillLabPresentationRouter> PresentationRouter;
 
+	TMap<FName, FSkillLabGrantedSkillRecord> GrantedSkillHandles;
+
+	int32 NextGrantedAbilityId = 1;
+
+	TMap<FName, float> CooldownEndTimes;
+
+	void PublishEvent(ESkillLabEventType EventType, const FString& Reason = FString(), const FSkillLabEffectApplicationResult* EffectResult = nullptr);
 	void LogEvent(const TCHAR* EventName, const FString& Detail = FString()) const;
 	FString BuildTraceContext() const;
+	void ResetRequestContext();
 };

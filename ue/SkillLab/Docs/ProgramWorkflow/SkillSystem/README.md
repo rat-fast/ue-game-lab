@@ -7,7 +7,7 @@
 - 项目通用事实：`../../ProjectContext/README.md`，随后读取 `../../ProjectContext/SkillLabCodeArchitecture.md` 和当前涉及的 `../../ProjectContext/Modules/<模块>.md`；
 - SkillSystem 策划规格：`../../Planning/SkillSystem/` 中与当前阶段相关的总览或模块文档；
 - 当前 SkillSystem 中间产物：本目录内已有的架构基线、专题结论、验证记录；
-- 工作流规则：仓库根目录下 5 个 `ai-program-*/SKILL.md`，由总控统一读取并按 Agent 职责分发。
+- 工作流规则：仓库根目录下 6 个 `ai-program` Skill，由总控统一读取并按职责分发：总控、架构、模块实现、集成、验证、Review。当前实际对应 `ai-program-workflow-orchestrator`、`ai-program-architecture`、`ai-program-module-implementation`、`ai-program-integration`、`ai-program-validation-log` 和 `ai-program-review`。
 
 ## 长期产物
 

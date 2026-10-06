@@ -13,6 +13,9 @@ class SKILLLAB_API USkillLabAttributeSet : public UAttributeSet
 public:
 	USkillLabAttributeSet();
 
+	static float GetDefaultTestValue();
+	static float GetDefaultSkillEnergy();
+
 	UPROPERTY(BlueprintReadOnly, Category = "SkillLab|Attributes")
 	FGameplayAttributeData TestValue;
 	ATTRIBUTE_ACCESSORS_BASIC(USkillLabAttributeSet, TestValue)

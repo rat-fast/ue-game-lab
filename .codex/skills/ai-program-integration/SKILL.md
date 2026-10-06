@@ -17,11 +17,11 @@ description: 将多个 UE 功能模块接入当前项目，处理接口连接、
 
 默认使用以下相对仓库路径：
 
-- 项目入口和代码地图：`ue/SkillLab/Docs/README.md`、`ue/SkillLab/Docs/ProjectContext/SkillLabCodeArchitecture.md`；
-- 架构基线：`ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
-- 实现源码：`ue/SkillLab/Source/SkillLab/`；
-- 配置和资产：`ue/SkillLab/Config/`、任务明确授权的 `ue/SkillLab/Content/`；
-- 长期集成/验证记录：`ue/SkillLab/Docs/ProgramWorkflow/<TaskName>/Validation/`。
+- 项目入口和代码地图：`<UEProjectRoot>/Docs/README.md`、`<UEProjectRoot>/Docs/ProjectContext/`；
+- 架构基线：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
+- 实现源码：`<UEProjectRoot>/Source/`；
+- 配置和资产：`<UEProjectRoot>/Config/`、任务明确授权的 `<UEProjectRoot>/Content/`；
+- 长期集成/验证记录：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Validation/`。
 
 `<TaskName>` 是当前功能任务名，策划目录和程序工作流目录必须使用同一个任务名。`ProjectContext/` 提供项目通用事实，`Planning/<TaskName>/` 提供策划验收依据，`ProgramWorkflow/<TaskName>/` 只提供当前任务的程序交接；不得读取其他任务目录。
 
@@ -35,7 +35,7 @@ description: 将多个 UE 功能模块接入当前项目，处理接口连接、
 - 各模块的实现摘要、接口变化和未完成范围；
 - 项目文档、代码状态、构建入口和本次运行入口。
 
-集成 Agent 进入项目时，先读 `ue/SkillLab/Docs/ProjectContext/README.md` 和代码架构地图，再读当前任务的基线、模块交付摘要和相关策划验收章节；不扫描全部 `Docs/`。
+集成 Agent 进入项目时，先读 `<UEProjectRoot>/Docs/ProjectContext/` 中的项目入口和代码架构地图，再读当前任务的基线、模块交付摘要和相关策划验收章节；不扫描全部 `Docs/`。
 
 ## 按需读取
 
@@ -47,8 +47,10 @@ description: 将多个 UE 功能模块接入当前项目，处理接口连接、
 
 ## 工作
 
+- 开始集成前，确认 Review 已按三层顺序完成架构符合性审查且结论允许继续；若架构符合性未通过，停止集成并回交总控，不能用编译成功或一次运行成功替代放行。
 - 检查模块接口、依赖、初始化、生命周期、清理和重置是否一致；
 - 处理编译、模块依赖、配置、必要 Blueprint 外壳和资源连接；
+- 接入配置或 UE 资产时，确认内容的权威来源、加载/导入路径、引用解析和校验方式；不能用临时资产或手工编辑器步骤掩盖缺失的 AI 可读生产入口；
 - 连接首批纵向链路，使其能够启动、请求、执行、结束、重置并重复测试；
 - 将普通代码/集成错误分派回适当模块，或在集成范围内修复；
 - 发现架构冲突时记录事实、影响和回交建议，不用局部补丁掩盖职责问题。

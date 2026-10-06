@@ -2,6 +2,16 @@
 
 USkillLabAttributeSet::USkillLabAttributeSet()
 {
-	TestValue = 0.0f;
-	SkillEnergy = 100.0f;
+	TestValue = GetDefaultTestValue();
+	SkillEnergy = GetDefaultSkillEnergy();
+}
+
+float USkillLabAttributeSet::GetDefaultTestValue()
+{
+	return 0.0f;
+}
+
+float USkillLabAttributeSet::GetDefaultSkillEnergy()
+{
+	return 100.0f;
 }
