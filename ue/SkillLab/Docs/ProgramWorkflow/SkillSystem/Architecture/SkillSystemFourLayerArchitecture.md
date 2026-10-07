@@ -18,15 +18,17 @@
 - `ue/SkillLab/Docs/ProjectContext/Modules/GameplayFramework.md`
 - `ue/SkillLab/Docs/ProjectContext/Modules/Input.md`
 - `ue/SkillLab/Docs/Planning/SkillSystem/README.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/Supporting/CommonContracts.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/Supporting/ConfigurationSpec.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/Supporting/ProgramArchitectureMapping.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M02-UnitAndAbilityFoundation.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M03-AbilityRequestAndLifecycle.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M04-TargetingAndHit.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M05-AttributesEffectsStates.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M07-PresentationAndUIFeedback.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M09-ObservabilityAndContentProduction.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/README.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/Batches/Batch01-SixSkillVerticalSlice/README.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/Batches/Batch01-SixSkillVerticalSlice/CapabilityRequirements.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M02-UnitAndAbilityFoundation.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M03-AbilityRequestAndLifecycle.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M04-TargetingAndHit.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M05-AttributesEffectsStates.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M07-PresentationAndUIFeedback.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M09-ObservabilityAndContentProduction.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Skills/README.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Skills/SkillDesigns.md`
 - `ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/ArchitectureBaseline.md`
 - `ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/ImplementationSlice.md`
 - `ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/ImplementationAudit.md`
@@ -321,9 +323,23 @@ ResetPresentation(UnitId, ResetReason)
 - 死亡时持续效果、投射物和区域的存续规则。
 - 输入缓冲、槽位版本和多单位目标的具体体验规则。
 
-## 十一、验收行为与交接路由
+## 十一、策划输入的程序候选映射（未冻结）
 
-实现 Agent 必须先读本文件第 1～6 节和 `ArchitectureBaseline.md` 第 3～10 节；若涉及表现，再读第 7 节及 M07；若涉及定义载体，再读第 3 节及 `ConfigurationSpec.md`；若涉及重置，再读第 8 节及 M02。
+原策划配套材料中的技术映射、配置语义和运行交接在本节保留为程序侧候选输入。它们不是策划约束，也不替换本文件已有的基线规则；实现前由程序 Agent 根据当前代码、UE 版本和可验证结果逐项确认。
+
+| 业务需求 | 程序候选关注点 |
+| --- | --- |
+| 稳定单位/技能/请求/施法/效果/对象身份 | 统一请求结果、GAS 上下文、对象归属和日志字段的实际映射 |
+| 技能内容表达目标、阶段、空间、效果和表现 | 定义载体、引用解析、范围校验、版本与来源追踪 |
+| 玩家、AI、Test 共用规则 | 单一请求入口、会话动作、批量 Reset 和可复现运行记录 |
+| 弹体、区域、护盾和持续状态独立存续 | Cast/Object/Effect 生命周期承载、终止通知和跨单位清理 |
+| 预览、命中、实际值、失败原因可见 | 事件事实出口、表现订阅、诊断与缺失资源回退 |
+
+技术候选的接口名、类名、数据载体和字段名不由策划层冻结；如果实现采用不同映射，只要保持公共结果语义、可追踪身份、幂等清理和可验证证据即可。六技能的业务参数从 `Planning/SkillSystem/Skills/SkillDesigns.md` 索引进入独立正文，公共能力需求读取 `Planning/SkillSystem/Infrastructure/`。
+
+## 十二、验收行为与交接路由
+
+实现 Agent 必须先读本文件第 1～6 节和 `ArchitectureBaseline.md` 第 3～10 节；若涉及表现，再读第 7 节及 Infrastructure M07；若涉及定义载体，再读第 3 节和本文件第 11 节；若涉及重置，再读第 8 节及 Infrastructure M02。
 
 最小验收矩阵：
 
@@ -336,4 +352,4 @@ ResetPresentation(UnitId, ResetReason)
 | 重置后再次请求 | 新 `RequestId`、新 `CastId`、新效果结果，链路与第一次独立 |
 | 缺失表现绑定 | 逻辑结果照常完成，并产生可定位诊断 |
 
-本专题是局部 SkillSystem 架构结论，会被后续 M02/M03/M04/M05/M07/M08/M09 实现任务引用；它不改变全局 `ArchitectureBaseline.md` 的版本。若实现必须改变公共身份、结果、事件或清理不变量，应先更新基线版本并记录被替换内容，再开始代码迁移。
+本专题是局部 SkillSystem 架构结论，会被后续基础设施与技能实现任务引用；它不改变全局 `ArchitectureBaseline.md` 的版本。若实现必须改变公共身份、结果、事件或清理不变量，应先更新基线版本并记录被替换内容，再开始代码迁移。

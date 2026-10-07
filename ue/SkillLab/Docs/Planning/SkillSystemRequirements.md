@@ -1,7 +1,9 @@
 # 技能系统第一层文档入口
 
-第一层“系统目标与范围”已经整理到：
+技能系统原先的第一层范围与第二层模块已按职责重组：
 
-- [01-SystemScope.md](SkillSystem/01-SystemScope.md)
+- [核心策划入口](SkillSystem/RepresentativeSkillVerticalSlice.md)
+- [基建需求入口](SkillSystem/Infrastructure/README.md)
+- [技能配置入口](SkillSystem/Skills/README.md)
 
-本文件保留作为旧路径兼容入口。后续以 `SkillSystem/01-SystemScope.md` 为唯一正文，避免第一层范围文档与第二层模块文档混淆。
+本文件保留作为旧路径兼容入口。正文以新的核心、基建和技能配置目录为准；程序接口与验证记录位于 `ProgramWorkflow/SkillSystem/`。

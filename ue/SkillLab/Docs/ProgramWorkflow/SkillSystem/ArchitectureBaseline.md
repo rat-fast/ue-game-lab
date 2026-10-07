@@ -15,13 +15,15 @@
 - `ue/SkillLab/Docs/ProjectContext/Modules/GameplayFramework.md`
 - `ue/SkillLab/Docs/ProjectContext/Modules/Input.md`
 - `ue/SkillLab/Docs/Planning/SkillSystem/README.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/01-SystemScope.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-CapabilityModel.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M01-InputAndSkillLoadout.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M02-UnitAndAbilityFoundation.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M03-AbilityRequestAndLifecycle.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M04-TargetingAndHit.md`
-- `ue/SkillLab/Docs/Planning/SkillSystem/02-Modules/M05-AttributesEffectsStates.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/RepresentativeSkillVerticalSlice.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/README.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/Batches/Batch01-SixSkillVerticalSlice/README.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/Batches/Batch01-SixSkillVerticalSlice/CapabilityRequirements.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M01-InputAndSkillLoadout.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M02-UnitAndAbilityFoundation.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M03-AbilityRequestAndLifecycle.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M04-TargetingAndHit.md`
+- `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M05-AttributesEffectsStates.md`
 - `ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/README.md`
 - 当前真实代码：`Source/SkillLab/SkillLabCharacter.*`、`SkillLabPlayerController.*`、`SkillLabSkillComponent.*`、`SkillLabAbilitySystemComponent.*`、`SkillLabAttributeSet.*`、`SkillLabPulseAbility.*`、`SkillLabPulseEffect.*`、`SkillLab.Build.cs`、`SkillLab.uproject`
 

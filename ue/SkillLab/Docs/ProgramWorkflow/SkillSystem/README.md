@@ -5,7 +5,7 @@
 ## 固定输入
 
 - 项目通用事实：`../../ProjectContext/README.md`，随后读取 `../../ProjectContext/SkillLabCodeArchitecture.md` 和当前涉及的 `../../ProjectContext/Modules/<模块>.md`；
-- SkillSystem 策划规格：`../../Planning/SkillSystem/` 中与当前阶段相关的总览或模块文档；
+- SkillSystem 策划规格：`../../Planning/SkillSystem/Skills/`（技能内容）、`../../Planning/SkillSystem/Infrastructure/Batches/`（当前批次实施范围）或 `../../Planning/SkillSystem/Infrastructure/`（公共能力）中与当前任务相关的文档；
 - 当前 SkillSystem 中间产物：本目录内已有的架构基线、专题结论、验证记录；
 - 工作流规则：仓库根目录下 6 个 `ai-program` Skill，由总控统一读取并按职责分发：总控、架构、模块实现、集成、验证、Review。当前实际对应 `ai-program-workflow-orchestrator`、`ai-program-architecture`、`ai-program-module-implementation`、`ai-program-integration`、`ai-program-validation-log` 和 `ai-program-review`。
 
@@ -14,6 +14,8 @@
 - `ArchitectureBaseline.md`：SkillSystem 当前统一架构基线和公共接口；
 - `Architecture/`：只对 SkillSystem 有效的专题架构结论；
 - `Validation/`：SkillSystem 编译、运行、PIE 证据和待判断问题。
+
+程序任务按职责读取对应策划层即可：基建实现读当前批次目录和 Infrastructure 模块，技能侧实现读 Skills；两者共同依赖本目录的程序接口和项目当前事实。只有接口缺口、公共语义变化或能力覆盖冲突时，才需要跨层协调。
 
 一次性子任务上下文、任务拆分和交付通过对话传递，不为每个子任务单独建文档。
 
