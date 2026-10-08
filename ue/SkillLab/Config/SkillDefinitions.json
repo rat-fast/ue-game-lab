@@ -1,0 +1,8 @@
+{
+  "skills": [
+    {"id":"Skill_Fireball","cost":10,"cooldown":1.0,"magnitude":30,"powerCoefficient":1.0},
+    {"id":"Skill_AreaBurst","cost":20,"cooldown":3.0,"magnitude":20,"powerCoefficient":0.5},
+    {"id":"Skill_Mend","cost":15,"cooldown":2.0,"magnitude":40},
+    {"id":"Skill_BurningBuff","cost":10,"cooldown":2.0,"magnitude":6,"powerCoefficient":0.2}
+  ]
+}

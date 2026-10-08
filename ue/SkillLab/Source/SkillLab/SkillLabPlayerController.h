@@ -9,6 +9,8 @@
 class UInputAction;
 class UInputMappingContext;
 class UNiagaraSystem;
+class USkillLabHUDWidget;
+class USkillLabHUDManagerComponent;
 struct FInputActionValue;
 
 UCLASS()
@@ -17,11 +19,21 @@ class SKILLLAB_API ASkillLabPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	ASkillLabPlayerController();
 	UFUNCTION(Exec)
 	void SkillTest();
 
 	UFUNCTION(Exec)
 	void SkillTestRecover();
+
+	UFUNCTION(Exec)
+	void SkillArea();
+
+	UFUNCTION(Exec)
+	void SkillBurn();
+
+	UFUNCTION(Exec)
+	void SkillSpawnTargets();
 
 	UFUNCTION(Exec)
 	void SkillReset();
@@ -35,6 +47,11 @@ protected:
 	void HandleCameraLook(const FInputActionValue& Value);
 	void HandleCameraZoom(const FInputActionValue& Value);
 	void MoveToCursor();
+	void CastAtCursor(FName SkillId, bool bGroundTarget, bool bAutoSelectNearestDummy = false);
+	void HandleSkillFireball();
+	void HandleSkillArea();
+	void HandleSkillMend();
+	void HandleSkillBurn();
 
 	UPROPERTY(EditDefaultsOnly, Category = "SkillLab|Input")
 	TObjectPtr<UInputAction> MoveOrRotateAction;
@@ -60,7 +77,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "SkillLab|Feedback")
 	TObjectPtr<UNiagaraSystem> MoveFailureEffect;
 
+	UPROPERTY(Transient)
+	TObjectPtr<USkillLabHUDWidget> HUDWidget;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USkillLabHUDManagerComponent> HUDManager;
+
 	FVector2D PointerPressPosition = FVector2D::ZeroVector;
 	bool bPointerHeld = false;
 	bool bCameraDragging = false;
+	bool bSkillTestTargetsSpawned = false;
 };

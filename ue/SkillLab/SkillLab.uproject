@@ -3,7 +3,17 @@
 	"EngineAssociation": "5.8",
 	"Category": "",
 	"Description": "",
-	"Modules": [
+		"Modules": [
+		{
+			"Name": "SkillLabGAS",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "SkillLabSkills",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
 		{
 			"Name": "SkillLab",
 			"Type": "Runtime",

@@ -17,6 +17,7 @@ public:
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	void AddCameraZoomInput(float Value);
 	void AddCameraRotationInput(const FVector2D& Value);
+	void ConfigureAsTrainingDummy();
 
 protected:
 
@@ -33,9 +34,12 @@ protected:
 	TObjectPtr<class USkillLabAbilitySystemComponent> SkillAbilitySystemComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Abilities", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class USkillLabAttributeSet> SkillAttributeSet;
+	TObjectPtr<class USkillLabSkillRuntimeComponent> SkillComponent;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Abilities", meta = (AllowPrivateAccess = "true"))
-	TObjectPtr<class USkillLabSkillComponent> SkillComponent;
+	UPROPERTY(Transient)
+	TObjectPtr<class UStaticMeshComponent> TrainingDummyBody;
+
+	UPROPERTY(Transient)
+	TObjectPtr<class UStaticMeshComponent> TrainingDummyHead;
 
 };
