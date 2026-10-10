@@ -3,6 +3,8 @@
 #include "GameplayEffect.h"
 #include "GameplayEffectExtension.h"
 #include "AbilitySystemComponent.h"
+#include "SkillLabAbilitySystemComponent.h"
+#include "SkillLabDamageCalculation.h"
 #include "SkillLabGASTags.h"
 
 USkillLabCombatAttributeSet::USkillLabCombatAttributeSet()
@@ -44,8 +46,19 @@ void USkillLabCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffec
 	{
 		const float RawDamage = FMath::Max(0.0f, GetIncomingDamage());
 		SetIncomingDamage(0.0f);
-		const float MitigatedDamage = FMath::Max(0.0f, RawDamage - GetArmor());
-		SetHealth(FMath::Clamp(GetHealth() - MitigatedDamage, 0.0f, GetMaxHealth()));
+		const SkillLabDamageCalculation::FResult Settlement = SkillLabDamageCalculation::Resolve(GetHealth(), GetMaxHealth(), GetArmor(), RawDamage);
+		if (USkillLabAbilitySystemComponent* ASC = Cast<USkillLabAbilitySystemComponent>(GetOwningAbilitySystemComponent()))
+		{
+			FSkillLabDamageResult Result;
+			Result.bApplied = true;
+			Result.HealthBefore = Settlement.HealthBefore;
+			Result.HealthAfter = Settlement.HealthAfter;
+			Result.RawDamage = Settlement.RawDamage;
+			Result.MitigatedDamage = Settlement.MitigatedDamage;
+			Result.AppliedDamage = Settlement.AppliedDamage;
+			ASC->RecordPeriodicDamage(Data.EffectSpec, Result);
+		}
+		SetHealth(Settlement.HealthAfter);
 	}
 	else if (Data.EvaluatedData.Attribute == GetIncomingHealingAttribute())
 	{

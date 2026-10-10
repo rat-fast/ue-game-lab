@@ -11,10 +11,30 @@ void USkillLabSkillGameplayAbility::ActivateAbility(FGameplayAbilitySpecHandle H
 	FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData*)
 {
 	AActor* Owner = Info ? Info->OwnerActor.Get() : nullptr;
-	if (USkillLabSkillRuntimeComponent* Skills = Owner ? Owner->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr)
+	USkillLabSkillRuntimeComponent* Skills = Owner ? Owner->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
+	if (!Skills) { EndAbility(Handle, Info, ActivationInfo, true, true); return; }
+	ActiveHandle = Handle;
+	ActiveActorInfo = Info;
+	ActiveActivationInfo = ActivationInfo;
+	bSkillActive = true;
+	Skills->NotifyAbilityActivated(this);
+}
+
+void USkillLabSkillGameplayAbility::FinishSkillAbility(bool bWasCancelled)
+{
+	if (bSkillActive) EndAbility(ActiveHandle, ActiveActorInfo, ActiveActivationInfo, true, bWasCancelled);
+}
+
+void USkillLabSkillGameplayAbility::EndAbility(FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* Info,
+	FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
+{
+	if (Info)
 	{
-		Skills->NotifyAbilityActivated(this);
-		EndAbility(Handle, Info, ActivationInfo, true, false);
+		if (AActor* Owner = Info->OwnerActor.Get())
+		{
+			if (USkillLabSkillRuntimeComponent* Skills = Owner->FindComponentByClass<USkillLabSkillRuntimeComponent>()) Skills->NotifyAbilityEnded(this);
+		}
 	}
-	else EndAbility(Handle, Info, ActivationInfo, true, true);
+	bSkillActive = false;
+	Super::EndAbility(Handle, Info, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

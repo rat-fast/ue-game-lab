@@ -1,9 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "SkillLabProjectileTypes.h"
 #include "SkillLabSkillTypes.generated.h"
 
 class UGameplayAbility;
+class USkillLabSkillBehavior;
+class UAnimMontage;
 
 UENUM(BlueprintType)
 enum class ESkillLabTargetShape : uint8 { Self, Unit, Ground };
@@ -18,7 +22,22 @@ UENUM(BlueprintType)
 enum class ESkillLabExecutionTemplate : uint8 { InstantTarget, Projectile, GroundArea };
 
 UENUM(BlueprintType)
-enum class ESkillLabSkillEvent : uint8 { Rejected, Started, TargetSelected, Hit, EffectApplied, BuffApplied, Completed };
+enum class ESkillLabReleaseTrigger : uint8 { Timer, GameplayEvent };
+
+UENUM(BlueprintType)
+enum class ESkillLabSkillEvent : uint8 { Rejected, Started, TargetSelected, PhaseChanged, Hit, DamageTick, EffectApplied, BuffApplied, BuffRemoved, Cancelled, Completed };
+
+UENUM(BlueprintType)
+enum class ESkillLabCastStage : uint8 { Idle, Windup, Active, Recovery, Completed, Cancelled };
+
+USTRUCT(BlueprintType)
+struct SKILLLABSKILLS_API FSkillLabCastPhaseDurations
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadOnly) float WindupSeconds = 0.0f;
+	UPROPERTY(BlueprintReadOnly) float ActiveSeconds = 0.0f;
+	UPROPERTY(BlueprintReadOnly) float RecoverySeconds = 0.0f;
+};
 
 USTRUCT(BlueprintType)
 struct SKILLLABSKILLS_API FSkillLabSkillRequest
@@ -40,6 +59,7 @@ struct SKILLLABSKILLS_API FSkillLabSkillResult
 	UPROPERTY(BlueprintReadOnly) FName Reason = NAME_None;
 	UPROPERTY(BlueprintReadOnly) FName SkillId = NAME_None;
 	UPROPERTY(BlueprintReadOnly) ESkillLabSkillEvent Event = ESkillLabSkillEvent::Completed;
+	UPROPERTY(BlueprintReadOnly) ESkillLabCastStage Stage = ESkillLabCastStage::Idle;
 	UPROPERTY(BlueprintReadOnly) ESkillLabEffectKind Effect = ESkillLabEffectKind::Damage;
 	UPROPERTY(BlueprintReadOnly) int32 RequestId = 0;
 	UPROPERTY(BlueprintReadOnly) int32 CastId = 0;
@@ -53,6 +73,9 @@ struct SKILLLABSKILLS_API FSkillLabSkillResult
 	UPROPERTY(BlueprintReadOnly) float ActualAmount = 0.0f;
 	UPROPERTY(BlueprintReadOnly) float HealthBefore = 0.0f;
 	UPROPERTY(BlueprintReadOnly) float HealthAfter = 0.0f;
+	UPROPERTY(BlueprintReadOnly) float StageDuration = 0.0f;
+	UPROPERTY(BlueprintReadOnly) FName EffectInstanceId = NAME_None;
+	UPROPERTY(BlueprintReadOnly) float EffectDuration = 0.0f;
 };
 
 USTRUCT(BlueprintType)
@@ -69,10 +92,20 @@ struct SKILLLABSKILLS_API FSkillLabSkillDefinition
 	UPROPERTY(BlueprintReadOnly) float Magnitude = 0.0f;
 	UPROPERTY(BlueprintReadOnly) float Duration = 0.0f;
 	UPROPERTY(BlueprintReadOnly) float Period = 0.0f;
+	UPROPERTY(BlueprintReadOnly) FSkillLabCastPhaseDurations Phases;
 	UPROPERTY(BlueprintReadOnly) ESkillLabEffectKind Effect = ESkillLabEffectKind::Damage;
 	UPROPERTY(BlueprintReadOnly) ESkillLabExecutionTemplate Execution = ESkillLabExecutionTemplate::InstantTarget;
+	UPROPERTY(BlueprintReadOnly) TSubclassOf<USkillLabSkillBehavior> BehaviorClass;
+	UPROPERTY(BlueprintReadOnly) ESkillLabReleaseTrigger ReleaseTrigger = ESkillLabReleaseTrigger::Timer;
+	UPROPERTY(BlueprintReadOnly) FGameplayTag ReleaseEventTag;
+	UPROPERTY(BlueprintReadOnly) FGameplayTagContainer BehaviorEventTags;
+	UPROPERTY(BlueprintReadOnly) TSoftObjectPtr<UAnimMontage> CastMontage;
+	UPROPERTY(BlueprintReadOnly) float ReleaseEventTimeout = 3.0f;
 	UPROPERTY(BlueprintReadOnly) float PowerCoefficient = 0.0f;
+	UPROPERTY(BlueprintReadOnly) FGameplayTagContainer BlockedByTags;
 	UPROPERTY(BlueprintReadOnly) TSubclassOf<UGameplayAbility> AbilityClass;
+	/** Skill-owned projectile tuning; intentionally plain C++ data rather than JSON/Blueprint content. */
+	FSkillLabProjectileParameters ProjectileParameters;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillLabSkillEventDelegate, const FSkillLabSkillResult&, Event);

@@ -1,8 +1,8 @@
 {
   "skills": [
-    {"id":"Skill_Fireball","cost":10,"cooldown":1.0,"magnitude":30,"powerCoefficient":1.0},
-    {"id":"Skill_AreaBurst","cost":20,"cooldown":3.0,"magnitude":20,"powerCoefficient":0.5},
-    {"id":"Skill_Mend","cost":15,"cooldown":2.0,"magnitude":40},
-    {"id":"Skill_BurningBuff","cost":10,"cooldown":2.0,"magnitude":6,"powerCoefficient":0.2}
+    {"id":"Skill_Fireball","cost":10,"cooldown":1.0,"magnitude":30,"powerCoefficient":1.0,"windup":0.25,"recovery":0.35,"blockedBy":["State.SkillLab.Dead","State.SkillLab.Stunned","State.SkillLab.Silenced"]},
+    {"id":"Skill_AreaBurst","cost":20,"cooldown":3.0,"magnitude":20,"powerCoefficient":0.5,"windup":0.25,"recovery":0.40,"blockedBy":["State.SkillLab.Dead","State.SkillLab.Stunned","State.SkillLab.Silenced"]},
+    {"id":"Skill_Mend","cost":15,"cooldown":2.0,"magnitude":40,"windup":0.20,"recovery":0.30,"blockedBy":["State.SkillLab.Dead","State.SkillLab.Stunned","State.SkillLab.Silenced"]},
+    {"id":"Skill_BurningBuff","cost":10,"cooldown":2.0,"magnitude":6,"powerCoefficient":0.2,"windup":0.25,"recovery":0.40,"duration":4.0,"period":1.0,"blockedBy":["State.SkillLab.Dead","State.SkillLab.Stunned","State.SkillLab.Silenced"]}
   ]
 }

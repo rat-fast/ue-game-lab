@@ -9,122 +9,58 @@
 #include "InputActionValue.h"
 #include "InputMappingContext.h"
 #include "InputCoreTypes.h"
-#include "DrawDebugHelpers.h"
-#include "EngineUtils.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
 #include "SkillLabCharacter.h"
-#include "SkillLabSkillRuntimeComponent.h"
-#include "SkillLabSkillTypes.h"
-#include "SkillLabHUDWidget.h"
 #include "SkillLabHUDManagerComponent.h"
-#include "Components/CapsuleComponent.h"
+#include "SkillLabSkillInputComponent.h"
+#include "SkillLabSkillShortcutComponent.h"
+#include "SkillLabTestCommandsComponent.h"
 
 ASkillLabPlayerController::ASkillLabPlayerController()
 {
+	PrimaryActorTick.bCanEverTick = true;
 	HUDManager = CreateDefaultSubobject<USkillLabHUDManagerComponent>(TEXT("HUDManager"));
+	SkillInput = CreateDefaultSubobject<USkillLabSkillInputComponent>(TEXT("SkillInput"));
+	SkillShortcuts = CreateDefaultSubobject<USkillLabSkillShortcutComponent>(TEXT("SkillShortcuts"));
+	TestCommands = CreateDefaultSubobject<USkillLabTestCommandsComponent>(TEXT("TestCommands"));
 }
 
 void ASkillLabPlayerController::SkillTest()
 {
-	CastAtCursor(TEXT("Skill_Fireball"), false, true);
+	if (TestCommands) TestCommands->SkillTest();
 }
 
 void ASkillLabPlayerController::SkillTestRecover()
 {
-	CastAtCursor(TEXT("Skill_Mend"), false);
+	if (TestCommands) TestCommands->SkillTestRecover();
 }
 
-void ASkillLabPlayerController::SkillArea() { HandleSkillArea(); }
-void ASkillLabPlayerController::SkillBurn() { CastAtCursor(TEXT("Skill_BurningBuff"), false, true); }
+void ASkillLabPlayerController::SkillArea() { if (TestCommands) TestCommands->SkillArea(); }
+void ASkillLabPlayerController::SkillBurn() { if (TestCommands) TestCommands->SkillBurn(); }
 
 void ASkillLabPlayerController::SkillSpawnTargets()
 {
-	if (!GetWorld() || bSkillTestTargetsSpawned) return;
-	bSkillTestTargetsSpawned = true;
-	const FVector Origin = GetPawn() ? GetPawn()->GetActorLocation() : FVector::ZeroVector;
-	for (int32 Index = 0; Index < 3; ++Index)
-	{
-		FActorSpawnParameters Params;
-		Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		ASkillLabCharacter* Target = GetWorld()->SpawnActor<ASkillLabCharacter>(
-			ASkillLabCharacter::StaticClass(), Origin + FVector(500.0f, (Index - 1) * 180.0f, 0.0f), FRotator::ZeroRotator, Params);
-		if (Target)
-		{
-			Target->ConfigureAsTrainingDummy();
-			if (USkillLabSkillRuntimeComponent* Skills = Target->FindComponentByClass<USkillLabSkillRuntimeComponent>()) Skills->TeamId = 2;
-			Target->Tags.AddUnique(TEXT("SkillLabDummy"));
-		}
-	}
+	if (TestCommands) TestCommands->SpawnTargets();
 }
-
-void ASkillLabPlayerController::CastAtCursor(const FName SkillId, const bool bGroundTarget, const bool bAutoSelectNearestDummy)
-{
-	ASkillLabCharacter* Caster = Cast<ASkillLabCharacter>(GetPawn());
-	USkillLabSkillRuntimeComponent* Skills = Caster ? Caster->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
-	if (!Skills) return;
-	FHitResult Hit;
-	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
-	AActor* Target = Hit.GetActor();
-	const bool bHitSkillDummy = Target && Target->ActorHasTag(TEXT("SkillLabDummy"));
-	if (!bHitSkillDummy)
-	{
-		Target = nullptr;
-	}
-	if (!Target && SkillId == TEXT("Skill_Mend")) Target = Caster;
-	if (!Target && bAutoSelectNearestDummy && (SkillId == TEXT("Skill_Fireball") || SkillId == TEXT("Skill_BurningBuff")))
-	{
-		float BestDistance = TNumericLimits<float>::Max();
-		for (TActorIterator<AActor> It(GetWorld()); It; ++It)
-		{
-			if (!It->ActorHasTag(TEXT("SkillLabDummy"))) continue;
-			const float Distance = FVector::DistSquared(Caster->GetActorLocation(), It->GetActorLocation());
-			if (Distance < BestDistance) { BestDistance = Distance; Target = *It; }
-		}
-	}
-	FVector Location = Hit.bBlockingHit ? Hit.Location : Caster->GetActorLocation() + Caster->GetActorForwardVector() * 500.0f;
-	if (bGroundTarget)
-	{
-		FVector WorldOrigin;
-		FVector WorldDirection;
-		if (DeprojectMousePositionToWorld(WorldOrigin, WorldDirection))
-		{
-			const float GroundZ = Caster->GetActorLocation().Z - Caster->GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
-			const FPlane GroundPlane(FVector(0.0f, 0.0f, GroundZ), FVector::UpVector);
-			const float Denominator = FVector::DotProduct(WorldDirection, GroundPlane.GetNormal());
-			if (FMath::Abs(Denominator) > KINDA_SMALL_NUMBER)
-			{
-				Location = FMath::LinePlaneIntersection(WorldOrigin, WorldOrigin + WorldDirection * 100000.0f, GroundPlane);
-			}
-		}
-	}
-	const FSkillLabSkillResult Result = Skills->CastSkill(SkillId, bGroundTarget ? nullptr : Target, Location);
-	if (!Result.bSuccess) UE_LOG(LogTemp, Warning, TEXT("Skill %s rejected: %s"), *SkillId.ToString(), *Result.Reason.ToString());
-}
-
-void ASkillLabPlayerController::HandleSkillFireball() { CastAtCursor(TEXT("Skill_Fireball"), false); }
-void ASkillLabPlayerController::HandleSkillArea() { CastAtCursor(TEXT("Skill_AreaBurst"), true); }
-void ASkillLabPlayerController::HandleSkillMend() { CastAtCursor(TEXT("Skill_Mend"), false); }
-void ASkillLabPlayerController::HandleSkillBurn() { CastAtCursor(TEXT("Skill_BurningBuff"), false); }
 
 void ASkillLabPlayerController::SkillReset()
 {
-	if (ASkillLabCharacter* SkillLabCharacter = Cast<ASkillLabCharacter>(GetPawn()))
-	{
-		if (USkillLabSkillRuntimeComponent* SkillComponent = SkillLabCharacter->FindComponentByClass<USkillLabSkillRuntimeComponent>())
-		{
-			SkillComponent->ResetSkills();
-		}
-	}
+	if (TestCommands) TestCommands->ResetSkills();
+}
+
+void ASkillLabPlayerController::SkillReloadDefinitions()
+{
+	if (TestCommands) TestCommands->ReloadDefinitions();
 }
 
 void ASkillLabPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
-	SkillSpawnTargets();
+	if (TestCommands) TestCommands->InitializeForPawn(GetPawn());
 
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
@@ -135,18 +71,7 @@ void ASkillLabPlayerController::BeginPlay()
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	SetInputMode(InputMode);
 
-	if (!HUDWidget)
-	{
-		HUDWidget = CreateWidget<USkillLabHUDWidget>(this, USkillLabHUDWidget::StaticClass());
-		if (HUDWidget)
-		{
-			USkillLabSkillRuntimeComponent* Runtime = Cast<ASkillLabCharacter>(GetPawn()) ? Cast<ASkillLabCharacter>(GetPawn())->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
-			if (HUDManager) HUDManager->SetSkillRuntime(Runtime);
-			HUDWidget->SetHUDManager(HUDManager);
-			HUDWidget->AddToViewport(20);
-			UE_LOG(LogTemp, Log, TEXT("[SkillLabHUD] Created HUD widget and connected HUD manager"));
-		}
-	}
+	if (HUDManager) HUDManager->InitializeForPlayer(this, GetPawn(), SkillShortcuts);
 
 	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
 	{
@@ -214,11 +139,23 @@ void ASkillLabPlayerController::SetupInputComponent()
 	}
 	if (InputComponent)
 	{
-		InputComponent->BindKey(EKeys::One, IE_Pressed, this, &ASkillLabPlayerController::HandleSkillFireball);
-		InputComponent->BindKey(EKeys::Two, IE_Pressed, this, &ASkillLabPlayerController::HandleSkillArea);
-		InputComponent->BindKey(EKeys::Three, IE_Pressed, this, &ASkillLabPlayerController::HandleSkillMend);
-		InputComponent->BindKey(EKeys::Four, IE_Pressed, this, &ASkillLabPlayerController::HandleSkillBurn);
+		if (SkillShortcuts) SkillShortcuts->BindInput(InputComponent);
 	}
+}
+
+void ASkillLabPlayerController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	if (!HasActorBegunPlay()) return;
+	if (HUDManager) HUDManager->InitializeForPlayer(this, InPawn, SkillShortcuts);
+	if (TestCommands) TestCommands->InitializeForPawn(InPawn);
+}
+
+void ASkillLabPlayerController::OnUnPossess()
+{
+	if (SkillInput) SkillInput->CancelSkill();
+	if (HUDManager) HUDManager->SetSkillRuntime(nullptr);
+	Super::OnUnPossess();
 }
 
 void ASkillLabPlayerController::HandlePointerPressed()
@@ -229,6 +166,12 @@ void ASkillLabPlayerController::HandlePointerPressed()
 
 void ASkillLabPlayerController::HandlePointerReleased()
 {
+	if (SkillInput && SkillInput->IsTargetingGround())
+	{
+		bPointerHeld = false;
+		bCameraDragging = false;
+		return;
+	}
 	if (bPointerHeld && !bCameraDragging)
 	{
 		MoveToCursor();

@@ -6,6 +6,7 @@
 
 class USkillLabCombatAttributeSet;
 class UGameplayEffect;
+struct FGameplayEffectSpec;
 
 UENUM(BlueprintType)
 enum class ESkillLabDamageType : uint8
@@ -37,7 +38,10 @@ struct SKILLLABGAS_API FSkillLabDamageResult
 	UPROPERTY(BlueprintReadOnly) float RawDamage = 0.0f;
 	UPROPERTY(BlueprintReadOnly) float MitigatedDamage = 0.0f;
 	UPROPERTY(BlueprintReadOnly) float AppliedDamage = 0.0f;
+	UPROPERTY(BlueprintReadOnly) FActiveGameplayEffectHandle ActiveEffectHandle;
 };
+
+DECLARE_MULTICAST_DELEGATE_TwoParams(FSkillLabPeriodicDamageResolved, FActiveGameplayEffectHandle, const FSkillLabDamageResult&);
 
 UCLASS(ClassGroup = (SkillLab), meta = (BlueprintSpawnableComponent))
 class SKILLLABGAS_API USkillLabAbilitySystemComponent : public UAbilitySystemComponent
@@ -46,6 +50,9 @@ class SKILLLABGAS_API USkillLabAbilitySystemComponent : public UAbilitySystemCom
 
 public:
 	USkillLabAbilitySystemComponent();
+	FSkillLabPeriodicDamageResolved OnPeriodicDamageResolved;
+	/** AttributeSet supplies the atomic result; GAS supplies the periodic effect identity. */
+	void RecordPeriodicDamage(const FGameplayEffectSpec& Spec, const FSkillLabDamageResult& Result);
 
 	/** Initializes owner/avatar information and ensures a combat attribute set exists. Safe to call repeatedly. */
 	UFUNCTION(BlueprintCallable, Category = "SkillLab|GAS")
@@ -69,7 +76,10 @@ public:
 	UFUNCTION(BlueprintPure, Category = "SkillLab|GAS")
 	bool HasAnySkillLabBlockTag(const FGameplayTagContainer& Tags) const;
 
+
 private:
+	void HandlePeriodicExecution(UAbilitySystemComponent* Source, const FGameplayEffectSpec& Spec, FActiveGameplayEffectHandle Handle);
+	TMap<const FGameplayEffectSpec*, FSkillLabDamageResult> PendingPeriodicDamage;
 	bool ApplyMetaEffect(UAbilitySystemComponent* TargetASC, TSubclassOf<UGameplayEffect> EffectClass, float Amount, UObject* SourceObject);
 	UPROPERTY(Transient)
 	TObjectPtr<USkillLabCombatAttributeSet> CombatAttributeSet;

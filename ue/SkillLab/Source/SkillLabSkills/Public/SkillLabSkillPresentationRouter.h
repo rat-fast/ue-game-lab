@@ -4,7 +4,6 @@
 #include "SkillLabSkillPresentationRouter.generated.h"
 
 class USkillLabSkillRuntimeComponent;
-class UStaticMesh;
 struct FSkillLabSkillResult;
 enum class ESkillLabSkillEvent : uint8;
 
@@ -15,6 +14,7 @@ class SKILLLABSKILLS_API USkillLabSkillPresentationRouter : public UObject
 public:
 	void Bind(USkillLabSkillRuntimeComponent* InSource);
 	void HandleEvent(const FSkillLabSkillResult& Result);
+	virtual UWorld* GetWorld() const override;
 private:
 	void ShowScreenMessage(const FSkillLabSkillResult& Result);
 	void SpawnWorldMarker(const FVector& Location, float Radius, const FColor& Color, float LifeSeconds, bool bFlat);

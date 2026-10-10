@@ -8,6 +8,44 @@
 USkillLabAbilitySystemComponent::USkillLabAbilitySystemComponent()
 {
 	SetIsReplicatedByDefault(true);
+	OnPeriodicGameplayEffectExecuteDelegateOnSelf.AddUObject(this, &USkillLabAbilitySystemComponent::HandlePeriodicExecution);
+}
+
+void USkillLabAbilitySystemComponent::RecordPeriodicDamage(const FGameplayEffectSpec& Spec, const FSkillLabDamageResult& Result)
+{
+	if (Spec.GetPeriod() <= 0.0f) return;
+	if (FSkillLabDamageResult* Previous = PendingPeriodicDamage.Find(&Spec))
+	{
+		Previous->HealthAfter = Result.HealthAfter;
+		Previous->RawDamage += Result.RawDamage;
+		Previous->MitigatedDamage += Result.MitigatedDamage;
+		Previous->AppliedDamage += Result.AppliedDamage;
+	}
+	else PendingPeriodicDamage.Add(&Spec, Result);
+}
+
+void USkillLabAbilitySystemComponent::HandlePeriodicExecution(UAbilitySystemComponent* Source,
+	const FGameplayEffectSpec& Spec, const FActiveGameplayEffectHandle Handle)
+{
+	(void)Source;
+	FSkillLabDamageResult Result;
+	// UE executes ActiveEffect.Spec and then sends the same spec through this native callback.
+	// Remove before broadcasting so nested effects cannot overwrite this execution's result.
+	if (!PendingPeriodicDamage.RemoveAndCopyValue(&Spec, Result))
+	{
+		// The engine normally forwards the same spec reference. A few UE paths
+		// materialize a transient copy; with one modifier/effect in this module,
+		// the single pending result is still unambiguous.
+		if (PendingPeriodicDamage.Num() != 1) return;
+		for (const TPair<const FGameplayEffectSpec*, FSkillLabDamageResult>& Pair : PendingPeriodicDamage)
+		{
+			Result = Pair.Value;
+			break;
+		}
+		PendingPeriodicDamage.Reset();
+	}
+	Result.ActiveEffectHandle = Handle;
+	OnPeriodicDamageResolved.Broadcast(Handle, Result);
 }
 
 void USkillLabAbilitySystemComponent::InitializeSkillLabAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
@@ -115,7 +153,11 @@ FSkillLabDamageResult USkillLabAbilitySystemComponent::ApplyDamageOverTimeToTarg
 	SpecHandle.Data->SetSetByCallerMagnitude(SkillLabGASTags::Data_Magnitude, RawDamage);
 	Result.HealthBefore = TargetAttributes->GetHealth();
 	Result.RawDamage = RawDamage;
-	Result.bApplied = TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get()).IsValid();
+	// Duration/periodic effects return a live valid handle. Use the semantic
+	// success flag so this remains correct if the GE is changed to instant.
+	const FActiveGameplayEffectHandle AppliedHandle = TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	Result.ActiveEffectHandle = AppliedHandle;
+	Result.bApplied = AppliedHandle.WasSuccessfullyApplied();
 	Result.HealthAfter = TargetAttributes->GetHealth();
 	Result.AppliedDamage = FMath::Max(0.0f, Result.HealthBefore - Result.HealthAfter);
 	Result.MitigatedDamage = Result.AppliedDamage;
@@ -145,6 +187,8 @@ bool USkillLabAbilitySystemComponent::ApplyMetaEffect(UAbilitySystemComponent* T
 		return false;
 	}
 	SpecHandle.Data->SetSetByCallerMagnitude(SkillLabGASTags::Data_Magnitude, Amount);
-	TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
-	return true;
+	const FActiveGameplayEffectHandle AppliedHandle = TargetASC->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
+	// Instant GEs intentionally return an invalid sentinel handle in UE 5.8;
+	// WasSuccessfullyApplied() is the authoritative result for both instant and duration GEs.
+	return AppliedHandle.WasSuccessfullyApplied();
 }

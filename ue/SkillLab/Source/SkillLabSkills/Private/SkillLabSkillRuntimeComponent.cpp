@@ -1,16 +1,44 @@
 #include "SkillLabSkillRuntimeComponent.h"
 
-#include "AbilitySystemGlobals.h"
-#include "Engine/OverlapResult.h"
-#include "EngineUtils.h"
-#include "TimerManager.h"
-#include "SkillLabSkillPresentationRouter.h"
+#include "GameFramework/Actor.h"
+#include "Engine/World.h"
 #include "SkillLabAbilitySystemComponent.h"
 #include "SkillLabCombatAttributeSet.h"
+#include "SkillLabEffectResolver.h"
+#include "SkillLabGASTags.h"
+#include "SkillLabSkillBehavior.h"
 #include "SkillLabSkillDefinitionProvider.h"
 #include "SkillLabSkillGameplayAbility.h"
-#include "SkillLabFireballProjectile.h"
+#include "SkillLabSkillEffectEventAdapter.h"
+#include "SkillLabSkillPresentationRouter.h"
 #include "SkillLabTargetingService.h"
+#include "TimerManager.h"
+
+namespace
+{
+	ESkillLabCastStage ToPublicStage(const FSkillLabCastLifecycle::EStage Stage)
+	{
+		switch (Stage)
+		{
+		case FSkillLabCastLifecycle::EStage::Windup: return ESkillLabCastStage::Windup;
+		case FSkillLabCastLifecycle::EStage::Active: return ESkillLabCastStage::Active;
+		case FSkillLabCastLifecycle::EStage::Recovery: return ESkillLabCastStage::Recovery;
+		case FSkillLabCastLifecycle::EStage::Completed: return ESkillLabCastStage::Completed;
+		case FSkillLabCastLifecycle::EStage::Cancelled: return ESkillLabCastStage::Cancelled;
+		default: return ESkillLabCastStage::Idle;
+		}
+	}
+
+	FName EffectReason(const ESkillLabEffectKind Kind)
+	{
+		switch (Kind)
+		{
+		case ESkillLabEffectKind::Healing: return TEXT("HealingApplied");
+		case ESkillLabEffectKind::DamageOverTime: return TEXT("DamageOverTimeApplied");
+		default: return TEXT("DamageApplied");
+		}
+	}
+}
 
 USkillLabSkillRuntimeComponent::USkillLabSkillRuntimeComponent()
 {
@@ -23,38 +51,74 @@ void USkillLabSkillRuntimeComponent::BeginPlay()
 	InitializeSkills();
 }
 
+void USkillLabSkillRuntimeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	bShuttingDown = true;
+	if (EffectEventAdapter) EffectEventAdapter->Clear(true);
+	if (ActiveCastId != 0)
+	{
+		const FSkillLabCastPhaseToken Token = Lifecycle.GetPhaseToken();
+		if (Lifecycle.Cancel(Token, GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0))
+		{
+			FinishCast(true, TEXT("EndPlay"));
+		}
+	}
+	ClearInterruptListeners();
+	if (PresentationRouter)
+	{
+		PresentationRouter->Bind(nullptr);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
 void USkillLabSkillRuntimeComponent::InitializeSkills()
 {
-	if (bInitialized) return;
+	if (bInitialized || bShuttingDown)
+	{
+		return;
+	}
 	AActor* Owner = GetOwner();
 	ASC = Owner ? Owner->FindComponentByClass<USkillLabAbilitySystemComponent>() : nullptr;
-	if (!ASC) return;
+	if (!ASC)
+	{
+		return;
+	}
 	ASC->InitializeSkillLabAbilityActorInfo(Owner, Owner);
 	PresentationRouter = NewObject<USkillLabSkillPresentationRouter>(this);
-	if (PresentationRouter) PresentationRouter->Bind(this);
-	UnitId = Owner ? Owner->GetUniqueID() : 0;
-	TArray<FName> Ids;
-	FSkillLabSkillDefinitionProvider::GetDefaultSkillIds(Ids);
-	for (const FName Id : Ids)
+	if (PresentationRouter)
 	{
-		FSkillLabSkillDefinition Def;
-		if (FSkillLabSkillDefinitionProvider::Resolve(Id, Def) && Def.AbilityClass)
+		PresentationRouter->Bind(this);
+	}
+	EffectEventAdapter = NewObject<USkillLabSkillEffectEventAdapter>(this);
+	if (EffectEventAdapter)
+	{
+		EffectEventAdapter->OnEffectEvent.AddUObject(this, &USkillLabSkillRuntimeComponent::ForwardEffectEvent);
+	}
+	UnitId = Owner ? Owner->GetUniqueID() : 0;
+
+	TArray<FName> SkillIds;
+	FSkillLabSkillDefinitionProvider::GetDefaultSkillIds(SkillIds);
+	for (const FName SkillId : SkillIds)
+	{
+		FSkillLabSkillDefinition Definition;
+		if (FSkillLabSkillDefinitionProvider::Resolve(SkillId, Definition) && Definition.AbilityClass)
 		{
-			GrantedSkills.Add(Id, ASC->GiveAbility(FGameplayAbilitySpec(Def.AbilityClass, 1)));
+			GrantedSkills.Add(SkillId, ASC->GiveAbility(FGameplayAbilitySpec(Definition.AbilityClass, 1)));
 		}
 	}
 	bInitialized = GrantedSkills.Num() > 0;
 	if (bInitialized)
 	{
-		FSkillLabSkillResult R; R.bSuccess = true; R.SourceUnitId = UnitId;
-		Emit(ESkillLabSkillEvent::Completed, R, TEXT("Initialized"));
+		FSkillLabSkillResult Result = MakeResult();
+		Result.bSuccess = true;
+		Emit(ESkillLabSkillEvent::Completed, Result, TEXT("Initialized"));
 	}
 }
 
 bool USkillLabSkillRuntimeComponent::IsAlive() const
 {
-	const USkillLabCombatAttributeSet* Attr = ASC ? ASC->GetCombatAttributeSet() : nullptr;
-	return bInitialized && Attr && Attr->GetHealth() > 0.0f;
+	const USkillLabCombatAttributeSet* Attributes = ASC ? ASC->GetCombatAttributeSet() : nullptr;
+	return bInitialized && Attributes && Attributes->GetHealth() > 0.0f;
 }
 
 bool USkillLabSkillRuntimeComponent::IsEnemy(const USkillLabSkillRuntimeComponent* Other) const
@@ -66,7 +130,7 @@ float USkillLabSkillRuntimeComponent::GetCooldownRemaining(const FName SkillId) 
 {
 	const double* End = CooldownEnd.Find(SkillId);
 	const double Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
-	return End ? FMath::Max(0.0, static_cast<float>(*End - Now)) : 0.0f;
+	return End ? FMath::Max(0.0f, static_cast<float>(*End - Now)) : 0.0f;
 }
 
 float USkillLabSkillRuntimeComponent::GetEnergyValue() const
@@ -93,6 +157,26 @@ float USkillLabSkillRuntimeComponent::GetMaxHealthValue() const
 	return Attributes ? Attributes->GetMaxHealth() : 0.0f;
 }
 
+ESkillLabCastStage USkillLabSkillRuntimeComponent::GetCastStage() const
+{
+	return ToPublicStage(Lifecycle.GetStage());
+}
+
+float USkillLabSkillRuntimeComponent::GetStageRemaining() const
+{
+	if (ActiveCastId == 0 || StageEndTime <= 0.0)
+	{
+		return 0.0f;
+	}
+	const double Now = GetWorld() ? GetWorld()->GetTimeSeconds() : StageEndTime;
+	return FMath::Max(0.0f, static_cast<float>(StageEndTime - Now));
+}
+
+FName USkillLabSkillRuntimeComponent::GetActiveSkillId() const
+{
+	return ActiveCastId != 0 ? ActiveDefinition.SkillId : NAME_None;
+}
+
 void USkillLabSkillRuntimeComponent::GetGrantedSkillIds(TArray<FName>& OutIds) const
 {
 	GrantedSkills.GetKeys(OutIds);
@@ -110,195 +194,552 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::CastSkill(const FName Skill
 	return SubmitSkillRequest(Request);
 }
 
+FSkillLabSkillResult USkillLabSkillRuntimeComponent::MakeResult() const
+{
+	FSkillLabSkillResult Result;
+	Result.SkillId = ActiveDefinition.SkillId;
+	Result.CastId = ActiveCastId;
+	Result.SourceUnitId = UnitId;
+	Result.SourceActor = GetOwner();
+	Result.Stage = ToPublicStage(Lifecycle.GetStage());
+	Result.Effect = ActiveDefinition.Effect;
+	Result.RequestId = ActiveRequest.RequestId;
+	return Result;
+}
+
 FSkillLabSkillResult USkillLabSkillRuntimeComponent::Reject(const FSkillLabSkillRequest& Request, const FName Reason)
 {
-	FSkillLabSkillResult R;
-	R.SkillId = Request.SkillId; R.RequestId = Request.RequestId; R.SourceUnitId = UnitId; R.Reason = Reason;
-	Emit(ESkillLabSkillEvent::Rejected, R, Reason);
-	return R;
+	FSkillLabSkillResult Result;
+	Result.SkillId = Request.SkillId;
+	Result.RequestId = Request.RequestId;
+	Result.SourceUnitId = UnitId;
+	Result.SourceActor = GetOwner();
+	Result.Reason = Reason;
+	Emit(ESkillLabSkillEvent::Rejected, Result, Reason);
+	return Result;
+}
+
+bool USkillLabSkillRuntimeComponent::CheckGates(FName& OutReason) const
+{
+	OutReason = NAME_None;
+	if (!bInitialized || !ASC)
+	{
+		OutReason = TEXT("NotInitialized");
+	}
+	else if (!IsAlive() || ASC->HasMatchingGameplayTag(SkillLabGASTags::State_Dead))
+	{
+		OutReason = TEXT("CasterDead");
+	}
+	else if (ASC->HasAnySkillLabBlockTag(ActiveDefinition.BlockedByTags))
+	{
+		OutReason = TEXT("BlockedByState");
+	}
+	return OutReason.IsNone();
 }
 
 FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FSkillLabSkillRequest& InRequest)
 {
 	FSkillLabSkillRequest Request = InRequest;
 	Request.RequestId = Request.RequestId > 0 ? Request.RequestId : NextRequestId++;
-	FSkillLabSkillDefinition Def;
-	if (!bInitialized || !ASC) return Reject(Request, TEXT("NotInitialized"));
-	if (!FSkillLabSkillDefinitionProvider::Resolve(Request.SkillId, Def)) return Reject(Request, TEXT("SkillUnknown"));
-	if (!IsAlive()) return Reject(Request, TEXT("CasterDead"));
-	if (ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("State.SkillLab.Dead"), false))) return Reject(Request, TEXT("CasterDead"));
-	if (ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("State.SkillLab.Stunned"), false))) return Reject(Request, TEXT("CasterStunned"));
-	if (ASC->HasMatchingGameplayTag(FGameplayTag::RequestGameplayTag(TEXT("State.SkillLab.Silenced"), false))) return Reject(Request, TEXT("CasterSilenced"));
-	if (!IsValid(Request.Caster)) return Reject(Request, TEXT("CasterRequired"));
-	if (Request.Caster != GetOwner()) return Reject(Request, TEXT("CasterMismatch"));
-	if (!GrantedSkills.Contains(Request.SkillId)) return Reject(Request, TEXT("SkillNotGranted"));
-	const double Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
-	if (const double* End = CooldownEnd.Find(Request.SkillId); End && Now < *End) return Reject(Request, TEXT("Cooldown"));
-	const USkillLabCombatAttributeSet* Attr = ASC->GetCombatAttributeSet();
-	if (!Attr || Attr->GetEnergy() < Def.Cost) return Reject(Request, TEXT("InsufficientEnergy"));
-	AActor* Target = nullptr; FName TargetReason;
-	if (!ResolveAndValidateTarget(Request, Def, Target, TargetReason)) return Reject(Request, TargetReason);
-	PendingRequest = Request; PendingDefinition = Def;
-	PendingRequest.Target = Target;
-	PendingAbility = nullptr;
-	if (!ASC->TryActivateAbility(GrantedSkills[Request.SkillId]) || !PendingAbility)
+	FSkillLabSkillDefinition Definition;
+	FName Reason;
+	if (bShuttingDown || !GetWorld() || !bInitialized || !ASC)
 	{
-		PendingAbility = nullptr; return Reject(Request, TEXT("ActivationFailed"));
+		return Reject(Request, TEXT("NotInitialized"));
 	}
-	PendingCastId = NextCastId++;
-	CooldownEnd.Add(Request.SkillId, Now + Def.Cooldown);
-	ASC->ApplyModToAttribute(USkillLabCombatAttributeSet::GetEnergyAttribute(), EGameplayModOp::Additive, -Def.Cost);
-	FSkillLabSkillResult Started; Started.bSuccess = true; Started.SkillId = Request.SkillId; Started.RequestId = Request.RequestId; Started.CastId = PendingCastId; Started.SourceUnitId = UnitId;
-	Started.Effect = Def.Effect;
-	Started.SourceActor = GetOwner(); Started.TargetActor = Target; Started.TargetLocation = Def.TargetShape == ESkillLabTargetShape::Ground ? Request.TargetLocation : Target->GetActorLocation();
-	Emit(ESkillLabSkillEvent::Started, Started);
-	ExecuteActivatedAbility();
+	if (bFinishing || ActiveCastId != 0)
+	{
+		return Reject(Request, TEXT("SkillBusy"));
+	}
+	if (!FSkillLabSkillDefinitionProvider::Resolve(Request.SkillId, Definition))
+	{
+		return Reject(Request, TEXT("SkillUnknown"));
+	}
+	ActiveDefinition = Definition;
+	if (!CheckGates(Reason))
+	{
+		ActiveDefinition = FSkillLabSkillDefinition();
+		return Reject(Request, Reason);
+	}
+	if (!IsValid(Request.Caster) || Request.Caster != GetOwner())
+	{
+		ActiveDefinition = FSkillLabSkillDefinition();
+		return Reject(Request, Request.Caster ? TEXT("CasterMismatch") : TEXT("CasterRequired"));
+	}
+	if (!GrantedSkills.Contains(Request.SkillId))
+	{
+		ActiveDefinition = FSkillLabSkillDefinition();
+		return Reject(Request, TEXT("SkillNotGranted"));
+	}
+	const double Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+	if (const double* Cooldown = CooldownEnd.Find(Request.SkillId); Cooldown && Now < *Cooldown)
+	{
+		ActiveDefinition = FSkillLabSkillDefinition();
+		return Reject(Request, TEXT("Cooldown"));
+	}
+	const USkillLabCombatAttributeSet* Attributes = ASC->GetCombatAttributeSet();
+	if (!Attributes || Attributes->GetEnergy() < Definition.Cost)
+	{
+		ActiveDefinition = FSkillLabSkillDefinition();
+		return Reject(Request, TEXT("InsufficientEnergy"));
+	}
+	AActor* ResolvedTarget = nullptr;
+	if (!FSkillLabTargetingService::ValidateRequest(*this, Request, Definition, ResolvedTarget, Reason))
+	{
+		ActiveDefinition = FSkillLabSkillDefinition();
+		return Reject(Request, Reason);
+	}
+	Request.Target = ResolvedTarget;
+
+	ActiveRequest = Request;
+	ActiveCastId = NextCastId++;
+	bCommitted = false;
+	bFinishing = false;
+	OutcomeReason = NAME_None;
+	FSkillLabCastLifecycle::FConfig LifecycleConfig;
+	LifecycleConfig.WindupSeconds = Definition.Phases.WindupSeconds;
+	LifecycleConfig.ActiveSeconds = Definition.Phases.ActiveSeconds;
+	LifecycleConfig.RecoverySeconds = Definition.Phases.RecoverySeconds;
+	LifecycleConfig.bUseActiveTimeout = Definition.Phases.ActiveSeconds > 0.0f;
+	if (!Lifecycle.Begin(static_cast<uint64>(ActiveCastId), LifecycleConfig, Now))
+	{
+		ActiveCastId = 0;
+		ActiveRequest = FSkillLabSkillRequest();
+		ActiveDefinition = FSkillLabSkillDefinition();
+		return Reject(Request, TEXT("LifecycleStartFailed"));
+	}
+	if (!ASC->TryActivateAbility(GrantedSkills[Request.SkillId]) || !ActiveAbility)
+	{
+		const FSkillLabCastPhaseToken Token = Lifecycle.GetPhaseToken();
+		Lifecycle.Cancel(Token, Now);
+		FinishCast(true, TEXT("ActivationFailed"));
+		return Reject(Request, TEXT("ActivationFailed"));
+	}
+
+	ListenForInterrupts();
+	const int32 StartedCastId = ActiveCastId;
+	const FSkillLabCastPhaseToken WindupToken = Lifecycle.GetPhaseToken();
+	StageEndTime = Definition.ReleaseTrigger == ESkillLabReleaseTrigger::GameplayEvent
+		? Now + Definition.ReleaseEventTimeout : Now + Definition.Phases.WindupSeconds;
+	FSkillLabSkillResult Started = MakeResult();
 	Started.bSuccess = true;
-	Emit(ESkillLabSkillEvent::Completed, Started);
+	Started.Stage = ToPublicStage(Lifecycle.GetStage());
+	Started.TargetActor = Request.Target;
+	Started.TargetLocation = Definition.TargetShape == ESkillLabTargetShape::Ground
+		? Request.TargetLocation
+		: (Request.Target ? Request.Target->GetActorLocation() : FVector::ZeroVector);
+	Started.VisualRadius = Definition.Radius;
+	Started.StageDuration = Definition.Phases.WindupSeconds;
+	Emit(ESkillLabSkillEvent::Started, Started);
+	// Events may synchronously cancel, release, or even start another cast.
+	if (ActiveCastId != StartedCastId || !Lifecycle.IsTokenCurrent(WindupToken)) return Started;
+	if (Definition.ReleaseTrigger == ESkillLabReleaseTrigger::Timer)
+	{
+		if (Definition.Phases.WindupSeconds > 0.0f)
+		{
+			FTimerDelegate ReleaseDelegate;
+			ReleaseDelegate.BindLambda([WeakThis = TWeakObjectPtr<USkillLabSkillRuntimeComponent>(this), WindupToken]()
+			{
+				if (WeakThis.IsValid()) WeakThis->ReleaseCast(WindupToken);
+			});
+			GetWorld()->GetTimerManager().SetTimer(PhaseTimer, ReleaseDelegate, Definition.Phases.WindupSeconds, false);
+		}
+		else ReleaseCast(WindupToken);
+	}
+	else
+	{
+		FTimerDelegate TimeoutDelegate;
+		TimeoutDelegate.BindLambda([WeakThis = TWeakObjectPtr<USkillLabSkillRuntimeComponent>(this), StartedCastId, WindupToken]()
+		{
+			if (WeakThis.IsValid() && WeakThis->ActiveCastId == StartedCastId && WeakThis->Lifecycle.IsTokenCurrent(WindupToken))
+				WeakThis->CancelActiveCast(TEXT("ReleaseEventTimeout"));
+		});
+		GetWorld()->GetTimerManager().SetTimer(ActiveTimeoutTimer, TimeoutDelegate, Definition.ReleaseEventTimeout, false);
+	}
 	return Started;
 }
 
-bool USkillLabSkillRuntimeComponent::ResolveAndValidateTarget(const FSkillLabSkillRequest& Request, const FSkillLabSkillDefinition& Def, AActor*& OutTarget, FName& OutReason) const
+void USkillLabSkillRuntimeComponent::ReceiveCastEvent(const int32 CastId, const FGameplayTag EventTag)
 {
-	return FSkillLabTargetingService::ValidateRequest(*this, Request, Def, OutTarget, OutReason);
+	if (bShuttingDown || bFinishing || CastId <= 0 || ActiveCastId != CastId || !EventTag.IsValid()) return;
+	if (Lifecycle.GetStage() == FSkillLabCastLifecycle::EStage::Windup
+		&& ActiveDefinition.ReleaseTrigger == ESkillLabReleaseTrigger::GameplayEvent
+		&& EventTag == ActiveDefinition.ReleaseEventTag)
+		ReleaseCast(Lifecycle.GetPhaseToken());
+	else if (Lifecycle.GetStage() == FSkillLabCastLifecycle::EStage::Active && ActiveBehavior
+		&& ActiveDefinition.BehaviorEventTags.HasTag(EventTag))
+		ActiveBehavior->ReceiveEvent(EventTag);
+}
+
+void USkillLabSkillRuntimeComponent::ReleaseCast(const FSkillLabCastPhaseToken Token)
+{
+	if (bShuttingDown || bFinishing || bCommitted || ActiveCastId == 0 || !Lifecycle.IsTokenCurrent(Token)
+		|| Lifecycle.GetStage() != FSkillLabCastLifecycle::EStage::Windup)
+	{
+		return;
+	}
+	const double Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+	FName GateReason;
+	AActor* ValidatedTarget = nullptr;
+	if (!CheckGates(GateReason)
+		|| !FSkillLabTargetingService::ValidateRequest(*this, ActiveRequest, ActiveDefinition, ValidatedTarget, GateReason))
+	{
+		CancelActiveCast(GateReason);
+		return;
+	}
+	ActiveRequest.Target = ValidatedTarget;
+	if (Lifecycle.AdvancePhase(Token, Now) != FSkillLabCastLifecycle::EAdvanceResult::EnteredActive)
+	{
+		CancelActiveCast(TEXT("ReleasePhaseFailed"));
+		return;
+	}
+	const FSkillLabCastPhaseToken ActiveToken = Lifecycle.GetPhaseToken();
+	const int32 ReleasedCastId = ActiveCastId;
+	const USkillLabCombatAttributeSet* Attributes = ASC ? ASC->GetCombatAttributeSet() : nullptr;
+	if (!Attributes || Attributes->GetEnergy() < ActiveDefinition.Cost || !Lifecycle.TryMarkRelease(ActiveToken))
+	{
+		CancelActiveCast(TEXT("ReleaseGateFailed"));
+		return;
+	}
+	bCommitted = true;
+	CooldownEnd.Add(ActiveDefinition.SkillId, Now + ActiveDefinition.Cooldown);
+	const float Cost = ActiveDefinition.Cost;
+	ASC->ApplyModToAttribute(USkillLabCombatAttributeSet::GetEnergyAttribute(), EGameplayModOp::Additive, -Cost);
+	if (ActiveCastId != ReleasedCastId || !Lifecycle.IsTokenCurrent(ActiveToken)) return;
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(PhaseTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ActiveTimeoutTimer);
+	}
+	FSkillLabSkillResult Phase = MakeResult();
+	Phase.bSuccess = true;
+	Phase.Stage = ESkillLabCastStage::Active;
+	Phase.TargetActor = ActiveRequest.Target;
+	Phase.TargetLocation = ActiveDefinition.TargetShape == ESkillLabTargetShape::Ground
+		? ActiveRequest.TargetLocation
+		: (ActiveRequest.Target ? ActiveRequest.Target->GetActorLocation() : FVector::ZeroVector);
+	Phase.VisualRadius = ActiveDefinition.Radius;
+	Phase.StageDuration = ActiveDefinition.Phases.ActiveSeconds;
+	Emit(ESkillLabSkillEvent::PhaseChanged, Phase);
+	if (ActiveCastId != ReleasedCastId || !Lifecycle.IsTokenCurrent(ActiveToken)) return;
+	FSkillLabSkillResult TargetSelected = Phase;
+	TargetSelected.Event = ESkillLabSkillEvent::TargetSelected;
+	Emit(ESkillLabSkillEvent::TargetSelected, TargetSelected);
+	if (ActiveCastId != ReleasedCastId || !Lifecycle.IsTokenCurrent(ActiveToken)) return;
+
+	StageEndTime = ActiveDefinition.Phases.ActiveSeconds > 0.0f ? Now + ActiveDefinition.Phases.ActiveSeconds : 0.0;
+	if (ActiveDefinition.Phases.ActiveSeconds > 0.0f)
+	{
+		FTimerDelegate ActiveDelegate;
+		ActiveDelegate.BindLambda([WeakThis = TWeakObjectPtr<USkillLabSkillRuntimeComponent>(this), ReleasedCastId, ActiveToken]()
+		{
+			if (WeakThis.IsValid() && WeakThis->ActiveCastId == ReleasedCastId && WeakThis->Lifecycle.IsTokenCurrent(ActiveToken))
+				WeakThis->CancelActiveCast(TEXT("ActiveTimeout"));
+		});
+		GetWorld()->GetTimerManager().SetTimer(ActiveTimeoutTimer, ActiveDelegate, ActiveDefinition.Phases.ActiveSeconds, false);
+	}
+	if (ActiveDefinition.BehaviorClass)
+	{
+		ActiveBehavior = NewObject<USkillLabSkillBehavior>(this, ActiveDefinition.BehaviorClass);
+		if (ActiveBehavior)
+		{
+			ActiveBehavior->Initialize(this, ActiveDefinition, ActiveRequest, ActiveCastId);
+			ActiveBehavior->Execute();
+			return;
+		}
+	}
+	CancelActiveCast(TEXT("BehaviorCreateFailed"));
+}
+
+void USkillLabSkillRuntimeComponent::CancelActiveCast(const FName Reason)
+{
+	if (ActiveCastId == 0)
+	{
+		return;
+	}
+	const FSkillLabCastPhaseToken Token = Lifecycle.GetPhaseToken();
+	if (Lifecycle.Cancel(Token, GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0))
+	{
+		FinishCast(true, Reason);
+	}
+}
+
+void USkillLabSkillRuntimeComponent::BeginRecovery()
+{
+	if (ActiveCastId == 0 || Lifecycle.GetStage() != FSkillLabCastLifecycle::EStage::Active)
+	{
+		return;
+	}
+	const double Now = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+	const FSkillLabCastPhaseToken Token = Lifecycle.GetPhaseToken();
+	if (Lifecycle.AdvancePhase(Token, Now) != FSkillLabCastLifecycle::EAdvanceResult::EnteredRecovery)
+	{
+		return;
+	}
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ActiveTimeoutTimer);
+	}
+	StageEndTime = ActiveDefinition.Phases.RecoverySeconds > 0.0f ? Now + ActiveDefinition.Phases.RecoverySeconds : Now;
+	const int32 RecoveringCastId = ActiveCastId;
+	const FSkillLabCastPhaseToken RecoveryToken = Lifecycle.GetPhaseToken();
+	FSkillLabSkillResult Phase = MakeResult();
+	Phase.bSuccess = true;
+	Phase.Stage = ESkillLabCastStage::Recovery;
+	Phase.StageDuration = ActiveDefinition.Phases.RecoverySeconds;
+	Emit(ESkillLabSkillEvent::PhaseChanged, Phase);
+	// A listener may cancel this cast and start another one during the broadcast.
+	// Never schedule the previous cast's recovery against the new active definition.
+	if (ActiveCastId != RecoveringCastId || !Lifecycle.IsTokenCurrent(RecoveryToken)) return;
+	if (ActiveDefinition.Phases.RecoverySeconds > 0.0f)
+	{
+		FTimerDelegate RecoveryDelegate;
+		RecoveryDelegate.BindLambda([WeakThis = TWeakObjectPtr<USkillLabSkillRuntimeComponent>(this), RecoveryToken]()
+		{
+			if (WeakThis.IsValid()) WeakThis->FinishRecovery(RecoveryToken);
+		});
+		GetWorld()->GetTimerManager().SetTimer(PhaseTimer, RecoveryDelegate, ActiveDefinition.Phases.RecoverySeconds, false);
+	}
+	else
+	{
+		FinishRecovery(RecoveryToken);
+	}
+}
+
+void USkillLabSkillRuntimeComponent::FinishRecovery(const FSkillLabCastPhaseToken Token)
+{
+	if (ActiveCastId == 0 || !Lifecycle.IsTokenCurrent(Token) || Lifecycle.GetStage() != FSkillLabCastLifecycle::EStage::Recovery)
+	{
+		return;
+	}
+	if (Lifecycle.Finish(Token, GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0))
+	{
+		FinishCast(false, OutcomeReason.IsNone() ? TEXT("Completed") : OutcomeReason);
+	}
+}
+
+void USkillLabSkillRuntimeComponent::FinishCast(const bool bCancelled, const FName Reason)
+{
+	if (bFinishing || ActiveCastId == 0)
+	{
+		return;
+	}
+	bFinishing = true;
+	OutcomeReason = Reason;
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(PhaseTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ActiveTimeoutTimer);
+	}
+	ClearInterruptListeners();
+	if (ActiveBehavior)
+	{
+		ActiveBehavior->Cleanup();
+	}
+	if (ActiveAbility)
+	{
+		USkillLabSkillGameplayAbility* Ability = ActiveAbility;
+		ActiveAbility = nullptr;
+		Ability->FinishSkillAbility(bCancelled);
+	}
+	FSkillLabSkillResult Result = MakeResult();
+	Result.bSuccess = !bCancelled;
+	Result.Stage = bCancelled ? ESkillLabCastStage::Cancelled : ESkillLabCastStage::Completed;
+	Emit(bCancelled ? ESkillLabSkillEvent::Cancelled : ESkillLabSkillEvent::Completed, Result, Reason);
+	ActiveBehavior = nullptr;
+	ActiveRequest = FSkillLabSkillRequest();
+	ActiveDefinition = FSkillLabSkillDefinition();
+	ActiveCastId = 0;
+	StageEndTime = 0.0;
+	bCommitted = false;
+	bFinishing = false;
 }
 
 void USkillLabSkillRuntimeComponent::NotifyAbilityActivated(USkillLabSkillGameplayAbility* Ability)
 {
-	PendingAbility = Ability;
+	if (bShuttingDown || ActiveCastId == 0 || ActiveAbility)
+	{
+		return;
+	}
+	ActiveAbility = Ability;
 }
 
-void USkillLabSkillRuntimeComponent::ExecuteActivatedAbility()
+void USkillLabSkillRuntimeComponent::NotifyAbilityEnded(USkillLabSkillGameplayAbility* Ability)
 {
-	const FSkillLabSkillDefinition Def = PendingDefinition;
-	FSkillLabSkillResult Result; Result.bSuccess = true; Result.SkillId = Def.SkillId; Result.RequestId = PendingRequest.RequestId; Result.CastId = PendingCastId; Result.SourceUnitId = UnitId;
-	Result.Effect = Def.Effect;
-	Result.SourceActor = GetOwner(); Result.TargetActor = PendingRequest.Target;
-	Result.TargetLocation = Def.TargetShape == ESkillLabTargetShape::Ground ? PendingRequest.TargetLocation : (PendingRequest.Target ? PendingRequest.Target->GetActorLocation() : FVector::ZeroVector);
-	Result.VisualRadius = Def.Radius;
-	Emit(ESkillLabSkillEvent::TargetSelected, Result);
-	if (Def.Execution == ESkillLabExecutionTemplate::Projectile)
+	if (ActiveAbility != Ability)
 	{
-		const FVector Start = GetOwner()->GetActorLocation() + FVector(0.0f, 0.0f, 70.0f);
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = GetOwner();
-		SpawnParams.Instigator = Cast<APawn>(GetOwner());
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		ASkillLabFireballProjectile* Projectile = GetWorld()->SpawnActor<ASkillLabFireballProjectile>(ASkillLabFireballProjectile::StaticClass(), Start, FRotator::ZeroRotator, SpawnParams);
-		if (Projectile)
-		{
-			Projectile->Initialize(GetOwner(), PendingRequest.Target, Def, PendingRequest, PendingCastId);
-		}
-		else
-		{
-			// Keep the gameplay path usable in commandlet/headless worlds where actor spawning can be unavailable.
-			ApplyToTarget(PendingRequest.Target, Def, Result, PendingCastId);
-		}
+		return;
 	}
-	else if (Def.Execution == ESkillLabExecutionTemplate::GroundArea) ApplyArea(PendingRequest.TargetLocation, Def, Result);
-	else ApplyToTarget(PendingRequest.Target, Def, Result);
-	PendingAbility = nullptr;
-}
-
-void USkillLabSkillRuntimeComponent::ResolveFireballImpact(AActor* HitActor, const FSkillLabSkillDefinition& Def, const FSkillLabSkillRequest& Request, const int32 CastId)
-{
-	FSkillLabSkillResult Result;
-	Result.bSuccess = false; Result.SkillId = Def.SkillId; Result.RequestId = Request.RequestId; Result.CastId = CastId; Result.SourceUnitId = UnitId;
-	Result.Effect = Def.Effect;
-	Result.SourceActor = GetOwner(); Result.TargetActor = HitActor;
-	if (HitActor)
+	ActiveAbility = nullptr;
+	if (!bFinishing && ActiveCastId != 0)
 	{
-		const USkillLabSkillRuntimeComponent* HitSkills = HitActor->FindComponentByClass<USkillLabSkillRuntimeComponent>();
-		if (!HitSkills || !IsEnemy(HitSkills))
-		{
-			Result.Reason = TEXT("HitTargetNotEnemy");
-			Emit(ESkillLabSkillEvent::Hit, Result);
-			return;
-		}
-		ApplyToTarget(HitActor, Def, Result, CastId);
-	}
-	else
-	{
-		Result.Reason = TEXT("ProjectileBlocked");
-		Emit(ESkillLabSkillEvent::Hit, Result);
+		CancelActiveCast(TEXT("AbilityEnded"));
 	}
 }
 
-void USkillLabSkillRuntimeComponent::ApplyToTarget(AActor* Target, const FSkillLabSkillDefinition& Def, FSkillLabSkillResult& Result, const int32 CastId)
+bool USkillLabSkillRuntimeComponent::IsBehaviorCurrent(const USkillLabSkillBehavior* Behavior, const int32 CastId) const
 {
-	USkillLabSkillRuntimeComponent* TargetComp = Target ? Target->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
-	USkillLabAbilitySystemComponent* TargetASC = Target ? Target->FindComponentByClass<USkillLabAbilitySystemComponent>() : nullptr;
-	if (!TargetComp || !TargetASC || !TargetComp->IsAlive()) { Result.bSuccess = false; Result.Reason = TEXT("HitTargetInvalid"); Emit(ESkillLabSkillEvent::Hit, Result); return; }
-	const USkillLabCombatAttributeSet* Before = TargetASC->GetCombatAttributeSet();
-	Result.TargetUnitId = TargetComp->GetUnitId(); Result.HealthBefore = Before ? Before->GetHealth() : 0.0f; Result.RequestedAmount = Def.Magnitude;
-	Result.Effect = Def.Effect;
+	return !bShuttingDown && Behavior && ActiveBehavior == Behavior && ActiveCastId == CastId
+		&& Lifecycle.GetStage() == FSkillLabCastLifecycle::EStage::Active;
+}
+
+FSkillLabSkillResult USkillLabSkillRuntimeComponent::ApplyBehaviorEffect(const USkillLabSkillBehavior* Behavior,
+	const int32 CastId, AActor* Target, const FSkillLabSkillDefinition& Definition)
+{
+	FSkillLabSkillResult Result = MakeResult();
+	Result.SkillId = Definition.SkillId;
+	Result.CastId = CastId;
 	Result.TargetActor = Target;
-	const bool bEffectApplied = Def.Effect == ESkillLabEffectKind::Healing
-		? ASC->ApplyHealingToTarget(TargetASC, Def.Magnitude, GetOwner())
-		: ASC->ResolveDamage(FSkillLabDamageRequest{ASC, TargetASC, Def.Magnitude, Def.PowerCoefficient, ESkillLabDamageType::Physical, GetOwner()}).bApplied;
-	const USkillLabCombatAttributeSet* After = TargetASC->GetCombatAttributeSet();
-	Result.HealthAfter = After ? After->GetHealth() : Result.HealthBefore;
-	Result.ActualAmount = Def.Effect == ESkillLabEffectKind::Healing ? Result.HealthAfter - Result.HealthBefore : Result.HealthBefore - Result.HealthAfter;
-	Result.bSuccess = bEffectApplied;
-	if (!bEffectApplied) Result.Reason = TEXT("GameplayEffectFailed");
-	Emit(ESkillLabSkillEvent::Hit, Result);
-	if (bEffectApplied)
+	Result.Effect = Definition.Effect;
+	if (!IsBehaviorCurrent(Behavior, CastId))
 	{
-		Emit(ESkillLabSkillEvent::EffectApplied, Result, Def.Effect == ESkillLabEffectKind::Healing ? TEXT("HealingApplied") : TEXT("DamageApplied"));
-	if (Def.Effect == ESkillLabEffectKind::DamageOverTime) AddBurning(Target, Def, CastId != 0 ? CastId : PendingCastId);
+		Result.Reason = TEXT("CastNotActive");
+		return Result;
 	}
-}
-
-void USkillLabSkillRuntimeComponent::ApplyArea(const FVector& Center, const FSkillLabSkillDefinition& Def, FSkillLabSkillResult& Result)
-{
-	TSet<int32> HitUnits;
-	TArray<AActor*> Targets;
-	FSkillLabTargetingService::FindAreaTargets(*this, Center, Def, Targets);
-	for (AActor* Candidate : Targets)
-	{
-		if (USkillLabSkillRuntimeComponent* Comp = Candidate->FindComponentByClass<USkillLabSkillRuntimeComponent>()) HitUnits.Add(Comp->GetUnitId());
-		ApplyToTarget(Candidate, Def, Result);
-	}
-	FSkillLabSkillResult Summary = Result;
-	Summary.TargetActor = nullptr;
-	Summary.TargetUnitId = 0;
-	Summary.ActualAmount = 0.0f;
-	Summary.RequestedAmount = Def.Magnitude;
-	Summary.bSuccess = HitUnits.Num() > 0;
-	Emit(ESkillLabSkillEvent::Hit, Summary, HitUnits.Num() ? TEXT("AreaHit") : TEXT("AreaEmpty"));
-}
-
-void USkillLabSkillRuntimeComponent::AddBurning(AActor* Target, const FSkillLabSkillDefinition& Def, const int32 CastId)
-{
+	USkillLabSkillRuntimeComponent* TargetRuntime = Target ? Target->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
 	USkillLabAbilitySystemComponent* TargetASC = Target ? Target->FindComponentByClass<USkillLabAbilitySystemComponent>() : nullptr;
-	if (!TargetASC || !ASC) return;
-	FSkillLabDamageRequest DamageRequest;
-	DamageRequest.SourceASC = ASC;
-	DamageRequest.TargetASC = TargetASC;
-	DamageRequest.BaseDamage = Def.Magnitude;
-	DamageRequest.PowerCoefficient = Def.PowerCoefficient;
-	DamageRequest.SourceObject = GetOwner();
-	if (!ASC->ApplyDamageOverTimeToTarget(DamageRequest, Def.Duration, Def.Period).bApplied) return;
-	FSkillLabSkillResult R; R.bSuccess = true; R.SkillId = Def.SkillId; R.CastId = CastId; R.SourceUnitId = UnitId; R.TargetUnitId = Target->FindComponentByClass<USkillLabSkillRuntimeComponent>()->GetUnitId();
-	R.TargetActor = Target;
-	Emit(ESkillLabSkillEvent::BuffApplied, R, TEXT("BurningStarted"));
+	if (!TargetRuntime || !TargetASC || !TargetRuntime->IsAlive())
+	{
+		Result.Reason = TEXT("HitTargetInvalid");
+		Emit(ESkillLabSkillEvent::Hit, Result, Result.Reason);
+		return Result;
+	}
+	if (!FSkillLabTargetingService::MatchesRelation(*this, *TargetRuntime, Definition.Relation))
+	{
+		Result.Reason = TEXT("TargetRelationRejected");
+		Emit(ESkillLabSkillEvent::Hit, Result, Result.Reason);
+		return Result;
+	}
+	const USkillLabCombatAttributeSet* Before = TargetASC->GetCombatAttributeSet();
+	Result.TargetUnitId = TargetRuntime->GetUnitId();
+	Result.HealthBefore = Before ? Before->GetHealth() : 0.0f;
+	Result.RequestedAmount = Definition.Magnitude;
+	FSkillLabEffectRequest EffectRequest;
+	EffectRequest.SourceASC = ASC;
+	EffectRequest.TargetASC = TargetASC;
+	EffectRequest.Magnitude = Definition.Magnitude;
+	EffectRequest.PowerCoefficient = Definition.PowerCoefficient;
+	EffectRequest.Duration = Definition.Duration;
+	EffectRequest.Period = Definition.Period;
+	EffectRequest.SourceObject = GetOwner();
+	EffectRequest.Operation = Definition.Effect == ESkillLabEffectKind::Healing ? ESkillLabEffectOperation::Healing
+		: (Definition.Effect == ESkillLabEffectKind::DamageOverTime ? ESkillLabEffectOperation::DamageOverTime : ESkillLabEffectOperation::Damage);
+	const FSkillLabEffectResult EffectResult = USkillLabEffectResolver::Apply(EffectRequest);
+	Result.bSuccess = EffectResult.bApplied;
+	Result.ActualAmount = EffectResult.ActualAmount;
+	Result.HealthAfter = EffectResult.HealthAfter;
+	Result.Reason = EffectResult.Reason;
+	if (!Result.bSuccess)
+	{
+		Emit(ESkillLabSkillEvent::Hit, Result, Result.Reason);
+		return Result;
+	}
+	if (Definition.Effect == ESkillLabEffectKind::DamageOverTime && EffectResult.ActiveEffectHandle.IsValid() && EffectEventAdapter)
+	{
+		Result.EffectInstanceId = FName(*EffectResult.ActiveEffectHandle.ToString());
+		Result.EffectDuration = Definition.Duration;
+		EffectEventAdapter->Track(TargetASC, EffectResult.ActiveEffectHandle, Result);
+	}
+	Emit(ESkillLabSkillEvent::Hit, Result);
+	Emit(ESkillLabSkillEvent::EffectApplied, Result, EffectReason(Definition.Effect));
+	if (Definition.Effect == ESkillLabEffectKind::DamageOverTime)
+	{
+		Emit(ESkillLabSkillEvent::BuffApplied, Result, TEXT("BurningStarted"));
+	}
+	return Result;
+}
+
+void USkillLabSkillRuntimeComponent::ReportBehaviorMiss(const USkillLabSkillBehavior* Behavior, const int32 CastId,
+	AActor* Target, const FName Reason)
+{
+	if (!Behavior || !IsBehaviorCurrent(Behavior, CastId))
+	{
+		return;
+	}
+	FSkillLabSkillResult Result = MakeResult();
+	Result.bSuccess = false;
+	Result.TargetActor = Target;
+	Emit(ESkillLabSkillEvent::Hit, Result, Reason);
+}
+
+void USkillLabSkillRuntimeComponent::CompleteBehavior(const USkillLabSkillBehavior* Behavior, const int32 CastId, const FName Reason)
+{
+	if (!Behavior || !IsBehaviorCurrent(Behavior, CastId))
+	{
+		return;
+	}
+	OutcomeReason = Reason;
+	BeginRecovery();
+}
+
+void USkillLabSkillRuntimeComponent::ListenForInterrupts()
+{
+	ClearInterruptListeners();
+	if (!ASC)
+	{
+		return;
+	}
+	TSet<FGameplayTag> RegisteredTags;
+	RegisteredTags.Add(SkillLabGASTags::State_Dead);
+	FDelegateHandle DeathHandle = ASC->RegisterGameplayTagEvent(SkillLabGASTags::State_Dead, EGameplayTagEventType::AnyCountChange)
+		.AddUObject(this, &USkillLabSkillRuntimeComponent::OnBlockingTagChanged);
+	InterruptHandles.Add(SkillLabGASTags::State_Dead, DeathHandle);
+	for (const FGameplayTag Tag : ActiveDefinition.BlockedByTags)
+	{
+		if (!Tag.IsValid() || RegisteredTags.Contains(Tag)) continue;
+		RegisteredTags.Add(Tag);
+		FDelegateHandle Handle = ASC->RegisterGameplayTagEvent(Tag, EGameplayTagEventType::AnyCountChange)
+			.AddUObject(this, &USkillLabSkillRuntimeComponent::OnBlockingTagChanged);
+		InterruptHandles.Add(Tag, Handle);
+	}
+}
+
+void USkillLabSkillRuntimeComponent::ClearInterruptListeners()
+{
+	if (ASC)
+	{
+		for (const TPair<FGameplayTag, FDelegateHandle>& Pair : InterruptHandles)
+		{
+			ASC->RegisterGameplayTagEvent(Pair.Key, EGameplayTagEventType::AnyCountChange).Remove(Pair.Value);
+		}
+	}
+	InterruptHandles.Reset();
+}
+
+void USkillLabSkillRuntimeComponent::OnBlockingTagChanged(const FGameplayTag Tag, const int32 Count)
+{
+	if (Count > 0 && ActiveCastId != 0 && (Tag == SkillLabGASTags::State_Dead || ActiveDefinition.BlockedByTags.HasTag(Tag)))
+	{
+		CancelActiveCast(Tag == SkillLabGASTags::State_Dead ? TEXT("CasterDead") : TEXT("BlockedByState"));
+	}
 }
 
 void USkillLabSkillRuntimeComponent::ResetSkills()
 {
+	CancelActiveCast(TEXT("Reset"));
+	if (EffectEventAdapter) EffectEventAdapter->Clear(true);
 	CooldownEnd.Reset();
 	if (ASC && ASC->GetCombatAttributeSet())
 	{
-		ASC->SetNumericAttributeBase(USkillLabCombatAttributeSet::GetHealthAttribute(), 100.0f);
-		ASC->SetNumericAttributeBase(USkillLabCombatAttributeSet::GetEnergyAttribute(), 100.0f);
+		const USkillLabCombatAttributeSet* Attributes = ASC->GetCombatAttributeSet();
+		ASC->SetNumericAttributeBase(USkillLabCombatAttributeSet::GetHealthAttribute(), Attributes->GetMaxHealth());
+		ASC->SetNumericAttributeBase(USkillLabCombatAttributeSet::GetEnergyAttribute(), Attributes->GetMaxEnergy());
 	}
+}
+
+void USkillLabSkillRuntimeComponent::ForwardEffectEvent(const FSkillLabSkillResult& Result)
+{
+	Emit(Result.Event, Result, Result.Reason);
 }
 
 void USkillLabSkillRuntimeComponent::Emit(const ESkillLabSkillEvent EventType, const FSkillLabSkillResult& Result, const FName Reason)
 {
 	FSkillLabSkillResult EventResult = Result;
 	EventResult.Event = EventType;
-	if (!Reason.IsNone()) EventResult.Reason = Reason;
+	if (!Reason.IsNone())
+	{
+		EventResult.Reason = Reason;
+	}
 	OnSkillEvent.Broadcast(EventResult);
 	OnNativeSkillEvent.Broadcast(EventResult);
 	UE_LOG(LogTemp, Log, TEXT("[SkillLabSkills] Event=%d Skill=%s Request=%d Cast=%d Source=%d Target=%d Success=%s Reason=%s Amount=%.2f"),

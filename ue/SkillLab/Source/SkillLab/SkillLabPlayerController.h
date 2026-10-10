@@ -8,9 +8,12 @@
 
 class UInputAction;
 class UInputMappingContext;
+class APawn;
 class UNiagaraSystem;
-class USkillLabHUDWidget;
 class USkillLabHUDManagerComponent;
+class USkillLabSkillInputComponent;
+class USkillLabSkillShortcutComponent;
+class USkillLabTestCommandsComponent;
 struct FInputActionValue;
 
 UCLASS()
@@ -38,20 +41,21 @@ public:
 	UFUNCTION(Exec)
 	void SkillReset();
 
+	/** Reloads external skill numbers without recompiling or restarting the editor. */
+	UFUNCTION(Exec)
+	void SkillReloadDefinitions();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+	virtual void OnPossess(APawn* InPawn) override;
+	virtual void OnUnPossess() override;
 
 	void HandlePointerPressed();
 	void HandlePointerReleased();
 	void HandleCameraLook(const FInputActionValue& Value);
 	void HandleCameraZoom(const FInputActionValue& Value);
 	void MoveToCursor();
-	void CastAtCursor(FName SkillId, bool bGroundTarget, bool bAutoSelectNearestDummy = false);
-	void HandleSkillFireball();
-	void HandleSkillArea();
-	void HandleSkillMend();
-	void HandleSkillBurn();
 
 	UPROPERTY(EditDefaultsOnly, Category = "SkillLab|Input")
 	TObjectPtr<UInputAction> MoveOrRotateAction;
@@ -77,14 +81,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "SkillLab|Feedback")
 	TObjectPtr<UNiagaraSystem> MoveFailureEffect;
 
-	UPROPERTY(Transient)
-	TObjectPtr<USkillLabHUDWidget> HUDWidget;
-
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USkillLabHUDManagerComponent> HUDManager;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USkillLabSkillInputComponent> SkillInput;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USkillLabSkillShortcutComponent> SkillShortcuts;
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USkillLabTestCommandsComponent> TestCommands;
 
 	FVector2D PointerPressPosition = FVector2D::ZeroVector;
 	bool bPointerHeld = false;
 	bool bCameraDragging = false;
-	bool bSkillTestTargetsSpawned = false;
 };

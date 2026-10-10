@@ -11,6 +11,7 @@
 #include "SkillLabCameraRigComponent.h"
 #include "SkillLabAbilitySystemComponent.h"
 #include "SkillLabSkillRuntimeComponent.h"
+#include "SkillLabSkillAnimationComponent.h"
 #include "AbilitySystemComponent.h"
 
 ASkillLabCharacter::ASkillLabCharacter()
@@ -39,6 +40,7 @@ ASkillLabCharacter::ASkillLabCharacter()
 
 	SkillAbilitySystemComponent = CreateDefaultSubobject<USkillLabAbilitySystemComponent>(TEXT("SkillAbilitySystem"));
 	SkillComponent = CreateDefaultSubobject<USkillLabSkillRuntimeComponent>(TEXT("SkillComponent"));
+	SkillAnimationComponent = CreateDefaultSubobject<USkillLabSkillAnimationComponent>(TEXT("SkillAnimation"));
 }
 
 UAbilitySystemComponent* ASkillLabCharacter::GetAbilitySystemComponent() const
@@ -68,6 +70,12 @@ void ASkillLabCharacter::ConfigureAsTrainingDummy()
 		GetMesh()->SetVisibility(false, true);
 		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetCapsuleComponent()->SetGenerateOverlapEvents(true);
+	GetCapsuleComponent()->SetCollisionResponseToAllChannels(ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_WorldDynamic, ECR_Overlap);
 
 	UStaticMesh* CylinderMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Cylinder.Cylinder"));
 	UStaticMesh* SphereMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Sphere.Sphere"));
@@ -78,7 +86,10 @@ void ASkillLabCharacter::ConfigureAsTrainingDummy()
 
 	TrainingDummyBody = NewObject<UStaticMeshComponent>(this, TEXT("TrainingDummyBody"));
 	TrainingDummyBody->SetStaticMesh(CylinderMesh);
-	TrainingDummyBody->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	TrainingDummyBody->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TrainingDummyBody->SetCollisionResponseToAllChannels(ECR_Ignore);
+	TrainingDummyBody->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	TrainingDummyBody->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	// ACharacter's root/capsule origin is at the capsule center, not at the feet.
 	// The default capsule half height is 88 cm, so offset the 135 cm tall post
 	// down by 20.5 cm to put its base on the floor.
@@ -90,7 +101,10 @@ void ASkillLabCharacter::ConfigureAsTrainingDummy()
 
 	TrainingDummyHead = NewObject<UStaticMeshComponent>(this, TEXT("TrainingDummyHead"));
 	TrainingDummyHead->SetStaticMesh(SphereMesh);
-	TrainingDummyHead->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	TrainingDummyHead->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TrainingDummyHead->SetCollisionResponseToAllChannels(ECR_Ignore);
+	TrainingDummyHead->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	TrainingDummyHead->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	TrainingDummyHead->SetRelativeLocation(FVector(0.0f, 0.0f, 67.5f));
 	TrainingDummyHead->SetRelativeScale3D(FVector(0.78f, 0.78f, 0.45f));
 	TrainingDummyHead->AttachToComponent(GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
