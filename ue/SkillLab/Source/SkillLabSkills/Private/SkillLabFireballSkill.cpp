@@ -63,7 +63,7 @@ void USkillLabFireballBehavior::Cleanup()
 	Projectile = nullptr;
 }
 
-void RegisterSkillLabFireballBehavior(FSkillLabSkillBehaviorRegistry& Registry)
+FSkillLabSkillBehaviorRegistration RegisterSkillLabFireballBehavior()
 {
-	Registry.Register(TEXT("Skill_Fireball"), &Configure);
+	return {TEXT("Skill_Fireball"), &Configure};
 }

@@ -20,7 +20,9 @@ public:
 	USkillLabHUDManagerComponent();
 	void SetSkillRuntime(USkillLabSkillRuntimeComponent* InSkillRuntime);
 	void SetShortcutComponent(USkillLabSkillShortcutComponent* InShortcuts);
+	void SetControlledPawn(APawn* InPawn);
 	void InitializeForPlayer(APlayerController* Player, APawn* Pawn, USkillLabSkillShortcutComponent* Shortcuts);
+	void ShutdownForPlayer();
 	FSkillLabHUDSnapshot BuildSnapshot() const;
 
 protected:
@@ -35,5 +37,6 @@ private:
 	TObjectPtr<USkillLabSkillRuntimeComponent> SkillRuntime;
 	UPROPERTY(Transient)
 	TObjectPtr<USkillLabSkillShortcutComponent> ShortcutComponent;
+	TWeakObjectPtr<APlayerController> OwningPlayer;
 	mutable bool bLoggedFirstSnapshot = false;
 };

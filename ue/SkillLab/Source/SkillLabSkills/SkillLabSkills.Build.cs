@@ -7,7 +7,8 @@ public class SkillLabSkills : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 		PublicDependencyModuleNames.AddRange(new string[]
 		{
-			"Core", "CoreUObject", "Engine", "Json", "GameplayAbilities", "GameplayTags", "GameplayTasks", "SkillLabGAS"
+			"Core", "CoreUObject", "Engine", "GameplayAbilities", "GameplayTags", "GameplayTasks", "SkillLabGAS"
 		});
+		PrivateDependencyModuleNames.Add("Json");
 	}
 }

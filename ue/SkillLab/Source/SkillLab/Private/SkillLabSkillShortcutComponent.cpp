@@ -32,8 +32,9 @@ TArray<FSkillLabSkillShortcut> USkillLabSkillShortcutComponent::GetShortcuts() c
 	return Result;
 }
 
-void USkillLabSkillShortcutComponent::BindInput(UInputComponent* Input)
+void USkillLabSkillShortcutComponent::BindInput(UInputComponent* Input, USkillLabSkillInputComponent* InSkillInput)
 {
+	SkillInput = InSkillInput;
 	if (!Input || BoundInput.Get() == Input) return;
 	UnbindInput();
 	BoundInput = Input;
@@ -60,6 +61,7 @@ void USkillLabSkillShortcutComponent::UnbindInput()
 		});
 	}
 	BoundInput.Reset();
+	SkillInput.Reset();
 }
 
 void USkillLabSkillShortcutComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -71,8 +73,7 @@ void USkillLabSkillShortcutComponent::EndPlay(const EEndPlayReason::Type EndPlay
 void USkillLabSkillShortcutComponent::ActivateSlot(const int32 SlotIndex)
 {
 	const TArray<FSkillLabSkillShortcut> Slots = GetShortcuts();
-	USkillLabSkillInputComponent* SkillInput = GetOwner() ? GetOwner()->FindComponentByClass<USkillLabSkillInputComponent>() : nullptr;
-	if (SkillInput && Slots.IsValidIndex(SlotIndex)) SkillInput->BeginSkill(Slots[SlotIndex].SkillId);
+	if (SkillInput.IsValid() && Slots.IsValidIndex(SlotIndex)) SkillInput->BeginSkill(Slots[SlotIndex].SkillId);
 }
 
 void USkillLabSkillShortcutComponent::HandleShortcutPressed(const FKey Key)
@@ -86,10 +87,10 @@ void USkillLabSkillShortcutComponent::HandleShortcutPressed(const FKey Key)
 
 void USkillLabSkillShortcutComponent::ConfirmTarget()
 {
-	if (USkillLabSkillInputComponent* Input = GetOwner() ? GetOwner()->FindComponentByClass<USkillLabSkillInputComponent>() : nullptr) Input->ConfirmSkill();
+	if (SkillInput.IsValid()) SkillInput->ConfirmSkill();
 }
 
 void USkillLabSkillShortcutComponent::CancelTarget()
 {
-	if (USkillLabSkillInputComponent* Input = GetOwner() ? GetOwner()->FindComponentByClass<USkillLabSkillInputComponent>() : nullptr) Input->CancelSkill();
+	if (SkillInput.IsValid()) SkillInput->CancelSkill();
 }

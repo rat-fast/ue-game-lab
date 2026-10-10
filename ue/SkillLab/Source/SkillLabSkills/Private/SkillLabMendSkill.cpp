@@ -25,7 +25,7 @@ void USkillLabMendBehavior::Execute()
 	Complete(TEXT("HealingApplied"));
 }
 
-void RegisterSkillLabMendBehavior(FSkillLabSkillBehaviorRegistry& Registry)
+FSkillLabSkillBehaviorRegistration RegisterSkillLabMendBehavior()
 {
-	Registry.Register(TEXT("Skill_Mend"), &Configure);
+	return {TEXT("Skill_Mend"), &Configure};
 }

@@ -20,6 +20,7 @@ void USkillLabSkillPresentationRouter::Bind(USkillLabSkillRuntimeComponent* InSo
 
 void USkillLabSkillPresentationRouter::HandleEvent(const FSkillLabSkillResult& Result)
 {
+	OnPresentationEvent.Broadcast(Result);
 	UWorld* World = GetWorld();
 	if (!World) return;
 	ShowScreenMessage(Result);

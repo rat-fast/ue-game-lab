@@ -8,6 +8,7 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "SkillLabSkillDefinitionProvider.h"
+#include "SkillLabSkillPresentationRouter.h"
 #include "SkillLabSkillRuntimeComponent.h"
 #include "SkillLabSkillTypes.h"
 
@@ -20,17 +21,17 @@ void USkillLabSkillAnimationComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	SkillRuntime = GetOwner() ? GetOwner()->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
-	if (SkillRuntime)
+	if (SkillRuntime && SkillRuntime->GetPresentationRouter())
 	{
-		SkillRuntime->OnNativeSkillEvent.AddUObject(this, &USkillLabSkillAnimationComponent::HandleSkillEvent);
+		SkillRuntime->GetPresentationRouter()->OnPresentationEvent.AddUObject(this, &USkillLabSkillAnimationComponent::HandleSkillEvent);
 	}
 }
 
 void USkillLabSkillAnimationComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (SkillRuntime)
+	if (SkillRuntime && SkillRuntime->GetPresentationRouter())
 	{
-		SkillRuntime->OnNativeSkillEvent.RemoveAll(this);
+		SkillRuntime->GetPresentationRouter()->OnPresentationEvent.RemoveAll(this);
 	}
 	StopCastMontage(ActiveCastId);
 	SkillRuntime = nullptr;
@@ -63,8 +64,8 @@ bool USkillLabSkillAnimationComponent::PlayCastMontage(const FSkillLabSkillResul
 	{
 		return false;
 	}
-	FSkillLabSkillDefinition Definition;
-	if (!FSkillLabSkillDefinitionProvider::Resolve(Result.SkillId, Definition))
+	FSkillLabSkillPresentationBinding Binding;
+	if (!FSkillLabSkillDefinitionProvider::ResolvePresentationBinding(Result.SkillId, Binding))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[SkillLabAnimation] Cast=%d Skill=%s has no definition; montage not played"),
 			Result.CastId, *Result.SkillId.ToString());
@@ -74,7 +75,7 @@ bool USkillLabSkillAnimationComponent::PlayCastMontage(const FSkillLabSkillResul
 	{
 		StopCastMontage(ActiveCastId);
 	}
-	ActiveMontage = Definition.CastMontage.LoadSynchronous();
+	ActiveMontage = Binding.CastMontage.LoadSynchronous();
 	if (!ActiveMontage)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("[SkillLabAnimation] Cast=%d Skill=%s has no CastMontage; animation timing is not connected"),

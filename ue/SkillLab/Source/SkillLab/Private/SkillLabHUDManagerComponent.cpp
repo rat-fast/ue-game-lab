@@ -24,9 +24,20 @@ void USkillLabHUDManagerComponent::SetShortcutComponent(USkillLabSkillShortcutCo
 	ShortcutComponent = InShortcuts;
 }
 
+void USkillLabHUDManagerComponent::SetControlledPawn(APawn* InPawn)
+{
+	SetSkillRuntime(InPawn ? InPawn->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr);
+}
+
 void USkillLabHUDManagerComponent::InitializeForPlayer(APlayerController* Player, APawn* Pawn, USkillLabSkillShortcutComponent* Shortcuts)
 {
-	SetSkillRuntime(Pawn ? Pawn->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr);
+	if (OwningPlayer.Get() != Player && HUDWidget)
+	{
+		HUDWidget->RemoveFromParent();
+		HUDWidget = nullptr;
+	}
+	OwningPlayer = Player;
+	SetControlledPawn(Pawn);
 	SetShortcutComponent(Shortcuts);
 	if (!Player || !Player->IsLocalController() || !WidgetClass || HUDWidget) return;
 	HUDWidget = CreateWidget<USkillLabHUDWidget>(Player, WidgetClass);
@@ -40,11 +51,22 @@ void USkillLabHUDManagerComponent::InitializeForPlayer(APlayerController* Player
 	}
 }
 
+void USkillLabHUDManagerComponent::ShutdownForPlayer()
+{
+	if (HUDWidget)
+	{
+		HUDWidget->RemoveFromParent();
+		HUDWidget = nullptr;
+	}
+	OwningPlayer.Reset();
+	SetControlledPawn(nullptr);
+	ShortcutComponent = nullptr;
+	bLoggedFirstSnapshot = false;
+}
+
 void USkillLabHUDManagerComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (HUDWidget) { HUDWidget->RemoveFromParent(); HUDWidget = nullptr; }
-	SkillRuntime = nullptr;
-	ShortcutComponent = nullptr;
+	ShutdownForPlayer();
 	Super::EndPlay(EndPlayReason);
 }
 

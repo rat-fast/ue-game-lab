@@ -27,7 +27,7 @@ void USkillLabBurningBehavior::Execute()
 	Complete(TEXT("BurningStarted"));
 }
 
-void RegisterSkillLabBurningBehavior(FSkillLabSkillBehaviorRegistry& Registry)
+FSkillLabSkillBehaviorRegistration RegisterSkillLabBurningBehavior()
 {
-	Registry.Register(TEXT("Skill_BurningBuff"), &Configure);
+	return {TEXT("Skill_BurningBuff"), &Configure};
 }

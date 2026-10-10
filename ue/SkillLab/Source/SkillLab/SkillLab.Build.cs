@@ -8,9 +8,18 @@ public class SkillLab : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AIModule", "NavigationSystem", "Niagara", "UMG", "Slate", "SlateCore", "GameplayAbilities", "GameplayTags", "GameplayTasks", "SkillLabGAS", "SkillLabSkills" });
+		// Keep only modules required by public SkillLab headers here. Gameplay, navigation,
+		// feedback and skill implementation details are private to this module.
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core", "CoreUObject", "Engine", "InputCore", "UMG", "GameplayAbilities"
+		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"EnhancedInput", "AIModule", "NavigationSystem", "Niagara", "Slate", "SlateCore",
+			"GameplayTags", "GameplayTasks", "SkillLabGAS", "SkillLabSkills"
+		});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

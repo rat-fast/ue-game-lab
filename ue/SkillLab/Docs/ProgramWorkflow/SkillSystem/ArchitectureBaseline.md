@@ -1,6 +1,6 @@
 # SkillSystem 架构基线
 
-- 版本：v0.2（首阶段最小纵向闭环，GAS 已接入后的交接修订）
+- 版本：v0.3（首阶段最小纵向闭环，目录注册与表现订阅边界修订）
 - 任务：SkillSystem
 - 状态：供首批实现、集成和验证使用；不是完整技能系统终稿
 - 目标链：单位初始化 → 获得一个能力 → 发起一次技能请求 → 激活检查 → 一个最简单目标 → 一个最简单效果 → 技能结束 → 清理和重置 → 再次施放
@@ -25,6 +25,7 @@
 - `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M04-TargetingAndHit.md`
 - `ue/SkillLab/Docs/Planning/SkillSystem/Infrastructure/M05-AttributesEffectsStates.md`
 - `ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/README.md`
+- `ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/Architecture/SkillCatalogRegistrationAndPresentation.md`
 - 当前真实代码：`Source/SkillLab/SkillLabCharacter.*`、`SkillLabPlayerController.*`、`SkillLabSkillComponent.*`、`SkillLabAbilitySystemComponent.*`、`SkillLabAttributeSet.*`、`SkillLabPulseAbility.*`、`SkillLabPulseEffect.*`、`SkillLab.Build.cs`、`SkillLab.uproject`
 
 当前项目事实：基础运行入口仍是 `GameMode → PlayerController → Character → CharacterMovementComponent`；Character 保留移动和镜头职责，并已挂载 `USkillLabAbilitySystemComponent` 与 `USkillLabAttributeSet`，实现 `IAbilitySystemInterface`。`SkillLab.Build.cs` 已依赖 `GameplayAbilities`、`GameplayTags`、`GameplayTasks`，`.uproject` 已启用 `GameplayAbilities` 插件。`USkillLabSkillComponent` 已完成最小单位初始化、Provider 默认 SkillId 列表遍历、按 SkillId 保存 AbilitySpecHandle 的通用授予、请求门控、GAS 激活、瞬时效果、控制台测试入口和重置。因此，“GAS 是否接入”不再是首阶段前置条件；当前剩余工作是扩大定义/装配覆盖并补充运行证据。
@@ -255,6 +256,8 @@ TargetId/TargetSpec（当前样本为自身目标；来源和目标语义不能�
 > **历史基线记录（已修复，2026-10-06）**：早期实现曾由 `USkillLabSkillComponent::RequestTestPulse` 走技能专用路径，并在 `TryActivateAbility` 前设置 `CastId`、扣费和冷却，且请求结果/日志缺少完整的 `SkillId`、来源和目标身份。该段只保留用于解释本基线的迁移背景，不代表当前源码状态。
 
 当前实现已改为 `SubmitSkillRequest` 统一入口；Provider 默认装配通过 `GetDefaultSkillIds` 驱动通用 `GrantSkill`，授予记录分开保存业务 `GrantedAbilityId` 与 GAS `SpecHandle`，有效授予身份在后续目标、资源、冷却和激活门控前写入请求上下文；GAS 激活成功后才创建 `CastId`、扣费和启动冷却。结果/事件携带来源、目标、TargetSpec 快照和定义身份。`Skill_RecoverEnergy` 已作为第二个无资产瞬时技能接入同一路径。
+
+本轮目录/表现修订：行为注册由每个技能返回 `FSkillLabSkillBehaviorRegistration`，注册表集中执行幂等登记；定义提供器新增只读表现绑定解析；`USkillLabSkillPresentationRouter` 提供 `OnPresentationEvent`，动画适配器通过该出口订阅事实并按绑定播放 Montage。该修订不改变运行生命周期、技能效果或事件含义。
 
 实现 Agent 可直接使用本基线中的身份和结果语义。需要单独专题结论时，优先拆分：
 

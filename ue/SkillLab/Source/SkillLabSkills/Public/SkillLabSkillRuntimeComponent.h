@@ -11,10 +11,33 @@ class USkillLabSkillGameplayAbility;
 class USkillLabSkillPresentationRouter;
 class USkillLabSkillBehavior;
 class USkillLabSkillEffectEventAdapter;
+class USkillLabSkillEffectExecutor;
+class USkillLabSkillLoadout;
+class USkillLabSkillRuntimeComponent;
+
+/**
+ * Stable, read-only context exposed to effect execution.
+ *
+ * The runtime owns cast state and the executor only borrows the context while
+ * applying a synchronous effect.  Keeping this boundary separate prevents the
+ * executor from reaching into lifecycle implementation details and gives the
+ * runtime an explicit shutdown point for any future asynchronous executor.
+ */
+class SKILLLABSKILLS_API ISkillLabSkillCastContext
+{
+public:
+	virtual ~ISkillLabSkillCastContext() = default;
+	virtual bool IsBehaviorCurrent(const USkillLabSkillBehavior* Behavior, int32 CastId) const = 0;
+	virtual USkillLabAbilitySystemComponent* GetSourceAbilitySystemComponent() const = 0;
+	virtual AActor* GetSourceActor() const = 0;
+	virtual int32 GetSourceUnitId() const = 0;
+	virtual bool MatchesTargetRelation(const USkillLabSkillRuntimeComponent* Target,
+		ESkillLabTargetRelation Relation) const = 0;
+};
 
 /** Shared orchestration. No concrete skill identity or delivery implementation belongs here. */
 UCLASS(ClassGroup=(SkillLab), meta=(BlueprintSpawnableComponent))
-class SKILLLABSKILLS_API USkillLabSkillRuntimeComponent : public UActorComponent
+class SKILLLABSKILLS_API USkillLabSkillRuntimeComponent : public UActorComponent, public ISkillLabSkillCastContext
 {
 	GENERATED_BODY()
 public:
@@ -44,12 +67,19 @@ public:
 	UFUNCTION(BlueprintPure, Category="SkillLab|Skill") float GetStageRemaining() const;
 	UFUNCTION(BlueprintPure, Category="SkillLab|Skill") FName GetActiveSkillId() const;
 	UFUNCTION(BlueprintPure, Category="SkillLab|Skill") int32 GetActiveCastId() const { return ActiveCastId; }
+	/** Presentation adapters use this bridge instead of subscribing to runtime internals. */
+	USkillLabSkillPresentationRouter* GetPresentationRouter() const { return PresentationRouter; }
 	void GetGrantedSkillIds(TArray<FName>& OutIds) const;
 
 	void NotifyAbilityActivated(USkillLabSkillGameplayAbility* Ability);
 	void NotifyAbilityEnded(USkillLabSkillGameplayAbility* Ability);
 	void ReceiveCastEvent(int32 CastId, FGameplayTag EventTag);
-	bool IsBehaviorCurrent(const USkillLabSkillBehavior* Behavior, int32 CastId) const;
+	virtual bool IsBehaviorCurrent(const USkillLabSkillBehavior* Behavior, int32 CastId) const override;
+	virtual USkillLabAbilitySystemComponent* GetSourceAbilitySystemComponent() const override { return ASC.Get(); }
+	virtual AActor* GetSourceActor() const override { return GetOwner(); }
+	virtual int32 GetSourceUnitId() const override { return UnitId; }
+	virtual bool MatchesTargetRelation(const USkillLabSkillRuntimeComponent* Target,
+		ESkillLabTargetRelation Relation) const override;
 	FSkillLabSkillResult ApplyBehaviorEffect(const USkillLabSkillBehavior* Behavior, int32 CastId,
 		AActor* Target, const FSkillLabSkillDefinition& Definition);
 	void ReportBehaviorMiss(const USkillLabSkillBehavior* Behavior, int32 CastId, AActor* Target, FName Reason);
@@ -58,14 +88,17 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere) int32 UnitId = 0;
 	UPROPERTY(VisibleAnywhere) bool bInitialized = false;
-	UPROPERTY(Transient) TObjectPtr<USkillLabAbilitySystemComponent> ASC;
-	UPROPERTY(Transient) TObjectPtr<USkillLabSkillGameplayAbility> ActiveAbility;
+	/** Borrowed from the owning Actor; Runtime never keeps the ASC alive. */
+	UPROPERTY(Transient) TWeakObjectPtr<USkillLabAbilitySystemComponent> ASC;
+	/** GAS owns the ability instance; Runtime only observes the active instance. */
+	UPROPERTY(Transient) TWeakObjectPtr<USkillLabSkillGameplayAbility> ActiveAbility;
 	UPROPERTY(Transient) TObjectPtr<USkillLabSkillBehavior> ActiveBehavior;
 	UPROPERTY(Transient) TObjectPtr<USkillLabSkillPresentationRouter> PresentationRouter;
 	UPROPERTY(Transient) TObjectPtr<USkillLabSkillEffectEventAdapter> EffectEventAdapter;
+	UPROPERTY(Transient) TObjectPtr<USkillLabSkillEffectExecutor> EffectExecutor;
+	UPROPERTY(Transient) TObjectPtr<USkillLabSkillLoadout> Loadout;
 	UPROPERTY(Transient) FSkillLabSkillRequest ActiveRequest;
 	UPROPERTY(Transient) FSkillLabSkillDefinition ActiveDefinition;
-	TMap<FName, FGameplayAbilitySpecHandle> GrantedSkills;
 	TMap<FName, double> CooldownEnd;
 	TMap<FGameplayTag, FDelegateHandle> InterruptHandles;
 	FTimerHandle PhaseTimer;

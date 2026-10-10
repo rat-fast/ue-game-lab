@@ -1,11 +1,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SkillLabSkillTypes.h"
 #include "SkillLabSkillPresentationRouter.generated.h"
 
 class USkillLabSkillRuntimeComponent;
-struct FSkillLabSkillResult;
-enum class ESkillLabSkillEvent : uint8;
+
+/** Native presentation subscription surface. Subscribers only receive runtime facts. */
+using FSkillLabSkillPresentationEvent = FSkillLabNativeSkillEvent;
 
 UCLASS()
 class SKILLLABSKILLS_API USkillLabSkillPresentationRouter : public UObject
@@ -14,6 +16,7 @@ class SKILLLABSKILLS_API USkillLabSkillPresentationRouter : public UObject
 public:
 	void Bind(USkillLabSkillRuntimeComponent* InSource);
 	void HandleEvent(const FSkillLabSkillResult& Result);
+	FSkillLabSkillPresentationEvent OnPresentationEvent;
 	virtual UWorld* GetWorld() const override;
 private:
 	void ShowScreenMessage(const FSkillLabSkillResult& Result);

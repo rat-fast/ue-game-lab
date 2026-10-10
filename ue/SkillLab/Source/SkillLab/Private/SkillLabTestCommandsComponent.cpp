@@ -1,7 +1,6 @@
 #include "SkillLabTestCommandsComponent.h"
 
 #include "Engine/World.h"
-#include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
 #include "SkillLabSkillShortcutComponent.h"
 #include "SkillLabSkillRuntimeComponent.h"
@@ -15,12 +14,14 @@ USkillLabTestCommandsComponent::USkillLabTestCommandsComponent()
 
 APawn* USkillLabTestCommandsComponent::GetControlledPawn() const
 {
-	const APlayerController* Controller = Cast<APlayerController>(GetOwner());
-	return Controller ? Controller->GetPawn() : nullptr;
+	return ControlledPawn.Get();
 }
 
-void USkillLabTestCommandsComponent::InitializeForPawn(APawn* Pawn)
+void USkillLabTestCommandsComponent::InitializeForPawn(APawn* Pawn, USkillLabSkillShortcutComponent* InShortcuts)
 {
+	ControlledPawn = Pawn;
+	ShortcutComponent = InShortcuts;
+	SkillRuntime = Pawn ? Pawn->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
 	if (!bEnableTestCommands || !bInitializeTrainingArena || !Pawn) return;
 	if (USkillLabTestArenaSubsystem* Arena = GetWorld() ? GetWorld()->GetSubsystem<USkillLabTestArenaSubsystem>() : nullptr)
 	{
@@ -31,9 +32,9 @@ void USkillLabTestCommandsComponent::InitializeForPawn(APawn* Pawn)
 void USkillLabTestCommandsComponent::RequestSlot(const int32 SlotIndex)
 {
 	if (!bEnableTestCommands) return;
-	if (USkillLabSkillShortcutComponent* Shortcuts = GetOwner() ? GetOwner()->FindComponentByClass<USkillLabSkillShortcutComponent>() : nullptr)
+	if (ShortcutComponent.IsValid())
 	{
-		Shortcuts->ActivateSlot(SlotIndex);
+		ShortcutComponent->ActivateSlot(SlotIndex);
 	}
 }
 
@@ -54,8 +55,7 @@ void USkillLabTestCommandsComponent::SpawnTargets()
 void USkillLabTestCommandsComponent::ResetSkills()
 {
 	if (!bEnableTestCommands) return;
-	const APawn* Pawn = GetControlledPawn();
-	if (USkillLabSkillRuntimeComponent* Runtime = Pawn ? Pawn->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr) Runtime->ResetSkills();
+	if (SkillRuntime.IsValid()) SkillRuntime->ResetSkills();
 }
 
 void USkillLabTestCommandsComponent::ReloadDefinitions()

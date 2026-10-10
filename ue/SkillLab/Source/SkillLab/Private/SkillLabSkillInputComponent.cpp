@@ -15,6 +15,25 @@ USkillLabSkillInputComponent::USkillLabSkillInputComponent()
 	PrimaryComponentTick.TickInterval = 0.016f;
 }
 
+void USkillLabSkillInputComponent::InitializeForPlayer(APlayerController* InController, APawn* InCaster)
+{
+	if (PlayerController.Get() != InController || Caster.Get() != InCaster)
+	{
+		CancelSkill();
+	}
+	PlayerController = InController;
+	Caster = InCaster;
+	SkillRuntime = InCaster ? InCaster->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
+}
+
+void USkillLabSkillInputComponent::ClearPlayerContext()
+{
+	CancelSkill();
+	SkillRuntime.Reset();
+	Caster.Reset();
+	PlayerController.Reset();
+}
+
 void USkillLabSkillInputComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	CancelSkill();
@@ -24,20 +43,18 @@ void USkillLabSkillInputComponent::EndPlay(const EEndPlayReason::Type EndPlayRea
 bool USkillLabSkillInputComponent::ResolveCasterAndRuntime(USkillLabSkillRuntimeComponent*& OutRuntime) const
 {
 	OutRuntime = nullptr;
-	const APlayerController* Controller = Cast<APlayerController>(GetOwner());
-	const APawn* Pawn = Controller ? Controller->GetPawn() : nullptr;
-	OutRuntime = Pawn ? Pawn->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
+	OutRuntime = SkillRuntime.Get();
 	return OutRuntime != nullptr;
 }
 
 bool USkillLabSkillInputComponent::ResolveGroundLocation(FVector& OutLocation) const
 {
-	const APlayerController* Controller = Cast<APlayerController>(GetOwner());
+	const APlayerController* Controller = PlayerController.Get();
 	if (!Controller || !Controller->GetWorld()) return false;
 	FVector WorldOrigin, WorldDirection;
 	if (!Controller->DeprojectMousePositionToWorld(WorldOrigin, WorldDirection)) return false;
 	FCollisionQueryParams QueryParams(SCENE_QUERY_STAT(SkillLabGroundAim), true);
-	if (const AActor* Caster = Controller->GetPawn()) QueryParams.AddIgnoredActor(Caster);
+	if (const AActor* CasterActor = Caster.Get()) QueryParams.AddIgnoredActor(CasterActor);
 	FHitResult GroundHit;
 	const FVector TraceEnd = WorldOrigin + WorldDirection * 100000.0f;
 	if (!Controller->GetWorld()->LineTraceSingleByChannel(GroundHit, WorldOrigin, TraceEnd, ECC_WorldStatic, QueryParams)
@@ -54,7 +71,7 @@ void USkillLabSkillInputComponent::BeginSkill(const FName SkillId)
 	if (!FSkillLabSkillDefinitionProvider::Resolve(SkillId, Definition)) { UE_LOG(LogTemp, Warning, TEXT("[SkillLabTargeting] Skill %s rejected: definition missing"), *SkillId.ToString()); return; }
 	CancelSkill();
 	if (Definition.TargetShape == ESkillLabTargetShape::Ground) { StartGroundPreview(Definition); return; }
-	APlayerController* Controller = Cast<APlayerController>(GetOwner());
+	APlayerController* Controller = PlayerController.Get();
 	AActor* Target = nullptr; FVector Location = FVector::ZeroVector; FName TargetReason;
 	if (!Controller || !FSkillLabTargetingService::ResolveCursorUnitTarget(*Controller, *Runtime, Definition, Target, Location, TargetReason))
 	{
@@ -70,7 +87,7 @@ void USkillLabSkillInputComponent::StartGroundPreview(const FSkillLabSkillDefini
 	if (!ResolveGroundLocation(Location)) { UE_LOG(LogTemp, Warning, TEXT("[SkillLabTargeting] Skill %s could not project cursor to ground"), *Definition.SkillId.ToString()); return; }
 	PendingSkillId = Definition.SkillId;
 	bTargetingGround = true;
-	const APlayerController* Controller = Cast<APlayerController>(GetOwner());
+	const APlayerController* Controller = PlayerController.Get();
 	TargetingCaster = Controller ? Controller->GetPawn() : nullptr;
 	SetComponentTickEnabled(true);
 	if (UWorld* World = GetWorld())

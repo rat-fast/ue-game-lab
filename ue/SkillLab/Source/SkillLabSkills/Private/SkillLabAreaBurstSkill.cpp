@@ -30,7 +30,7 @@ void USkillLabAreaBurstBehavior::Execute()
 	Complete(Targets.Num() > 0 ? TEXT("AreaHit") : TEXT("AreaEmpty"));
 }
 
-void RegisterSkillLabAreaBurstBehavior(FSkillLabSkillBehaviorRegistry& Registry)
+FSkillLabSkillBehaviorRegistration RegisterSkillLabAreaBurstBehavior()
 {
-	Registry.Register(TEXT("Skill_AreaBurst"), &Configure);
+	return {TEXT("Skill_AreaBurst"), &Configure};
 }

@@ -5,6 +5,8 @@
 #include "SkillLabTestCommandsComponent.generated.h"
 
 class APawn;
+class USkillLabSkillShortcutComponent;
+class USkillLabSkillRuntimeComponent;
 
 /** Optional demo commands. Disabling this component disables setup and all test commands. */
 UCLASS(ClassGroup=(SkillLab), meta=(BlueprintSpawnableComponent))
@@ -14,7 +16,7 @@ class SKILLLAB_API USkillLabTestCommandsComponent : public UActorComponent
 
 public:
 	USkillLabTestCommandsComponent();
-	void InitializeForPawn(APawn* Pawn);
+	void InitializeForPawn(APawn* Pawn, USkillLabSkillShortcutComponent* InShortcuts);
 	void RequestSlot(int32 SlotIndex);
 	void SkillTest();
 	void SkillTestRecover();
@@ -29,4 +31,7 @@ public:
 
 private:
 	APawn* GetControlledPawn() const;
+	TWeakObjectPtr<APawn> ControlledPawn;
+	TWeakObjectPtr<USkillLabSkillShortcutComponent> ShortcutComponent;
+	TWeakObjectPtr<USkillLabSkillRuntimeComponent> SkillRuntime;
 };

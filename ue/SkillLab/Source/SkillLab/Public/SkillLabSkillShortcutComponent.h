@@ -6,6 +6,7 @@
 #include "SkillLabSkillShortcutComponent.generated.h"
 
 class UInputComponent;
+class USkillLabSkillInputComponent;
 
 /** The single source for skill bar ordering, activation keys and HUD labels. */
 USTRUCT(BlueprintType)
@@ -24,7 +25,7 @@ class SKILLLAB_API USkillLabSkillShortcutComponent : public UActorComponent
 
 public:
 	USkillLabSkillShortcutComponent();
-	void BindInput(UInputComponent* Input);
+	void BindInput(UInputComponent* Input, USkillLabSkillInputComponent* InSkillInput);
 	void ActivateSlot(int32 SlotIndex);
 	/** Invalid/duplicate entries are omitted by both input and HUD. */
 	TArray<FSkillLabSkillShortcut> GetShortcuts() const;
@@ -45,4 +46,5 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="SkillLab|Skill Bar") FKey ConfirmKey;
 	UPROPERTY(EditDefaultsOnly, Category="SkillLab|Skill Bar") FKey CancelKey;
 	TWeakObjectPtr<UInputComponent> BoundInput;
+	TWeakObjectPtr<USkillLabSkillInputComponent> SkillInput;
 };

@@ -5,6 +5,8 @@
 #include "SkillLabSkillInputComponent.generated.h"
 
 class ASkillLabSkillFeedbackActor;
+class APlayerController;
+class APawn;
 class USkillLabSkillRuntimeComponent;
 struct FSkillLabSkillDefinition;
 
@@ -15,6 +17,8 @@ class SKILLLAB_API USkillLabSkillInputComponent : public UActorComponent
 
 public:
 	USkillLabSkillInputComponent();
+	void InitializeForPlayer(APlayerController* InController, APawn* InCaster);
+	void ClearPlayerContext();
 	UFUNCTION(BlueprintCallable, Category="SkillLab|Input") void BeginSkill(FName SkillId);
 	UFUNCTION(BlueprintCallable, Category="SkillLab|Input") void ConfirmSkill();
 	UFUNCTION(BlueprintCallable, Category="SkillLab|Input") void CancelSkill();
@@ -33,5 +37,8 @@ private:
 	UPROPERTY(Transient) TObjectPtr<ASkillLabSkillFeedbackActor> PreviewActor;
 	FName PendingSkillId = NAME_None;
 	TWeakObjectPtr<AActor> TargetingCaster;
+	TWeakObjectPtr<APlayerController> PlayerController;
+	TWeakObjectPtr<APawn> Caster;
+	TWeakObjectPtr<USkillLabSkillRuntimeComponent> SkillRuntime;
 	bool bTargetingGround = false;
 };

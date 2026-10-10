@@ -165,6 +165,19 @@ bool FSkillLabSkillDefinitionProvider::Resolve(const FName SkillId, FSkillLabSki
 	return false;
 }
 
+bool FSkillLabSkillDefinitionProvider::ResolvePresentationBinding(const FName SkillId, FSkillLabSkillPresentationBinding& OutBinding)
+{
+	EnsureLoaded();
+	OutBinding = FSkillLabSkillPresentationBinding();
+	if (const FSkillLabSkillDefinition* Found = Definitions.Find(SkillId))
+	{
+		OutBinding.SkillId = Found->SkillId;
+		OutBinding.CastMontage = Found->CastMontage;
+		return true;
+	}
+	return false;
+}
+
 bool FSkillLabSkillDefinitionProvider::ReloadDefinitions()
 {
 	bLoadAttempted = true;

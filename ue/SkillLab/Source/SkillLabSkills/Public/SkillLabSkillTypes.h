@@ -108,5 +108,14 @@ struct SKILLLABSKILLS_API FSkillLabSkillDefinition
 	FSkillLabProjectileParameters ProjectileParameters;
 };
 
+/** Presentation-only binding resolved from a committed skill definition snapshot. */
+USTRUCT(BlueprintType)
+struct SKILLLABSKILLS_API FSkillLabSkillPresentationBinding
+{
+	GENERATED_BODY()
+	UPROPERTY(BlueprintReadOnly) FName SkillId = NAME_None;
+	UPROPERTY(BlueprintReadOnly) TSoftObjectPtr<UAnimMontage> CastMontage;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillLabSkillEventDelegate, const FSkillLabSkillResult&, Event);
 DECLARE_MULTICAST_DELEGATE_OneParam(FSkillLabNativeSkillEvent, const FSkillLabSkillResult&);

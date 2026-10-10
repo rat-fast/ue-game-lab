@@ -11,6 +11,7 @@ class UInputMappingContext;
 class APawn;
 class UNiagaraSystem;
 class USkillLabHUDManagerComponent;
+class USkillLabPlayerInputComponent;
 class USkillLabSkillInputComponent;
 class USkillLabSkillShortcutComponent;
 class USkillLabTestCommandsComponent;
@@ -51,12 +52,6 @@ protected:
 	virtual void OnPossess(APawn* InPawn) override;
 	virtual void OnUnPossess() override;
 
-	void HandlePointerPressed();
-	void HandlePointerReleased();
-	void HandleCameraLook(const FInputActionValue& Value);
-	void HandleCameraZoom(const FInputActionValue& Value);
-	void MoveToCursor();
-
 	UPROPERTY(EditDefaultsOnly, Category = "SkillLab|Input")
 	TObjectPtr<UInputAction> MoveOrRotateAction;
 
@@ -68,9 +63,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "SkillLab|Input")
 	TObjectPtr<UInputMappingContext> DefaultMappingContext;
-
-	UPROPERTY(Transient)
-	TObjectPtr<UInputMappingContext> RuntimeMappingContext;
 
 	UPROPERTY(EditDefaultsOnly, Category = "SkillLab|Input", meta = (ClampMin = "0.0"))
 	float DragThresholdPixels = 6.0f;
@@ -85,6 +77,9 @@ protected:
 	TObjectPtr<USkillLabHUDManagerComponent> HUDManager;
 
 	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USkillLabPlayerInputComponent> InputAdapter;
+
+	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USkillLabSkillInputComponent> SkillInput;
 
 	UPROPERTY(VisibleAnywhere)
@@ -93,7 +88,4 @@ protected:
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USkillLabTestCommandsComponent> TestCommands;
 
-	FVector2D PointerPressPosition = FVector2D::ZeroVector;
-	bool bPointerHeld = false;
-	bool bCameraDragging = false;
 };
