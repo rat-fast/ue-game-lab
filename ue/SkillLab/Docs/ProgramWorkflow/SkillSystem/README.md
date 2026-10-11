@@ -1,21 +1,19 @@
 # SkillSystem 程序工作流
 
-本目录只服务于 SkillLab 的 SkillSystem 实现任务。SkillSystem Agent 不读取其他任务的 `ProgramWorkflow/<任务>/`。
+> 占位入口。旧程序架构、实现交接和验证文档已删除；后续新对话必须先依据当前代码、共享功能基线和当前批次策划重新建立程序产物。
 
-## 固定输入
+## 输入关系
 
-- 项目通用事实：`../../ProjectContext/README.md`，随后读取 `../../ProjectContext/SkillLabCodeArchitecture.md` 和当前涉及的 `../../ProjectContext/Modules/<模块>.md`；
-- SkillSystem 策划规格：`../../Planning/SkillSystem/Skills/`（技能内容）、`../../Planning/SkillSystem/Infrastructure/Batches/`（当前批次实施范围）或 `../../Planning/SkillSystem/Infrastructure/`（公共能力）中与当前任务相关的文档；
-- 当前 SkillSystem 中间产物：本目录内已有的架构基线、专题结论、验证记录；
-- 工作流规则：仓库根目录下 6 个 `ai-program` Skill，由总控统一读取并按职责分发：总控、架构、模块实现、集成、验证、Review。当前实际对应 `ai-program-workflow-orchestrator`、`ai-program-architecture`、`ai-program-module-implementation`、`ai-program-integration`、`ai-program-validation-log` 和 `ai-program-review`。
+- `../../ProjectContext/`：当前代码事实和代码定位；
+- `../../SkillSystem/`：当前共享功能基线；
+- `../../Planning/SkillSystem/`：长期目标、当前批次目标和具体内容设计；
+- `LongTerm/`：长期程序框架；
+- `Batches/<BatchName>/`：某一批次的架构基线、实现交接和 Review 状态。
 
-## 长期产物
+## 读取规则
 
-- `ArchitectureBaseline.md`：SkillSystem 当前统一架构基线和公共接口；
-- `Architecture/`：只对 SkillSystem 有效的专题架构结论；
-- `Validation/`：SkillSystem 编译、运行、PIE 证据和待判断问题。
+不同 Agent 的读取清单由当前架构交接包明确给出。不得扫描整个 `Docs/`，不得恢复旧程序文档中的接口、类名、验证结论或样例假设。
 
-程序任务按职责读取对应策划层即可：基建实现读当前批次目录和 Infrastructure 模块，技能侧实现读 Skills；两者共同依赖本目录的程序接口和项目当前事实。只有接口缺口、公共语义变化或能力覆盖冲突时，才需要跨层协调。
+## 当前状态
 
-一次性子任务上下文、任务拆分和交付通过对话传递，不为每个子任务单独建文档。
-
+尚未建立新的程序架构基线。下一次程序架构对话应从当前真实代码开始，先建立代码文档，再建立当前批次架构放行包。

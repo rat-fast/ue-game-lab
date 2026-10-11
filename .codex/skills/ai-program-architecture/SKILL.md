@@ -18,11 +18,13 @@ description: 为 UE 功能建立或修订程序架构基线、公共接口和职
 默认使用以下相对仓库路径：
 
 - 领域输入：`<UEProjectRoot>/Docs/Planning/<TaskName>/`；
+- 当前共享功能基线：`<UEProjectRoot>/Docs/<DomainName>/`；
 - 当前代码地图：`<UEProjectRoot>/Docs/ProjectContext/`；
-- 全局架构基线：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
-- 专题架构产物：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Architecture/`。
+- 长期程序框架：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/LongTerm/`；
+- 当前批次架构基线：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Batches/<BatchName>/ArchitectureBaseline.md`；
+- 当前批次专题架构产物：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Batches/<BatchName>/Architecture/`。
 
-路径含义固定为：`Planning/` 是项目策划知识，`ProjectContext/` 是项目通用事实，`ProgramWorkflow/<TaskName>/` 是当前任务的程序中间产物。策划目录和程序工作流目录使用同一个任务名。
+路径含义固定为：`Planning/` 是项目策划知识，`ProjectContext/` 是项目当前代码事实，`ProgramWorkflow/<TaskName>/` 是程序中间产物。长期程序框架位于 `LongTerm/`，批次产物位于 `Batches/<BatchName>/`；批次名称与策划批次对应。
 
 专题任务的上下文和任务要求由总控直接在对话中传递。架构 Agent 的冻结结论、公共接口和实现交接包必须写入或更新当前任务的架构基线/专题文档；临时讨论、候选方案和未决问题可以留在交付对话中，除非它们会影响后续 Agent 的判断。
 ## 必须读取
@@ -31,7 +33,8 @@ description: 为 UE 功能建立或修订程序架构基线、公共接口和职
 
 - 当前架构任务和用户目标；
 - `<UEProjectRoot>/Docs/ProjectContext/` 中的项目入口、代码地图和相关模块文档；
-- 当前任务的 `<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/README.md`（如果存在）、架构基线和总控指定的专题结论；
+- `<UEProjectRoot>/Docs/<DomainName>/` 中与当前架构直接相关的共享功能基线；
+- 当前任务的 `<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/README.md`、长期程序框架、当前批次架构基线和总控指定的专题结论；
 - `<UEProjectRoot>/Docs/Planning/<TaskName>/README.md` 及与任务直接相关的模块/公共契约文档；
 - 总控上下文包列出的真实代码、配置或资产入口。
 
@@ -85,11 +88,13 @@ description: 为 UE 功能建立或修订程序架构基线、公共接口和职
 - 每条要求的验证方式和验收边界；
 - 允许的临时适配、替换条件、未决问题和必须回交的事项。
 
+实现包还必须明确三类读取边界：实现 Agent 必须读取的文档；只有遇到指定依赖时才读取的文档；本切片禁止默认读取的文档或目录。缺少这三类边界时，架构交付不算完成。
+
 实现包未列出的源码、配置、资产和其他任务文档，不得作为实现 Agent 的默认上下文。若实现中发现交接包缺少事实或落点，先回交总控或架构 Agent，再扩大读取范围。
 
 ## 交付
 
-按共享 `ai-native-programming` 的分层规则组织产物：`ArchitectureBaseline.md` 保留本阶段范围、公共约束、状态和专题索引；可独立交接的模块或专题放在当前任务 `Architecture/` 下；未来候选单独标识并按需读取。不预建固定数量的文件，不把实施偏离直接改写为允许项。交付时指出各任务必读的基线章节和对应专题，而非要求所有实现对话读取所有架构材料。
+按共享 `ai-native-programming` 的分层规则组织产物：长期可复用的程序框架放在 `LongTerm/`；`ArchitectureBaseline.md` 只保留当前批次范围、公共约束、状态和专题索引；可独立交接的专题放在当前批次 `Architecture/` 下；未来候选单独标识并按需读取。不预建固定数量的文件，不把实施偏离直接改写为允许项。交付时指出各任务必读的基线章节和对应专题，而非要求所有实现对话读取所有架构材料。
 
 架构 Agent 在实现开始前必须交付一个完整的放行包，至少包括：当前冻结的架构基线；公共接口和不变量；实现约束清单；正式入口与测试入口边界；配置/内容权威来源；未决问题和禁止实现 Agent 自行决定的事项。放行包必须附带当前任务必须满足的接口、生命周期、配置边界、Blueprint 边界和验收行为，以及允许的临时适配、适用范围和替换条件。没有这份放行包或实现交接包，实现 Agent 不应开始修改代码。
 

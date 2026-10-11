@@ -1,0 +1,4 @@
+interface:
+  display_name: "SkillLab Baseline Agent"
+  short_description: "整理和审查共享业务基线"
+  default_prompt: "整理或审查一个领域的当前共享业务基线，严格区分已确认业务语义、实现/验证事实和当前限制。"

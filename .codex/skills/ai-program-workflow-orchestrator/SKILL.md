@@ -46,15 +46,17 @@ description: 协调大型 UE 功能的多对话程序实现；读取最小必要
 以下路径相对仓库根目录。`<UEProjectRoot>` 表示当前 UE 项目目录（例如 `ue/<ProjectName>/`），由总控根据项目入口具体替换：
 
 - 项目入口和总体代码地图：`<UEProjectRoot>/Docs/README.md`、`<UEProjectRoot>/Docs/ProjectContext/`；
+- 当前共享功能基线：`<UEProjectRoot>/Docs/<DomainName>/`；
 - 策划和领域规格：`<UEProjectRoot>/Docs/Planning/<TaskName>/`；
 - 程序工作流任务根目录：`<UEProjectRoot>/Docs/ProgramWorkflow/`；每个具体任务必须使用自己的同级目录 `<TaskName>/`；
-- 当前架构基线：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
-- 专题架构结论：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Architecture/`；
-- 阶段 Review 结论：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Review/`；
-- 验证记录：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Validation/`；
+- 长期程序框架：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/LongTerm/`；
+- 当前批次架构基线：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Batches/<BatchName>/ArchitectureBaseline.md`；
+- 当前批次专题架构：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Batches/<BatchName>/Architecture/`；
+- 当前批次实现交接：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Batches/<BatchName>/Implementation/`；
+- 当前批次 Review 状态：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Batches/<BatchName>/Review/`；验证事实由实现交接记录，不设独立验证目录。
 - 任务状态、上下文包和子 Agent 交付默认通过对话传递，不为每个子任务新建文档；只有需要跨对话长期复用的结论才写入上述目录。
 
-当前功能的长期产物限定在 `<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/`，包括 `ArchitectureBaseline.md`、`Architecture/`、可按阶段需要建立的 `Review/` 和 `Validation/`。`<TaskName>` 必须与 `Planning/<TaskName>/` 的任务名一致；具体项目和任务名不在本通用 Skill 中写死。
+当前功能的长期产物限定在 `<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/`，包括 `LongTerm/` 和按批次建立的 `Batches/<BatchName>/`。批次目录按需包含 `ArchitectureBaseline.md`、`Architecture/`、`Implementation/` 和 `Review/`，不设独立验证目录。`<TaskName>` 与 `<BatchName>` 必须和策划侧对应目录一致；具体项目和任务名不在本通用 Skill 中写死。
 ## 必须读取的通用上下文
 
 每次启动总控时必须确认：
@@ -64,18 +66,19 @@ description: 协调大型 UE 功能的多对话程序实现；读取最小必要
 - 仓库 `AGENTS.md` 及适用的项目入口 Skill；
 - 项目文档入口、代码架构地图和当前实现状态；
 - 当前任务已有的架构基线、公共接口约定和交接记录（如果存在）；
-- 四个程序职责 Skill 的职责和交付约定：总控、架构、实现、Review。接入和验证执行属于实现切片，验证判断属于 Review。
+- 四个程序职责 Skill 的职责和交付约定：总控、架构、实现、Review。接入和事实验证属于实现切片，验证判断属于 Review。
 
-总控启动时按以下顺序建立上下文，不把三个文档区域混为一体：
+总控启动时按以下顺序建立上下文，不把项目代码文档、共享功能基线、策划文档和程序交接混为一体：
 
 1. 仓库根 `AGENTS.md`；
 2. `.codex/skills/ue-project-context/SKILL.md`，并按其路由读取项目入口；
 3. `.codex/skills/ai-native-programming/SKILL.md`；
 4. 当前项目的 `ProjectContext/README.md`、代码架构地图和相关模块文档；
-5. 当前任务入口、架构基线和总控指定的策划文档；
-6. 总控上下文包列出的源码、配置、资产和运行入口。
+5. 当前领域共享功能基线的入口和与任务相关的正文；
+6. 当前任务入口、架构基线和总控指定的策划文档；
+7. 总控上下文包列出的源码、配置、资产和运行入口。
 
-其中第 4 项是项目通用上下文，第 5 项是当前任务策划知识，第 6 项是当前任务程序中间产物。不得把具体项目或任务路径写入通用 Skill 规则，也不得读取其他任务目录。
+其中第 4 项是项目代码事实，第 5 项是当前共享业务语义，第 6 项是当前任务策划知识，第 7 项是当前任务程序中间产物。不得把具体项目或任务路径写入通用 Skill 规则，也不得读取其他任务目录。
 
 总控需要知道其他 Skill 能做什么、需要什么输入、会交付什么，但不需要把其他 Skill 的全部业务文档内容复制进自己的上下文。
 
@@ -108,7 +111,7 @@ description: 协调大型 UE 功能的多对话程序实现；读取最小必要
 
 创建时使用当前项目本地环境，不创建 worktree。后续交付必须回到已创建的任务对话，不能用总控内部的一次临时调用代替新对话。
 
-上下文包必须把文档路径写成可直接打开的路径：通用项目文档来自 `ProjectContext/`，当前任务策划来自 `Planning/<TaskName>/`，当前任务交接来自 `ProgramWorkflow/<TaskName>/`。总控不要求新对话自行扫描 `Docs/` 或猜测任务目录；创建后通过该对话继续补充上下文并接收交付。
+上下文包必须把文档路径写成可直接打开的路径：项目代码文档来自 `ProjectContext/`，共享功能基线来自 `<DomainName>/`，当前任务策划来自 `Planning/<TaskName>/`，当前批次交接来自 `ProgramWorkflow/<TaskName>/Batches/<BatchName>/`。总控不要求新对话自行扫描 `Docs/` 或猜测任务目录；创建后通过该对话继续补充上下文并接收交付。
 
 上游文档和架构基线属于“必须给到”的材料；与当前任务无直接关系的模块文档、历史对话和全部源码属于“不要默认给到”的材料。总控根据任务进度补充新的按需材料，不让子 Agent 自行猜测缺失上下文。
 

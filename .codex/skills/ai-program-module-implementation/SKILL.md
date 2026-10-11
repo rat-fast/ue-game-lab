@@ -18,19 +18,22 @@ description: 在已有架构基线和模块约定下，实现一个边界明确�
 默认使用以下相对仓库路径：
 
 - 领域规格：`<UEProjectRoot>/Docs/Planning/<TaskName>/` 中与当前模块对应的文档；
-- 架构基线：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/ArchitectureBaseline.md`；
-- 相关专题结论：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Architecture/`；
+- 当前共享功能基线：`<UEProjectRoot>/Docs/<DomainName>/` 中由交接包指定的正文；
+- 长期程序框架：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/LongTerm/` 中与当前任务相关的文档；
+- 当前批次架构基线：`<UEProjectRoot>/Docs/ProgramWorkflow/<TaskName>/Batches/<BatchName>/ArchitectureBaseline.md`；
+- 相关专题结论：当前批次目录下的 `Architecture/`；
 - 实际实现：`<UEProjectRoot>/Source/`、`<UEProjectRoot>/Config/` 和任务明确授权的 `<UEProjectRoot>/Content/` 资产。
 
-`<TaskName>` 是当前功能名，策划目录和程序工作流目录必须使用同一个任务名。`Planning/<TaskName>/`、`ProjectContext/` 和 `ProgramWorkflow/<TaskName>/` 分别表示策划知识、项目通用事实和当前任务交接；它们不是同一类上下文。
+`<TaskName>` 是当前功能名，`<BatchName>` 是当前批次名。`Planning/<TaskName>/`、`ProjectContext/` 和 `ProgramWorkflow/<TaskName>/Batches/<BatchName>/` 分别表示策划知识、项目当前代码事实和当前批次程序交接；它们不是同一类上下文。
 
-任务上下文包和本次交付默认通过对话传递。只要本次交付要交给 Review 或后续 Agent，架构符合性对应表和实现交接摘要必须进入当前任务已有的交接文档或总控明确维护的上下文包；不为每个小修复重复创建文档。若本次实现改变公共接口、生命周期、配置边界、正式入口或下游读取所需的实现事实，必须更新当前任务已有的实现交接文档；局部且不影响后续判断的修复可以只通过对话交付。
+任务上下文包和本次交付默认通过对话传递。只要本次交付要交给 Review 或后续 Agent，架构符合性对应表和实现交接摘要必须进入当前批次 `Implementation/` 下已有的交接文档或总控明确维护的上下文包；不为每个小修复重复创建文档。若本次实现改变公共接口、生命周期、配置边界、正式入口或下游读取所需的实现事实，必须更新当前批次已有的实现交接文档；局部且不影响后续判断的修复可以只通过对话交付。
 ## 必须读取
 
 - `.codex/skills/ai-native-programming/SKILL.md` 中与当前任务相关的程序约束；
 
 - 总控给出的任务上下文包和架构 Agent 的实现交接包；
 - 交接包指定的架构基线章节、项目文档和策划文档；
+- 交接包指定的共享功能基线正文；
 - 交接包列出的源码、配置、资产入口和验证入口；
 - 直接依赖的上游交付摘要。
 
@@ -41,6 +44,7 @@ description: 在已有架构基线和模块约定下，实现一个边界明确�
 
 不要默认读取全部策划文档、全部源码、无关模块或其他任务。交接包没有给出代码落点、验证方式或允许的临时适配时，先停止并回交总控，不得通过扩大扫描自行补齐方案。
 不要读取其他任务的 `ProgramWorkflow/<OtherTask>/`。
+只读取交接包列出的必读文档；按需文档必须先满足触发条件再读取；禁止读取项不得为了寻找捷径而扫描。
 
 ## 工作
 
@@ -73,7 +77,7 @@ description: 在已有架构基线和模块约定下，实现一个边界明确�
 
 ## 交付
 
-返回：实现范围、实际读取的交接包和入口、修改产物、公共接口变化、采用的假设、未实现范围、事实验证入口、已知问题、需要用户判断的问题、项目代码文档影响判断（是否改变模块职责、代码地图、运行入口、配置/资产入口、功能映射或验证方式及其依据），以及实现交接文档是否已更新。实现 Agent 不在 Review 放行前自行更新项目代码文档。
+返回：实现范围、实际读取的交接包和入口、修改产物、公共接口变化、采用的假设、未实现范围、事实验证入口、结果摘要、已知问题、需要用户判断的问题、项目代码文档影响判断（是否改变模块职责、代码地图、运行入口、配置/资产入口、功能映射或验证方式及其依据），以及实现交接文档是否已更新。实现 Agent 不在 Review 放行前自行更新项目代码文档；不复制原始编译日志或完整运行日志。
 
 
 
