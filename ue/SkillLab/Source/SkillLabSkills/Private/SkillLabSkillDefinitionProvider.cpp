@@ -2,6 +2,8 @@
 
 #include "Dom/JsonObject.h"
 #include "GameplayTagContainer.h"
+#include "Animation/AnimMontage.h"
+#include "Animation/AnimSequence.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 #include "Serialization/JsonReader.h"
@@ -37,7 +39,8 @@ namespace
 		if (!Json.IsValid()) return Fail(OutError, TEXT("skill entry must be an object"));
 		static const TSet<FString> KnownFields = {
 			TEXT("id"), TEXT("cost"), TEXT("cooldown"), TEXT("magnitude"), TEXT("powerCoefficient"),
-			TEXT("windup"), TEXT("active"), TEXT("recovery"), TEXT("duration"), TEXT("period"), TEXT("blockedBy")
+			TEXT("windup"), TEXT("active"), TEXT("recovery"), TEXT("duration"), TEXT("period"), TEXT("blockedBy"),
+			TEXT("castMontage"), TEXT("castAnimation")
 		};
 		for (const TPair<FString, TSharedPtr<FJsonValue>>& Field : Json->Values)
 			if (!KnownFields.Contains(Field.Key)) return Fail(OutError, FString::Printf(TEXT("unknown skill field '%s'"), *Field.Key));
@@ -48,6 +51,24 @@ namespace
 			return Fail(OutError, TEXT("id must be a nonempty string without surrounding whitespace"));
 		Out.SkillId = FName(*Id);
 		if (Out.SkillId.IsNone()) return Fail(OutError, TEXT("id cannot be None"));
+		const TSharedPtr<FJsonValue> MontageValue = Json->TryGetField(TEXT("castMontage"));
+		if (MontageValue.IsValid())
+		{
+			FString AssetPath;
+			if (MontageValue->Type != EJson::String || !MontageValue->TryGetString(AssetPath) || AssetPath.IsEmpty())
+				return Fail(OutError, TEXT("castMontage must be a nonempty soft asset path"));
+			Out.CastMontage = TSoftObjectPtr<UAnimMontage>(FSoftObjectPath(AssetPath));
+		}
+		const TSharedPtr<FJsonValue> AnimationValue = Json->TryGetField(TEXT("castAnimation"));
+		if (AnimationValue.IsValid())
+		{
+			FString AssetPath;
+			if (AnimationValue->Type != EJson::String || !AnimationValue->TryGetString(AssetPath) || AssetPath.IsEmpty())
+				return Fail(OutError, TEXT("castAnimation must be a nonempty soft asset path"));
+			Out.CastAnimation = TSoftObjectPtr<UAnimSequence>(FSoftObjectPath(AssetPath));
+		}
+		if (Out.CastMontage.IsValid() && Out.CastAnimation.IsValid())
+			return Fail(OutError, TEXT("castMontage and castAnimation are mutually exclusive"));
 		// Behavior and targeting are owned by skill code. The text source overrides only content values.
 		if (!FSkillLabSkillBehaviorRegistry::Apply(Out.SkillId, Out)) return Fail(OutError, TEXT("no C++ behavior registered for this id"));
 		if (!ReadNumber(*Json, TEXT("cost"), Out.Cost, true, OutError) || !ReadNumber(*Json, TEXT("cooldown"), Out.Cooldown, true, OutError)
@@ -173,6 +194,7 @@ bool FSkillLabSkillDefinitionProvider::ResolvePresentationBinding(const FName Sk
 	{
 		OutBinding.SkillId = Found->SkillId;
 		OutBinding.CastMontage = Found->CastMontage;
+		OutBinding.CastAnimation = Found->CastAnimation;
 		return true;
 	}
 	return false;

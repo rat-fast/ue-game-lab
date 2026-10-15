@@ -8,6 +8,7 @@
 class UGameplayAbility;
 class USkillLabSkillBehavior;
 class UAnimMontage;
+class UAnimSequence;
 
 UENUM(BlueprintType)
 enum class ESkillLabTargetShape : uint8 { Self, Unit, Ground };
@@ -100,6 +101,7 @@ struct SKILLLABSKILLS_API FSkillLabSkillDefinition
 	UPROPERTY(BlueprintReadOnly) FGameplayTag ReleaseEventTag;
 	UPROPERTY(BlueprintReadOnly) FGameplayTagContainer BehaviorEventTags;
 	UPROPERTY(BlueprintReadOnly) TSoftObjectPtr<UAnimMontage> CastMontage;
+	UPROPERTY(BlueprintReadOnly) TSoftObjectPtr<UAnimSequence> CastAnimation;
 	UPROPERTY(BlueprintReadOnly) float ReleaseEventTimeout = 3.0f;
 	UPROPERTY(BlueprintReadOnly) float PowerCoefficient = 0.0f;
 	UPROPERTY(BlueprintReadOnly) FGameplayTagContainer BlockedByTags;
@@ -115,6 +117,7 @@ struct SKILLLABSKILLS_API FSkillLabSkillPresentationBinding
 	GENERATED_BODY()
 	UPROPERTY(BlueprintReadOnly) FName SkillId = NAME_None;
 	UPROPERTY(BlueprintReadOnly) TSoftObjectPtr<UAnimMontage> CastMontage;
+	UPROPERTY(BlueprintReadOnly) TSoftObjectPtr<UAnimSequence> CastAnimation;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSkillLabSkillEventDelegate, const FSkillLabSkillResult&, Event);

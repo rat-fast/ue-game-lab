@@ -34,9 +34,16 @@ TArray<FSkillLabSkillShortcut> USkillLabSkillShortcutComponent::GetShortcuts() c
 
 void USkillLabSkillShortcutComponent::BindInput(UInputComponent* Input, USkillLabSkillInputComponent* InSkillInput)
 {
-	SkillInput = InSkillInput;
-	if (!Input || BoundInput.Get() == Input) return;
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] BindInput owner=%s input=%s skillInput=%s existingInput=%s"),
+		*GetNameSafe(GetOwner()), *GetNameSafe(Input), *GetNameSafe(InSkillInput), *GetNameSafe(BoundInput.Get()));
+	if (!Input || BoundInput.Get() == Input)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SkillLabInput] BindInput skipped: input=%s existingInput=%s"),
+			*GetNameSafe(Input), *GetNameSafe(BoundInput.Get()));
+		return;
+	}
 	UnbindInput();
+	SkillInput = InSkillInput;
 	BoundInput = Input;
 	const TArray<FSkillLabSkillShortcut> ValidShortcuts = GetShortcuts();
 	if (ValidShortcuts.Num() != Shortcuts.Num())
@@ -46,9 +53,12 @@ void USkillLabSkillShortcutComponent::BindInput(UInputComponent* Input, USkillLa
 	for (const FSkillLabSkillShortcut& Shortcut : ValidShortcuts)
 	{
 		Input->BindKey(Shortcut.Key, IE_Pressed, this, &USkillLabSkillShortcutComponent::HandleShortcutPressed);
+		UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] Bound key=%s skill=%s"), *Shortcut.Key.ToString(), *Shortcut.SkillId.ToString());
 	}
 	if (ConfirmKey.IsValid()) Input->BindKey(ConfirmKey, IE_Pressed, this, &USkillLabSkillShortcutComponent::ConfirmTarget);
 	if (CancelKey.IsValid() && CancelKey != ConfirmKey) Input->BindKey(CancelKey, IE_Pressed, this, &USkillLabSkillShortcutComponent::CancelTarget);
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] Binding complete count=%d confirm=%s cancel=%s totalKeyBindings=%d"),
+		ValidShortcuts.Num(), *ConfirmKey.ToString(), *CancelKey.ToString(), Input->KeyBindings.Num());
 }
 
 void USkillLabSkillShortcutComponent::UnbindInput()
@@ -73,24 +83,35 @@ void USkillLabSkillShortcutComponent::EndPlay(const EEndPlayReason::Type EndPlay
 void USkillLabSkillShortcutComponent::ActivateSlot(const int32 SlotIndex)
 {
 	const TArray<FSkillLabSkillShortcut> Slots = GetShortcuts();
-	if (SkillInput.IsValid() && Slots.IsValidIndex(SlotIndex)) SkillInput->BeginSkill(Slots[SlotIndex].SkillId);
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] ActivateSlot index=%d slots=%d skillInput=%s"),
+		SlotIndex, Slots.Num(), *GetNameSafe(SkillInput.Get()));
+	if (SkillInput.IsValid() && Slots.IsValidIndex(SlotIndex))
+	{
+		UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] BeginSkill skill=%s from slot=%d"), *Slots[SlotIndex].SkillId.ToString(), SlotIndex);
+		SkillInput->BeginSkill(Slots[SlotIndex].SkillId);
+	}
 }
 
 void USkillLabSkillShortcutComponent::HandleShortcutPressed(const FKey Key)
 {
 	const TArray<FSkillLabSkillShortcut> Slots = GetShortcuts();
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] KeyPressed key=%s slots=%d skillInput=%s"),
+		*Key.ToString(), Slots.Num(), *GetNameSafe(SkillInput.Get()));
 	for (int32 Index = 0; Index < Slots.Num(); ++Index)
 	{
 		if (Slots[Index].Key == Key) { ActivateSlot(Index); return; }
 	}
+	UE_LOG(LogTemp, Warning, TEXT("[SkillLabInput] KeyPressed had no matching shortcut key=%s"), *Key.ToString());
 }
 
 void USkillLabSkillShortcutComponent::ConfirmTarget()
 {
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] ConfirmPressed skillInput=%s"), *GetNameSafe(SkillInput.Get()));
 	if (SkillInput.IsValid()) SkillInput->ConfirmSkill();
 }
 
 void USkillLabSkillShortcutComponent::CancelTarget()
 {
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] CancelPressed skillInput=%s"), *GetNameSafe(SkillInput.Get()));
 	if (SkillInput.IsValid()) SkillInput->CancelSkill();
 }

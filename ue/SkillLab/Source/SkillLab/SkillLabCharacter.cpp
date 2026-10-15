@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Animation/AnimInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -13,6 +14,7 @@
 #include "SkillLabSkillRuntimeComponent.h"
 #include "SkillLabSkillAnimationComponent.h"
 #include "AbilitySystemComponent.h"
+#include "UObject/UnrealType.h"
 
 ASkillLabCharacter::ASkillLabCharacter()
 {
@@ -41,6 +43,86 @@ ASkillLabCharacter::ASkillLabCharacter()
 	SkillAbilitySystemComponent = CreateDefaultSubobject<USkillLabAbilitySystemComponent>(TEXT("SkillAbilitySystem"));
 	SkillComponent = CreateDefaultSubobject<USkillLabSkillRuntimeComponent>(TEXT("SkillComponent"));
 	SkillAnimationComponent = CreateDefaultSubobject<USkillLabSkillAnimationComponent>(TEXT("SkillAnimation"));
+}
+
+void ASkillLabCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	// The Blueprint still owns these legacy placeholder meshes for the training
+	// scene. They must not obscure the real skeletal character at runtime.
+	static const FName PlaceholderNames[] =
+	{
+		TEXT("VisualCapsuleCore"),
+		TEXT("VisualCapsuleTop"),
+		TEXT("VisualCapsuleBottom")
+	};
+
+	TArray<UStaticMeshComponent*> StaticMeshes;
+	GetComponents<UStaticMeshComponent>(StaticMeshes);
+	for (UStaticMeshComponent* Component : StaticMeshes)
+	{
+		if (!Component)
+		{
+			continue;
+		}
+
+		for (const FName& PlaceholderName : PlaceholderNames)
+		{
+			if (Component->GetFName() == PlaceholderName)
+			{
+				Component->SetVisibility(false, true);
+				Component->SetHiddenInGame(true);
+				Component->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				break;
+			}
+		}
+	}
+}
+
+void ASkillLabCharacter::Tick(const float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	// ABP_Unarmed contains the locomotion state machine, but its generated
+	// update graph can lose the pawn reference when the source character class
+	// is migrated between projects. Feed the same public variables from the
+	// native character so navigation movement always reaches the blend space.
+	USkeletalMeshComponent* CharacterMesh = GetMesh();
+	UAnimInstance* AnimInstance = CharacterMesh ? CharacterMesh->GetAnimInstance() : nullptr;
+	if (!AnimInstance || !GetCharacterMovement())
+	{
+		return;
+	}
+
+	const FVector HorizontalVelocity = FVector(GetCharacterMovement()->Velocity.X, GetCharacterMovement()->Velocity.Y, 0.0f);
+	const float GroundSpeed = HorizontalVelocity.Size();
+	const FVector Forward = GetActorForwardVector();
+	const FVector Right = GetActorRightVector();
+	const float Direction = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(HorizontalVelocity, Right), FVector::DotProduct(HorizontalVelocity, Forward)));
+	const bool bShouldMove = GroundSpeed > 3.0f;
+
+	const FName FloatNames[] = {TEXT("Speed"), TEXT("GroundSpeed"), TEXT("Direction")};
+	const float FloatValues[] = {GroundSpeed, GroundSpeed, Direction};
+	for (int32 Index = 0; Index < UE_ARRAY_COUNT(FloatNames); ++Index)
+	{
+		if (FFloatProperty* Property = FindFProperty<FFloatProperty>(AnimInstance->GetClass(), FloatNames[Index]))
+		{
+			Property->SetPropertyValue_InContainer(AnimInstance, FloatValues[Index]);
+		}
+	}
+	if (FBoolProperty* Property = FindFProperty<FBoolProperty>(AnimInstance->GetClass(), TEXT("ShouldMove")))
+	{
+		Property->SetPropertyValue_InContainer(AnimInstance, bShouldMove);
+	}
+
+	if (FMath::Abs(GroundSpeed - LastAnimationSpeed) > 30.0f || bShouldMove != bLastAnimationShouldMove)
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("[SkillLabAnimation] Mesh=%s Speed=%.1f Direction=%.1f ShouldMove=%s AnimClass=%s"),
+			*GetNameSafe(CharacterMesh), GroundSpeed, Direction, bShouldMove ? TEXT("true") : TEXT("false"),
+			*GetNameSafe(AnimInstance->GetClass()));
+		LastAnimationSpeed = GroundSpeed;
+		bLastAnimationShouldMove = bShouldMove;
+	}
 }
 
 UAbilitySystemComponent* ASkillLabCharacter::GetAbilitySystemComponent() const

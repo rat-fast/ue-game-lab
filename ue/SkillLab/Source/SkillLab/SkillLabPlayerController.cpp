@@ -50,6 +50,8 @@ void ASkillLabPlayerController::SkillReloadDefinitions()
 void ASkillLabPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] PlayerController BeginPlay controller=%s pawn=%s input=%s"),
+		*GetNameSafe(this), *GetNameSafe(GetPawn()), *GetNameSafe(InputComponent));
 	if (SkillInput) SkillInput->InitializeForPlayer(this, GetPawn());
 	if (TestCommands) TestCommands->InitializeForPawn(GetPawn(), SkillShortcuts);
 
@@ -69,6 +71,8 @@ void ASkillLabPlayerController::BeginPlay()
 void ASkillLabPlayerController::SetupInputComponent()
 {
 	Super::SetupInputComponent();
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] SetupInputComponent controller=%s input=%s"),
+		*GetNameSafe(this), *GetNameSafe(InputComponent));
 
 	if (InputAdapter)
 	{
@@ -79,6 +83,7 @@ void ASkillLabPlayerController::SetupInputComponent()
 	if (InputComponent)
 	{
 		if (SkillShortcuts) SkillShortcuts->BindInput(InputComponent, SkillInput);
+		UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] SetupInputComponent complete keyBindings=%d"), InputComponent->KeyBindings.Num());
 	}
 }
 

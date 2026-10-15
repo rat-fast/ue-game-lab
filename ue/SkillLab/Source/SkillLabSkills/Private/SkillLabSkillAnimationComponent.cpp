@@ -2,6 +2,7 @@
 
 #include "Animation/AnimInstance.h"
 #include "Animation/AnimMontage.h"
+#include "Animation/AnimSequence.h"
 #include "Animation/AnimNotifyQueue.h"
 #include "Animation/ActiveMontageInstanceScope.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -78,7 +79,14 @@ bool USkillLabSkillAnimationComponent::PlayCastMontage(const FSkillLabSkillResul
 	ActiveMontage = Binding.CastMontage.LoadSynchronous();
 	if (!ActiveMontage)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("[SkillLabAnimation] Cast=%d Skill=%s has no CastMontage; animation timing is not connected"),
+		if (UAnimSequence* CastAnimation = Binding.CastAnimation.LoadSynchronous())
+		{
+			ActiveMontage = UAnimMontage::CreateSlotAnimationAsDynamicMontage(CastAnimation, TEXT("DefaultSlot"), 0.08f, 0.12f, 1.0f);
+		}
+	}
+	if (!ActiveMontage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SkillLabAnimation] Cast=%d Skill=%s has no usable CastMontage or CastAnimation; animation timing is not connected"),
 			Result.CastId, *Result.SkillId.ToString());
 		ActiveCastId = 0;
 		ActiveMontageInstanceId = INDEX_NONE;
@@ -123,6 +131,8 @@ bool USkillLabSkillAnimationComponent::PlayCastMontage(const FSkillLabSkillResul
 	// the new cast identity during the handoff.
 	ActiveCastId = Result.CastId;
 	ActiveMontageInstanceId = MontageInstance->GetInstanceID();
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabAnimation] Cast=%d Skill=%s playing Montage=%s Slot=DefaultSlot"),
+		Result.CastId, *Result.SkillId.ToString(), *ActiveMontage->GetName());
 	return true;
 }
 

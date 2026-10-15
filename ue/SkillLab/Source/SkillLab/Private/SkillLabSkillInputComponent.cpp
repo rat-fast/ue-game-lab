@@ -24,6 +24,8 @@ void USkillLabSkillInputComponent::InitializeForPlayer(APlayerController* InCont
 	PlayerController = InController;
 	Caster = InCaster;
 	SkillRuntime = InCaster ? InCaster->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] InitializeForPlayer controller=%s caster=%s runtime=%s"),
+		*GetNameSafe(InController), *GetNameSafe(InCaster), *GetNameSafe(SkillRuntime.Get()));
 }
 
 void USkillLabSkillInputComponent::ClearPlayerContext()
@@ -65,6 +67,8 @@ bool USkillLabSkillInputComponent::ResolveGroundLocation(FVector& OutLocation) c
 
 void USkillLabSkillInputComponent::BeginSkill(const FName SkillId)
 {
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabTargeting] BeginSkill requested skill=%s controller=%s caster=%s runtime=%s"),
+		*SkillId.ToString(), *GetNameSafe(PlayerController.Get()), *GetNameSafe(Caster.Get()), *GetNameSafe(SkillRuntime.Get()));
 	USkillLabSkillRuntimeComponent* Runtime = nullptr;
 	if (!ResolveCasterAndRuntime(Runtime)) { UE_LOG(LogTemp, Warning, TEXT("[SkillLabTargeting] Skill %s rejected: missing caster runtime"), *SkillId.ToString()); return; }
 	FSkillLabSkillDefinition Definition;
