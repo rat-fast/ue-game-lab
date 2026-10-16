@@ -5,7 +5,6 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Animation/AnimInstance.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -14,12 +13,9 @@
 #include "SkillLabSkillRuntimeComponent.h"
 #include "SkillLabSkillAnimationComponent.h"
 #include "AbilitySystemComponent.h"
-#include "UObject/UnrealType.h"
 
 ASkillLabCharacter::ASkillLabCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
 	GetCharacterMovement()->MaxWalkSpeed = 600.0f;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 	bUseControllerRotationYaw = false;
@@ -76,52 +72,6 @@ void ASkillLabCharacter::BeginPlay()
 				break;
 			}
 		}
-	}
-}
-
-void ASkillLabCharacter::Tick(const float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-
-	// ABP_Unarmed contains the locomotion state machine, but its generated
-	// update graph can lose the pawn reference when the source character class
-	// is migrated between projects. Feed the same public variables from the
-	// native character so navigation movement always reaches the blend space.
-	USkeletalMeshComponent* CharacterMesh = GetMesh();
-	UAnimInstance* AnimInstance = CharacterMesh ? CharacterMesh->GetAnimInstance() : nullptr;
-	if (!AnimInstance || !GetCharacterMovement())
-	{
-		return;
-	}
-
-	const FVector HorizontalVelocity = FVector(GetCharacterMovement()->Velocity.X, GetCharacterMovement()->Velocity.Y, 0.0f);
-	const float GroundSpeed = HorizontalVelocity.Size();
-	const FVector Forward = GetActorForwardVector();
-	const FVector Right = GetActorRightVector();
-	const float Direction = FMath::RadiansToDegrees(FMath::Atan2(FVector::DotProduct(HorizontalVelocity, Right), FVector::DotProduct(HorizontalVelocity, Forward)));
-	const bool bShouldMove = GroundSpeed > 3.0f;
-
-	const FName FloatNames[] = {TEXT("Speed"), TEXT("GroundSpeed"), TEXT("Direction")};
-	const float FloatValues[] = {GroundSpeed, GroundSpeed, Direction};
-	for (int32 Index = 0; Index < UE_ARRAY_COUNT(FloatNames); ++Index)
-	{
-		if (FFloatProperty* Property = FindFProperty<FFloatProperty>(AnimInstance->GetClass(), FloatNames[Index]))
-		{
-			Property->SetPropertyValue_InContainer(AnimInstance, FloatValues[Index]);
-		}
-	}
-	if (FBoolProperty* Property = FindFProperty<FBoolProperty>(AnimInstance->GetClass(), TEXT("ShouldMove")))
-	{
-		Property->SetPropertyValue_InContainer(AnimInstance, bShouldMove);
-	}
-
-	if (FMath::Abs(GroundSpeed - LastAnimationSpeed) > 30.0f || bShouldMove != bLastAnimationShouldMove)
-	{
-		UE_LOG(LogTemp, Verbose, TEXT("[SkillLabAnimation] Mesh=%s Speed=%.1f Direction=%.1f ShouldMove=%s AnimClass=%s"),
-			*GetNameSafe(CharacterMesh), GroundSpeed, Direction, bShouldMove ? TEXT("true") : TEXT("false"),
-			*GetNameSafe(AnimInstance->GetClass()));
-		LastAnimationSpeed = GroundSpeed;
-		bLastAnimationShouldMove = bShouldMove;
 	}
 }
 

@@ -15,7 +15,6 @@ class SKILLLAB_API ASkillLabCharacter : public ACharacter, public IAbilitySystem
 public:
 	ASkillLabCharacter();
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
 	virtual class UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 	void AddCameraZoomInput(float Value);
 	void AddCameraRotationInput(const FVector2D& Value);
@@ -46,8 +45,5 @@ protected:
 
 	UPROPERTY(Transient)
 	TObjectPtr<class UStaticMeshComponent> TrainingDummyHead;
-
-	float LastAnimationSpeed = -1.0f;
-	bool bLastAnimationShouldMove = false;
 
 };
