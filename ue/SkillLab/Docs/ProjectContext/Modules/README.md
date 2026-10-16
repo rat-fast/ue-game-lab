@@ -6,3 +6,4 @@
 - [SkillLabGAS 战斗属性与效果](SkillLabGAS.md)：ASC、属性集、即时效果、持续伤害和纯结算测试。
 - [PlayerInteraction 玩家交互与 HUD](PlayerInteraction.md)：角色、控制器、Enhanced Input、技能选点、快捷键和 HUD。
 - [TestAndVerification 测试入口与验证](TestAndVerification.md)：训练场、Exec 命令、自动化测试、日志证据和未验证项。
+- [CharacterPresentation 角色与技能表现](CharacterPresentation.md)：角色 Mesh、AnimBP、动画播放、表现接线和当前验证入口。
