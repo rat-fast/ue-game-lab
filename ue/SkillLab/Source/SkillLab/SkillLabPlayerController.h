@@ -15,6 +15,9 @@ class USkillLabPlayerInputComponent;
 class USkillLabSkillInputComponent;
 class USkillLabSkillShortcutComponent;
 class USkillLabTestCommandsComponent;
+class USkillLabSkillRuntimeComponent;
+class ASkillLabCharacter;
+struct FSkillLabSkillResult;
 struct FInputActionValue;
 
 UCLASS()
@@ -87,5 +90,15 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<USkillLabTestCommandsComponent> TestCommands;
+
+	void StartRuntimeProbe();
+	void TickRuntimeProbe();
+	void LogRuntimeProbeSample(const TCHAR* Label);
+	void SubmitRuntimeProbeSkill(FName SkillId, AActor* Target, const FVector& TargetLocation, bool bHasLocation);
+	void HandleRuntimeProbeSkillEvent(const FSkillLabSkillResult& Result);
+	FTimerHandle RuntimeProbeTimer;
+	float RuntimeProbeElapsed = 0.0f;
+	bool bRuntimeProbeStarted = false;
+	TWeakObjectPtr<ASkillLabCharacter> RuntimeProbeTarget;
 
 };

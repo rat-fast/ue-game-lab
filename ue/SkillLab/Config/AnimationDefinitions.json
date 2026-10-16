@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "locomotion": {
+    "movementThreshold": 0.01,
+    "directionClampDegrees": 45.0,
+    "directionMin": -180.0,
+    "directionMax": 180.0
+  }
+}
