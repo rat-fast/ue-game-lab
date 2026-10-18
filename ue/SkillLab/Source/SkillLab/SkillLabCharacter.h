@@ -20,6 +20,9 @@ public:
 	void AddCameraRotationInput(const FVector2D& Value);
 	void ConfigureAsTrainingDummy();
 
+	UFUNCTION(BlueprintPure, Category = "SkillLab|Animation")
+	class USkillLabCharacterAnimationStateComponent* GetCharacterAnimationStateComponent() const { return CharacterAnimationStateComponent; }
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, Category = "SkillLab|Camera")
@@ -39,6 +42,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Abilities", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USkillLabSkillAnimationComponent> SkillAnimationComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Animation", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USkillLabCharacterAnimationStateComponent> CharacterAnimationStateComponent;
 
 	UPROPERTY(Transient)
 	TObjectPtr<class UStaticMeshComponent> TrainingDummyBody;

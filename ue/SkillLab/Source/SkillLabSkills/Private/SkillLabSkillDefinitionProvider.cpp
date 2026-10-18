@@ -67,7 +67,10 @@ namespace
 				return Fail(OutError, TEXT("castAnimation must be a nonempty soft asset path"));
 			Out.CastAnimation = TSoftObjectPtr<UAnimSequence>(FSoftObjectPath(AssetPath));
 		}
-		if (Out.CastMontage.IsValid() && Out.CastAnimation.IsValid())
+		// IsValid() only reports an already loaded object for soft pointers. The
+		// catalog parser must reject conflicting configured paths before either
+		// asset is loaded.
+		if (!Out.CastMontage.IsNull() && !Out.CastAnimation.IsNull())
 			return Fail(OutError, TEXT("castMontage and castAnimation are mutually exclusive"));
 		// Behavior and targeting are owned by skill code. The text source overrides only content values.
 		if (!FSkillLabSkillBehaviorRegistry::Apply(Out.SkillId, Out)) return Fail(OutError, TEXT("no C++ behavior registered for this id"));

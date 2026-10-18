@@ -1,0 +1,9 @@
+{
+  "asset": "/Game/Characters/Mannequins/Anims/Pistol/MM_Pistol_Fire_Montage.MM_Pistol_Fire_Montage",
+  "rateScale": 1.0,
+  "blendInTime": 0.08,
+  "blendOutTime": 0.12,
+  "slot": "DefaultSlot",
+  "section": { "name": "SkillCast", "startTime": 0.0, "next": "" },
+  "notify": { "time": 0.2, "eventTag": "SkillLab.Event.Cast" }
+}

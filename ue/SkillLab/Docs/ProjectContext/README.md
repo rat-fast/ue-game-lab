@@ -5,9 +5,10 @@
 ## 阅读顺序
 
 1. `SkillLabCodeArchitecture.md`：项目角色、模块地图、正式入口、运行链、配置/资产来源和验证边界。
-2. `Modules/README.md`：按稳定职责选择模块文档。
-3. 当前任务所需的模块文档：技能运行时、GAS、玩家交互/HUD 或测试验证。
-4. `../SkillSystem/`：仅在需要核对共享技能业务语义时读取，不用它替代源码事实。
+2. 程序架构、实现、集成或 Review 任务读取 `ProgramArchitectureContract.md`：SkillLab 程序分层和跨层职责约定。
+3. `Modules/README.md`：按稳定职责选择模块文档。
+4. 当前任务所需的模块文档：技能运行时、GAS、玩家交互/HUD 或测试验证。
+5. `../SkillSystem/`：仅在需要核对共享技能业务语义时读取，不用它替代源码事实。
 
 ## 事实来源
 

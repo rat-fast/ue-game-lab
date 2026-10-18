@@ -46,6 +46,13 @@ public:
 	UFUNCTION(Exec)
 	void SkillReloadDefinitions();
 
+	UFUNCTION(Exec)
+	void SkillAnimationSmoke();
+
+	/** Runs all four skills through the public runtime request API without cursor targeting. */
+	UFUNCTION(Exec)
+	void SkillPresentationSmoke();
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;

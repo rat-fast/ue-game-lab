@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SkillLab structured animation content patch",
+  "type": "object",
+  "required": ["asset"],
+  "additionalProperties": false,
+  "properties": {
+    "asset": { "type": "string", "minLength": 1, "description": "UE object path to UAnimMontage" },
+    "rateScale": { "type": "number", "exclusiveMinimum": 0 },
+    "blendInTime": { "type": "number", "minimum": 0 },
+    "blendOutTime": { "type": "number", "minimum": 0 },
+    "slot": { "type": "string", "minLength": 1, "description": "Slot name only; resolve SlotGroup through the Skeleton slot registry" },
+    "section": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "startTime": { "type": "number", "minimum": 0 },
+        "next": { "type": "string" }
+      }
+    },
+    "notify": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["time", "eventTag"],
+      "properties": {
+        "time": { "type": "number", "minimum": 0 },
+        "eventTag": { "type": "string", "minLength": 1 }
+      }
+    },
+    "segment": { "type": "string", "minLength": 1, "description": "UAnimSequenceBase object path; current writer replaces the first segment of the first Slot track after Skeleton compatibility validation" }
+  }
+}
