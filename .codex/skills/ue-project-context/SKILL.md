@@ -19,6 +19,8 @@ description: "进入或处理本仓库 Unreal Engine 项目时，作为必读入
 4. 根据任务从项目文档的模块目录读取匹配的模块文档，不要默认读取全部模块。
 5. 最后读取任务涉及的源码、配置、资产和验证证据。
 
+进入项目程序架构、实现、集成或 Review 任务时，遵循当前项目 `Docs/ProjectContext/README.md` 中的程序规范路由。SkillLab 的这些任务必须读取 `Docs/ProjectContext/ProgramArchitectureContract.md`；其他项目只读取其自身入口明确指定的规范，不把 SkillLab 约定推广为全仓库规则。
+
 如果任务进入程序实现、架构、集成、编译或运行验证，再读取仓库 `.codex/skills/ai-native-programming/SKILL.md` 和对应的程序工作流 Skill。普通 UE 学习或文档浏览不自动加载程序约束 Skill。
 
 如果项目缺少上述文档，明确记录“文档不存在”，再以真实源码、配置和资产为依据，不要假装已经读取。

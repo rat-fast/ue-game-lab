@@ -9,6 +9,8 @@ description: 将 AI Native 研发原则转换为 UE 程序 Agent 可执行的编
 
 进入 `ue/` 项目时，先读取 `ue-project-context`，获得仓库规则、项目文档入口和目录边界。涉及程序架构、C++、配置、Blueprint、模块实现、集成、编译或运行验证时，再读取本 Skill。`ai-native-design-collaborator` 只用于讨论 AI Native 工作流设计，不是程序实现对话的默认上下文。
 
+项目专属程序职责和分层约定由该项目的上下文文档定义。进入 SkillLab 的程序架构、实现、集成或 Review 任务时，按 `ue-project-context` 路由读取 `ue/SkillLab/Docs/ProjectContext/ProgramArchitectureContract.md`；本 Skill 不复制该项目规范，也不把它套用到其他 UE 项目。
+
 ## 上下文边界
 
 - 只读取当前任务最小但足够的上下文，不扫描整个仓库或整个 `Docs/`。
