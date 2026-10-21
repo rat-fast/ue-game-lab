@@ -17,6 +17,16 @@ bool FSkillLabDefinitionProviderValidationTest::RunTest(const FString& Parameter
 		FSkillLabSkillDefinitionProvider::ValidateJsonText(Valid, Error));
 	TestTrue(TEXT("Valid catalog has no error"), Error.IsEmpty());
 
+	const FString AnimationBinding = TEXT(R"({"skills":[{"id":"Skill_Fireball","cost":10,"cooldown":1,"magnitude":20,"castAnimation":"/Game/SkillLab/Animations/AS_FireballCast.AS_FireballCast"}]})");
+	Error.Reset();
+	TestTrue(TEXT("Sequence presentation binding is accepted by the shared definition contract"),
+		FSkillLabSkillDefinitionProvider::ValidateJsonText(AnimationBinding, Error));
+
+	const FString ConflictingBindings = TEXT(R"({"skills":[{"id":"Skill_Fireball","cost":10,"cooldown":1,"magnitude":20,"castMontage":"/Game/SkillLab/Animations/SomeMontage.SomeMontage","castAnimation":"/Game/SkillLab/Animations/AS_FireballCast.AS_FireballCast"}]})");
+	Error.Reset();
+	TestFalse(TEXT("Montage and sequence bindings remain mutually exclusive"),
+		FSkillLabSkillDefinitionProvider::ValidateJsonText(ConflictingBindings, Error));
+
 	const FString UnknownField = TEXT(R"({"skills":[{"id":"Skill_Fireball","cost":10,"cooldown":1,"magnitude":20,"unexpected":1}]})");
 	Error.Reset();
 	TestFalse(TEXT("Unknown content fields are rejected"), FSkillLabSkillDefinitionProvider::ValidateJsonText(UnknownField, Error));

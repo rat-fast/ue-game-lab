@@ -65,6 +65,13 @@ bool USkillLabSkillAnimationComponent::PlayCastMontage(const FSkillLabSkillResul
 	{
 		return false;
 	}
+	// Tear down the previous cast before resolving the replacement binding. A
+	// missing asset must still leave the old cast's action stopped; otherwise a
+	// new runtime cast can inherit a visually stale montage.
+	if (ActiveCastId != 0 && ActiveCastId != Result.CastId)
+	{
+		StopCastMontage(ActiveCastId);
+	}
 	FSkillLabSkillPresentationBinding Binding;
 	if (!FSkillLabSkillDefinitionProvider::ResolvePresentationBinding(Result.SkillId, Binding))
 	{
@@ -72,15 +79,13 @@ bool USkillLabSkillAnimationComponent::PlayCastMontage(const FSkillLabSkillResul
 			Result.CastId, *Result.SkillId.ToString());
 		return false;
 	}
-	if (ActiveCastId != 0 && ActiveCastId != Result.CastId)
-	{
-		StopCastMontage(ActiveCastId);
-	}
 	ActiveMontage = Binding.CastMontage.LoadSynchronous();
+	ActiveNotifyAnimation = ActiveMontage;
 	if (!ActiveMontage)
 	{
 		if (UAnimSequence* CastAnimation = Binding.CastAnimation.LoadSynchronous())
 		{
+			ActiveNotifyAnimation = CastAnimation;
 			ActiveMontage = UAnimMontage::CreateSlotAnimationAsDynamicMontage(CastAnimation, TEXT("DefaultSlot"), 0.08f, 0.12f, 1.0f);
 		}
 	}
@@ -99,6 +104,7 @@ bool USkillLabSkillAnimationComponent::PlayCastMontage(const FSkillLabSkillResul
 		UE_LOG(LogTemp, Warning, TEXT("[SkillLabAnimation] Cast=%d Skill=%s has no skeletal AnimInstance; montage not played"),
 			Result.CastId, *Result.SkillId.ToString());
 		ActiveMontage = nullptr;
+		ActiveNotifyAnimation = nullptr;
 		ActiveCastId = 0;
 		ActiveMontageInstanceId = INDEX_NONE;
 		return false;
@@ -110,6 +116,7 @@ bool USkillLabSkillAnimationComponent::PlayCastMontage(const FSkillLabSkillResul
 			Result.CastId, *Result.SkillId.ToString(), *ActiveMontage->GetName());
 		ActiveAnimInstance = nullptr;
 		ActiveMontage = nullptr;
+		ActiveNotifyAnimation = nullptr;
 		ActiveCastId = 0;
 		ActiveMontageInstanceId = INDEX_NONE;
 		return false;
@@ -122,6 +129,7 @@ bool USkillLabSkillAnimationComponent::PlayCastMontage(const FSkillLabSkillResul
 		ActiveAnimInstance->Montage_Stop(0.0f, ActiveMontage);
 		ActiveAnimInstance = nullptr;
 		ActiveMontage = nullptr;
+		ActiveNotifyAnimation = nullptr;
 		ActiveCastId = 0;
 		ActiveMontageInstanceId = INDEX_NONE;
 		return false;
@@ -149,7 +157,7 @@ bool USkillLabSkillAnimationComponent::ForwardCastEvent(const int32 CastId, cons
 bool USkillLabSkillAnimationComponent::ForwardAnimNotify(UAnimSequenceBase* Animation, const FGameplayTag EventTag,
 	const FAnimNotifyEventReference& EventReference)
 {
-	if (!Animation || !ActiveMontage || Animation != ActiveMontage.Get() || !ActiveAnimInstance
+	if (!Animation || !ActiveMontage || (Animation != ActiveMontage.Get() && Animation != ActiveNotifyAnimation.Get()) || !ActiveAnimInstance
 		|| !ActiveAnimInstance->Montage_IsPlaying(ActiveMontage) || ActiveCastId <= 0
 		|| ActiveMontageInstanceId == INDEX_NONE)
 	{
@@ -176,6 +184,7 @@ void USkillLabSkillAnimationComponent::StopCastMontage(const int32 CastId)
 	}
 	ActiveAnimInstance = nullptr;
 	ActiveMontage = nullptr;
+	ActiveNotifyAnimation = nullptr;
 	ActiveCastId = 0;
 	ActiveMontageInstanceId = INDEX_NONE;
 }

@@ -55,6 +55,16 @@ void ASkillLabPlayerController::SkillReloadDefinitions()
 	if (TestCommands) TestCommands->ReloadDefinitions();
 }
 
+void ASkillLabPlayerController::SkillAnimationSmoke()
+{
+	if (TestCommands) TestCommands->AnimationStateSmoke();
+}
+
+void ASkillLabPlayerController::SkillPresentationSmoke()
+{
+	if (TestCommands) TestCommands->SkillPresentationSmoke();
+}
+
 void ASkillLabPlayerController::BeginPlay()
 {
 	Super::BeginPlay();

@@ -7,6 +7,7 @@
 class APawn;
 class USkillLabSkillShortcutComponent;
 class USkillLabSkillRuntimeComponent;
+struct FSkillLabSkillResult;
 
 /** Optional demo commands. Disabling this component disables setup and all test commands. */
 UCLASS(ClassGroup=(SkillLab), meta=(BlueprintSpawnableComponent))
@@ -25,13 +26,32 @@ public:
 	void SpawnTargets();
 	void ResetSkills();
 	void ReloadDefinitions();
+	void AnimationStateSmoke();
+	void SkillPresentationSmoke();
 
 	UPROPERTY(EditAnywhere, Category="SkillLab|Testing") bool bEnableTestCommands = true;
 	UPROPERTY(EditAnywhere, Category="SkillLab|Testing") bool bInitializeTrainingArena = true;
 
 private:
 	APawn* GetControlledPawn() const;
+	void ApplyAnimationSmokeMovement();
+	void TriggerAnimationSmokeJump();
+	void StopAnimationSmokeMovement();
+	void CaptureAnimationSmokeState();
+	void StopAnimationSmokeCapture();
+	void RunSkillPresentationSmokeStep();
+	void HandleSkillPresentationSmokeEvent(const FSkillLabSkillResult& Result);
 	TWeakObjectPtr<APawn> ControlledPawn;
 	TWeakObjectPtr<USkillLabSkillShortcutComponent> ShortcutComponent;
 	TWeakObjectPtr<USkillLabSkillRuntimeComponent> SkillRuntime;
+	FTimerHandle AnimationSmokeMoveTimer;
+	FTimerHandle AnimationSmokeJumpTimer;
+	FTimerHandle AnimationSmokeStopTimer;
+	FTimerHandle AnimationSmokeCaptureTimer;
+	FTimerHandle AnimationSmokeCaptureEndTimer;
+	FTimerHandle SkillPresentationSmokeTimer;
+	TWeakObjectPtr<AActor> SkillPresentationSmokeTarget;
+	int32 SkillPresentationSmokeStep = 0;
+	int32 LastCapturedAnimationState = INDEX_NONE;
+	int32 AnimationSmokeCaptureIndex = 0;
 };

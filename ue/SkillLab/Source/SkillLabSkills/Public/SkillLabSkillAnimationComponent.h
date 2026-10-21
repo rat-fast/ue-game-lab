@@ -48,6 +48,8 @@ private:
 
 	UPROPERTY(Transient) TObjectPtr<USkillLabSkillRuntimeComponent> SkillRuntime;
 	UPROPERTY(Transient) TObjectPtr<UAnimMontage> ActiveMontage;
+	/** Animation asset reported by notify callbacks. Dynamic montages report their source sequence. */
+	UPROPERTY(Transient) TObjectPtr<UAnimSequenceBase> ActiveNotifyAnimation;
 	UPROPERTY(Transient) TObjectPtr<UAnimInstance> ActiveAnimInstance;
 	int32 ActiveCastId = 0;
 	int32 ActiveMontageInstanceId = INDEX_NONE;
