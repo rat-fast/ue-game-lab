@@ -1,46 +1,44 @@
-# 表现资产与验证边界
+# 表现资产、内容工具与验证边界
 
 ## 职责
 
-集中记录 Git 基线中可定位的角色/动画资产、表现接线和验证证据，防止资产存在、代码存在或一次历史日志被误写成业务承诺。
+记录 a2c5969 中可定位的角色/动画资产、动作配置、内容读写工具和证据等级，防止资产存在、代码存在或一次命令成功被误写成完整视觉验收。
 
-## 当前共享承诺
+## 已确认业务承诺
 
-- 资产或代码存在不能单独证明运行表现已经验证。
-- 当前共享基线只依赖 Git 基线提交 `cb7c4ef5ede2072f9aa64a648beb12daec35dc52` 及现有项目文档；未提交 Native Animation 实验和旧归档文档不能改变当前承诺。
+- 表现内容应能被人和 AI 定位、局部修改、回读并校验；具体结构化格式、字段和编辑器入口由程序实现与策划需求共同维护，不在本基线冻结。
+- 内容工具的成功只证明工具操作和校验范围；运行时视觉验收仍需独立的 UE 运行证据。
 
-## 当前实现与验证事实
+## a2c5969 中已实现事实
 
-### 基线资产
+### 角色与动作资产
 
-| 范围 | Git 基线路径 | 可确认事实 |
+| 范围 | Git 路径 | 事实边界 |
 | --- | --- | --- |
-| 角色骨骼 Mesh | `Content/Characters/Mannequins/Meshes/SK_Mannequin.uasset`、`SKM_Manny_Simple.uasset`、`SKM_Quinn_Simple.uasset` | 资产存在于基线提交 |
-| AnimBP/基础动作 | `Content/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed.uasset`、`BS_Idle_Walk_Run.uasset`、`MM_Idle.uasset`、`Walk/`、`Jog/`、`Jump/` | 基础动画资产存在；未证明默认运行绑定 |
-| 技能动作 | `Content/SkillLab/Animations/AS_FireballCast.uasset`；Unarmed `Attack/MM_Attack_01/02.uasset`、`MM_ChargedAttack.uasset` | 基线配置引用了四个技能动作路径；未证明加载和播放 |
-| 运行接线 | `Source/SkillLabSkills/Private/SkillLabSkillAnimationComponent.cpp`、`SkillLabSkillAnimNotify.cpp`、`SkillLabSkillPresentationRouter.cpp` | 存在事件订阅、动作播放尝试、Notify 转发和临时反馈代码 |
+| Mesh/Skeleton | `Content/Characters/Mannequins/Meshes/SK_Mannequin.uasset`、`SKM_Manny_Simple.uasset`、`SKM_Quinn_Simple.uasset` | 文件在指定提交中；未由本轮重新打开资产确认内部绑定 |
+| 基础动画 | `Content/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed.uasset`、`BS_Idle_Walk_Run.uasset`、`MM_Idle.uasset`、Walk/Jog/Jump 目录 | 资源存在；不单独证明默认角色运行求值正确 |
+| 技能动作 | `Content/SkillLab/Animations/AS_FireballCast.uasset`、Unarmed Attack 下的 `MM_Attack_01/02.uasset`、`MM_ChargedAttack.uasset` | 四项 JSON 绑定的软路径目标；不单独证明可播放、Notify 或时点 |
+| 正式 Montage 样本 | `Content/Characters/Mannequins/Anims/Pistol/MM_Pistol_Fire_Montage.uasset` | 内容工具样本资产；不是四技能当前配置承诺 |
 
-### 验证证据
+### 配置与内容工具
 
-- 基线自动化测试名可从 `Source/SkillLabSkills/Private/Tests/SkillLabCastLifecycleTests.cpp`、`SkillLabDefinitionProviderTests.cpp` 定位；它们验证生命周期和定义校验，不验证资产视觉结果。
-- 项目文档记录过 NullRHI smoke 日志，观察到初始化、区域命中、修复以及燃烧/火球拒绝事件；这些是历史运行证据，且不是本轮重新执行的动画验收。
-- `Docs/ProjectContext/Modules/TestAndVerification.md` 和 `SkillLabSkillsRuntime.md` 明确写出：本轮未启动 UE、未编译、未执行自动化测试，并没有完整动画释放验证。
-- 二进制 `.uasset` 的路径和 Git 对象存在可以支持“资产在基线中”，不能单凭文件名确认内部 Skeleton、Anim Class、Notify、Slot 或引用关系。
+- `Config/SkillDefinitions.json` 为四项技能提供 `castAnimation` 软路径。代码支持 `castMontage` 与 `castAnimation` 互斥解析；当前配置没有 `castMontage`。
+- `Source/SkillLabAnimationEditor/` 的 Editor-only Commandlet 按 `schemas/skilllab-animation-content.schema.json` 读取 Montage 内容，可读取并校验 Skeleton、Slot、Section/NextSection、片段、Notify、Blend、Play Rate；`-Write` 可对支持范围执行局部 Patch、保存、重载和回读。
+- a2c5969 中存在 `Config/Animation/FireballMontage.json` 及缺失资产、非法 Play Rate 负例。工具文档明确写出首个 Slot/Segment 等写入边界，以及复杂 Notify、多片段精确定位和不兼容 Skeleton 覆盖不足。
 
-## 当前限制
+## 现有证据已验证范围
 
-- 没有本轮可复现的 UE 5.8 编辑器/PIE/游戏截图、日志或自动化结果，不能宣称角色基础动作或技能动作已验收。
-- 没有证据确认默认地图 `L_SkillLab_NavTest` 中玩家角色的实际表现绑定；训练假人路径还会主动隐藏 Skeletal Mesh。
-- 代码支持的四个技能动作绑定和事件接线不能自动扩大为更多技能、更多状态或完整表现资产协议。
-- 本页不建立 JSON Schema、资源命名规范、Montage 工具规则、批次验收模板或 AI 生产工作流。
+- 本地 `Saved/AnimationReports/` 实际存在只读、缺失资产、非法速率和 `copy-write-readback.json`；批次记录称其曾完成临时 Montage 副本的读、写、保存、重载、回读和负例验证。未在本轮重跑，且验证对象为临时副本，不能推导基线 Montage 已被修改或四技能视觉已通过。
+- 本地 `Saved/AnimationStateVisual/` 实际存在 Idle/Move/Jump/Fall/Land 截图；本地日志和批次记录曾将其与默认角色状态烟测关联。它们是历史证据，不是本轮重新生成的视口验收包。
+- 本地四技能 smoke、Cast handoff 和 Editor 自动化日志实际存在，支持局部运行链、身份隔离和定义校验的历史结论；不支持完整视觉验收。
 
-## 待确认问题
+## 当前限制与待确认
 
-- 是否需要在后续验证批次中逐项确认 Mesh、Skeleton、AnimBP、基础动作、技能动作和 Notify 的资产引用？
-- 是否需要把技能事件到视觉反馈的覆盖矩阵作为单独的人类验收材料？
-- 历史 NullRHI smoke 是否仍对应当前基线运行入口，还是需要重新生成可复现证据？
+- 没有当前可复现的 UE 5.8 PIE/游戏视口证据确认默认 Mesh、AnimBP、四技能动作、释放事件和取消清理的最终视觉质量。
+- 没有证据确认四项动作都含有效 Notify、Notify 时点与运行事件一致，或缺资源时已有明确的玩家可辨识降级表现。
+- 内容工具尚未覆盖复杂 Notify、多片段精确定位、不兼容 Skeleton 的完整负例；不把工具当前写入范围扩展成通用资产生产协议。
+- 未来是否需要事件覆盖矩阵、逐项资源引用验收和可重复视觉回归，由表现与程序 Review 共同确认。
 
 ## 与其他基线的关系
 
-本页只保存证据等级和验证边界。业务事件语义见 `02-SkillActionPresentation.md` 与 `../SkillSystem/06-FeedbackAndObservability.md`；项目级测试入口见 `../ProjectContext/Modules/TestAndVerification.md`。发现证据不足时，不在本页替未来方案补齐承诺。
-
+角色和基础状态见 `01-CharacterPresentation.md`；技能事件和动作清理见 `02-SkillActionPresentation.md`；具体内容要求、工具批次和验收条件分别见 `../Planning/CharacterPresentation/` 与 `../ProgramWorkflow/AnimationWorkflow/`。

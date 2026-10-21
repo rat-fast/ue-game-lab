@@ -2,38 +2,31 @@
 
 ## 职责
 
-定义角色在表现层的最小业务语义，以及基础 Mesh、动画实例和移动动作在当前版本中的证据边界。角色的技能规则、属性和输入仍由 `../SkillSystem/` 与项目代码文档负责。
+定义角色 Mesh、AnimBP/AnimInstance 和基础动作在表现层的业务边界。技能规则、属性、输入和施法生命周期分别由 `../SkillSystem/` 与项目代码文档负责。
 
-## 当前共享承诺
+## 已确认业务承诺
 
-- 角色表现是技能运行事实的观察者。角色外观、基础动作或反馈不能自行决定技能是否成功、是否命中、是否扣费或何时完成。
-- 角色基础表现与技能表现是两个可分离的职责：基础移动/待机状态不等于某次施法动作，技能动作也不替代角色的移动、目标和效果规则。
-- 技能表现需要能够关联对应施法身份以及取消、完成等终态事实，避免旧施法的表现影响新的施法；具体由哪个对象或技术载体承载，由程序架构和表现实现阶段决定。
+- 角色表现观察技能和角色运行事实，不能自行决定技能是否成功、命中、扣费或完成。
+- 基础移动表现与技能动作是可分离职责；技能动作结束后应回到基础姿势，具体资源和技术载体不在本页冻结。
+- 项目继续使用 UE 的骨骼、姿势求值、融合和压缩能力；本方向只要求把项目级逻辑放到可维护的代码/内容入口，不要求重写 UE 底层动画能力。
 
-上述承诺来自 `Docs/SkillSystem/00-DomainModel.md`、`06-FeedbackAndObservability.md` 的“事件供表现观察”边界，以及基线代码中角色与技能运行组件分职责的事实。
+## a2c5969 中已实现事实
 
-## 当前实现与验证事实
+- `ASkillLabCharacter` 创建角色动画状态组件；该组件从 `ACharacter`/`UCharacterMovementComponent` 读取速度、方向、加速度和 Falling 状态，形成 `Idle`、`Move`、`Jump`、`Fall`、`Land` 快照。
+- `USkillLabCharacterAnimInstance` 读取快照并桥接到既有 `ABP_Unarmed` 变量。`ABP_Unarmed` 仍由 UE 动画状态机和资源求值姿势；代码没有替换骨骼融合或姿势求值。
+- Git 基线包含 `SK_Mannequin`、Manny/Quinn Mesh、`ABP_Unarmed`、Idle/Walk/Jog/Jump 等基础动画资源。训练假人路径会隐藏 Skeletal Mesh 并使用临时静态几何体，不能作为正式角色外观事实。
 
-- 基线角色类继承 `ACharacter`，构造相机、能力系统、技能运行组件和技能动画组件；来源：`Source/SkillLab/SkillLabCharacter.h`、`SkillLabCharacter.cpp`（Git 基线提交）。
-- 基线内容树包含 Mannequin 骨骼 Mesh：`Content/Characters/Mannequins/Meshes/SK_Mannequin.uasset`，以及 `SKM_Manny_Simple.uasset`、`SKM_Quinn_Simple.uasset`。
-- 基线内容树包含 `Content/Characters/Mannequins/Anims/Unarmed/ABP_Unarmed.uasset`、待机/移动混合资源 `BS_Idle_Walk_Run.uasset`、`MM_Idle.uasset`、Walk/Jog 方向动作和 Jump 目录动作。文件存在只证明资产进入 Git 基线，不证明默认 Blueprint 已选择或运行时求值正确。
-- 基线角色代码会隐藏训练场 Blueprint 中名为 `VisualCapsuleCore`、`VisualCapsuleTop`、`VisualCapsuleBottom` 的静态占位组件；训练假人路径还会隐藏角色 Skeletal Mesh 并创建临时静态几何体。来源：`Source/SkillLab/SkillLabCharacter.cpp`。
-- 已有项目文档把默认地图、角色 Blueprint 和正式动画资源绑定列为需要在 UE 5.8 编辑器/游戏进程中复验的内容；本轮没有重新执行该验证。
+## 现有证据已验证范围
 
-## 当前限制
+- a2c5969 的实现交接记录了 UE 5.8 构建、AnimBP 资产编译和默认角色运行烟测；本地存在 `Saved/Logs/SkillLabAnimationVisual-Acceptance.log`、`Saved/AnimationStateVisual/` 和 `Saved/AnimAssetVerify.log`，记录过 AnimInstance 消费快照及 `Idle -> Move -> Jump -> Fall -> Land` 迁移。
+- 上述材料是未在本轮重跑的本地历史证据；它支持状态链曾被运行观察，不等于本轮重新验证，也没有提供迁移前/迁移后一对一质量对照或完整技能结束后姿势验收。
 
-- 没有基线级证据确认 `BP_SkillLabCharacter.uasset` 的默认 Skeletal Mesh、Anim Class、状态机拓扑或引用的骨骼/Socket。
-- 没有基线级运行证据确认 Idle、Walk、Jog、Jump、落地或朝向切换在默认地图中可见且正确。
-- 训练假人使用静态几何体的代码路径不能被解释为正式角色外观承诺。
-- 不冻结角色 C++ 类名、Blueprint 组件名、AnimBP 图结构、状态机、BlendSpace、Montage Slot 或未来移动框架。
+## 当前限制与待确认
 
-## 待确认问题
-
-- 默认可控角色在正式运行入口中实际使用哪个 Skeletal Mesh、AnimBP 和骨骼版本？
-- 基础动作的业务覆盖范围是否只需要待机/移动，还是还包括跳跃、受击、死亡等状态？
-- 训练假人与正式角色是否需要不同的表现验收标准？
+- `BP_SkillLabCharacter` 的默认 Mesh、Skeleton、Anim Class、状态机内部结构和 Socket 绑定虽可从基线资产定位，但没有在本轮重新打开 UE 核验。
+- 没有当前可复现证据证明 Idle、Move、Jump、Fall、Land 在正式入口中的主观视觉质量、所有边界迁移或技能动作结束后的姿势恢复。
+- 不把 `ABP_Unarmed` 的节点、状态机、BlendSpace、Slot 或类名冻结为公共承诺；基础动作是否扩展到受击、死亡等状态待策划确认。
 
 ## 与其他基线的关系
 
-技能请求、阶段和结果以 `../SkillSystem/` 为准；技能动作的事件关联见 `02-SkillActionPresentation.md`；资产与验证证据见 `03-AssetsAndVerification.md`。本页不重复技能数值或程序架构。
-
+技能动作和施法事件见 `02-SkillActionPresentation.md`；资产、内容工具和证据等级见 `03-AssetsAndVerification.md`；技能阶段和结果以 `../SkillSystem/02-RequestLifecycle.md`、`../SkillSystem/06-FeedbackAndObservability.md` 为准。

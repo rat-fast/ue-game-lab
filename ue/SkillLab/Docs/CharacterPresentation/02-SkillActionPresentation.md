@@ -2,39 +2,34 @@
 
 ## 职责
 
-定义技能动作表现可以依赖的运行事实、释放时机的业务边界和表现清理语义。本文不规定技能最终动画方案、数据载体、动画工具或 C++/Blueprint 接口。
+定义技能动作可以依赖的运行事实、释放/效果与动作时序的业务边界、取消和完成后的清理语义。不规定具体动画方案、Notify 命名、Slot、数据载体或生产工具接口。
 
-## 当前共享承诺
+## 已确认业务承诺
 
-- 技能表现以技能运行层发布的结构化事件为事实来源。表现可以显示开始、阶段变化、目标选定、命中/效果、持续伤害、取消和完成等事实；表现本身不能伪造这些事实。
-- 一次技能动作必须能与一次施法身份对应。旧施法的延迟事件不能改变新施法的表现状态；取消或完成只影响其对应的当前动作。
-- “动作开始”“释放/效果发生”和“施法终态”是不同业务事实。动画时间点、命中结果、效果应用和 Cast 完成不能仅凭同一个视觉帧互相推断。
-- 没有可用动作资源时，技能运行事实仍然成立；缺少动画不能被解释为技能拒绝、未命中或效果失败。
+- 技能表现以运行层结构化事件为事实来源。`Started`、阶段变化、目标/命中、效果、持续伤害、取消和完成是不同事实；动画帧不能自行产生技能结果。
+- 一次动作必须关联一次施法身份。迟到的旧事件不能清理或改变新施法的动作；取消和完成只影响对应施法。
+- 没有可用动作资源时，技能运行事实仍然成立。降级表现不能伪造施法、命中、扣费或效果。
+- 动作恢复与独立持续效果分开：燃烧等持续效果的生命周期以技能系统事件为准，不因动作结束而结束。
 
-这些承诺依据 `../SkillSystem/00-DomainModel.md`、`02-RequestLifecycle.md`、`06-FeedbackAndObservability.md`，并与基线运行时公开的 `Started`、`PhaseChanged`、`TargetSelected`、`Hit`、`DamageTick`、`EffectApplied`、`BuffApplied`、`BuffRemoved`、`Cancelled`、`Completed` 事件集合相一致。
+## a2c5969 中已实现事实
 
-## 当前实现与验证事实
+- `USkillLabSkillAnimationComponent` 订阅表现路由：收到 `Started` 时解析当前技能绑定并尝试播放动作；收到同一 `CastId` 的 `Cancelled`/`Completed` 时停止动作。
+- 配置支持 `castMontage` 或 `castAnimation` 二选一。当前 `Config/SkillDefinitions.json` 的火球、区域爆发、修复、燃烧四项均填写 `castAnimation`；运行时对 Sequence 调用 UE 的 Dynamic Montage 创建能力。代码也支持直接加载正式 `UAnimMontage`，但本提交没有证明四项配置实际使用正式 Montage。
+- `USkillLabSkillAnimNotify` 只携带事件 Tag；转发前检查当前动画对象、Montage 实例 ID 和 `CastId`。这提供了身份校验路径，但不等于任何资产已配置 Notify 或时点已经验收。
+- 释放仍由技能运行时的 Timer 或 GameplayEvent 规则决定；动画组件只转发事件，不负责扣费、命中、效果应用或 Cast 终态。
 
-- 基线角色包含技能动画适配组件；它订阅表现路由的运行事件，在 `Started` 尝试播放该技能定义的动作，在相同施法身份的 `Cancelled`/`Completed` 时停止动作。来源：`Source/SkillLabSkills/Public/SkillLabSkillAnimationComponent.h` 与对应 `.cpp`。
-- 基线代码提供一个可携带 Gameplay Tag 的动画 Notify，并把 Notify 转回当前施法事件；代码会检查动画对象、活动动作、施法身份和动作实例是否匹配。来源：`SkillLabSkillAnimNotify.h/.cpp`、`SkillLabSkillAnimationComponent.cpp`。
-- 基线表现路由会广播运行结果，并为目标选定、命中、周期伤害和持续效果添加屏幕消息或临时世界反馈。来源：`SkillLabSkillPresentationRouter.h/.cpp`、`SkillLabSkillFeedbackActor.*`。
-- 基线 `Config/SkillDefinitions.json` 为 `Skill_Fireball`、`Skill_AreaBurst`、`Skill_Mend`、`Skill_BurningBuff` 各提供一个 `castAnimation` 软路径；其中火球指向 `Content/SkillLab/Animations/AS_FireballCast.uasset`，其余指向 Unarmed Attack 目录动作。代码还允许定义读取 `castMontage`，但这只是实现能力事实，不是本基线的生产约定。
-- `SkillLab.Skills.CastLifecycle` 自动化测试覆盖施法阶段、过期 token、取消和事件驱动释放；`SkillLab.Skills.DefinitionValidation` 覆盖定义文本的基本校验。两者都没有证明动画播放、Notify 释放或视觉时序。
+## 现有证据已验证范围
 
-## 当前限制
+- 本地 `Saved/Logs/SkillLab-C-PresentationSmoke-20261018.log` 曾记录四项技能依次进入 `Started/Active`、播放动态 Montage、产生各自效果并完成；燃烧在动作完成后继续产生 `DamageTick` 并最终移除，支持“持续效果独立于动作终态”的局部结论。
+- 本地 `Saved/Logs/SkillLab-C-CastHandoff-20261018.log` 曾记录取消 Cast 1 后新 Cast 2 播放新 Montage，支持 Cast 身份隔离的运行链证据。`Saved/Logs/SkillLab-C-Automation-Editor-20261018.log` 曾记录 CastLifecycle 与 DefinitionValidation 通过。
+- 这些日志来自历史运行，本轮没有重跑；它们不证明真实视口姿势质量、Notify 的实际时间对齐、缺资源降级、取消后基础姿势恢复或玩家输入路径下的四技能完整表现。
 
-- 基线代码存在动作播放和 Notify 接线，但没有当前 UE 运行证据证明四个技能的动作资源都能加载、播放、对齐或回传事件。
-- 当前验证没有证明某个动画 Notify 已写入资产，也没有证明 `castAnimation` 的软路径在默认地图中可解析。
-- 运行时事件可被表现观察，不等于所有事件已有专用 VFX、音频、镜头或角色动作。
-- 不冻结 Montage/Sequence 选择、Slot 名、Notify 命名集合、释放事件标签、事件到动画帧的时间表、完整动画框架、异步阶段或未来技能动作设计。
+## 当前限制与待确认
 
-## 待确认问题
-
-- 当前四个技能是否都需要动作驱动释放，还是允许按技能选择计时释放？
-- 哪些事件需要角色动作，哪些只需要世界反馈、UI 或音频？
-- 动作资源缺失时，后续体验验收应要求降级反馈还是直接标记为内容缺陷？
+- 尚无证据证明任何技能资产包含可触发的释放 Notify，也没有证明 Notify 时点与技能实际释放/效果事件一致。
+- 缺少动作资源、无 Mesh/AnimInstance、Montage 播放失败时，代码会记录警告并继续技能运行；当前没有专门运行证据证明降级反馈足够清晰且不会误导。
+- 不冻结 Montage/Sequence 选择、Slot/Section、Notify 标签、释放帧、动作时长、VFX/音频/镜头或未来技能动作设计。四项技能分别需要怎样的表现验收仍待确认。
 
 ## 与其他基线的关系
 
-施法阶段和技能结果以 `../SkillSystem/02-RequestLifecycle.md`、`06-FeedbackAndObservability.md` 为准；角色基础动作见 `01-CharacterPresentation.md`；资产路径和验证证据等级见 `03-AssetsAndVerification.md`。
-
+角色基础状态见 `01-CharacterPresentation.md`；资产和工具边界见 `03-AssetsAndVerification.md`；施法事实和终态以 `../SkillSystem/02-RequestLifecycle.md`、`../SkillSystem/06-FeedbackAndObservability.md` 为准。
