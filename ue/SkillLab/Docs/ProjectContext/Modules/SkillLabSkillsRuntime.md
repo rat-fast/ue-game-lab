@@ -10,7 +10,7 @@
 - 定义与数据：`FSkillLabSkillDefinition`、`FSkillLabSkillRequest`、`FSkillLabSkillResult`、`FSkillLabSkillDefinitionProvider`；数值来源为 `Config/SkillDefinitions.json`。
 - 执行边界：`USkillLabSkillBehaviorRegistry`、`USkillLabSkillBehavior`、`USkillLabSkillEffectExecutor`、`USkillLabSkillEffectEventAdapter`。
 - 当前行为样本：`USkillLabFireballSkill`/`AFireballProjectile`、`USkillLabAreaBurstSkill`、`USkillLabMendSkill`、`USkillLabBurningSkill`。
-- 目标与表现桥：`FSkillLabTargetingService`、`USkillLabSkillPresentationRouter`、`ASkillLabSkillFeedbackActor`、`USkillLabSkillAnimationComponent`。
+- 目标解析与技能行为继续位于 `SkillLabSkills`；表现桥、反馈 Actor 与技能动画组件位于独立 `SkillLabPresentation` 模块。运行时只发布 `OnNativeSkillEvent`，不创建或持有表现对象。
 
 ## Runtime Entry
 

@@ -21,7 +21,7 @@ enum class ESkillLabFeedbackShape : uint8
 
 /** Self-contained temporary world feedback actor. Component/material lifetime belongs to the actor. */
 UCLASS(NotBlueprintable)
-class SKILLLABSKILLS_API ASkillLabSkillFeedbackActor : public AActor
+class SKILLLABPRESENTATION_API ASkillLabSkillFeedbackActor : public AActor
 {
 	GENERATED_BODY()
 

@@ -11,7 +11,7 @@ class UCharacterMovementComponent;
 
 /** Native source of locomotion facts consumed by ABP_Unarmed's pose graph. */
 UCLASS(Blueprintable, BlueprintType)
-class SKILLLAB_API USkillLabAnimInstance : public UAnimInstance
+class SKILLLABPRESENTATION_API USkillLabAnimInstance : public UAnimInstance
 {
 	GENERATED_BODY()
 

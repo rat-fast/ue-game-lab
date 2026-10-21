@@ -11,7 +11,7 @@ public class SkillLabAnimationEditor : ModuleRules
 		});
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
-			"UnrealEd", "SkillLabSkills"
+			"UnrealEd", "SkillLabSkills", "SkillLabPresentation"
 		});
 	}
 }

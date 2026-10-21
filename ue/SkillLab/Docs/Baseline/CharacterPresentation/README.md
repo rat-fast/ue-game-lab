@@ -4,7 +4,7 @@
 
 本目录记录 SkillLab 当前可供表现策划、程序、资源和 Review Agent 共同使用的最小表现语义。它只回答表现可以观察哪些运行事实、a2c5969 中有哪些实现事实、现有证据验证到哪里，以及哪些内容仍不能承诺。
 
-本目录不替代 `../SkillSystem/` 的技能业务语义、`../ProjectContext/` 的代码事实、`../Planning/CharacterPresentation/` 的策划要求或 `../ProgramWorkflow/AnimationWorkflow/` 的批次交接；不冻结 C++ API、Blueprint 拓扑、JSON Schema、Montage 生产规范或最终资源方案。
+本目录不替代 `../SkillSystem/` 的技能业务语义、`../../ProjectContext/` 的代码事实、`../../Planning/CharacterPresentation/` 的策划要求或 `../../ProgramWorkflow/AnimationWorkflow/` 的批次交接；不冻结 C++ API、Blueprint 拓扑、JSON Schema、Montage 生产规范或最终资源方案。
 
 ## 基线版本与证据状态
 

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 
 /** Text owned, validated rules used by the native locomotion AnimInstance. */
-struct SKILLLAB_API FSkillLabAnimationDefinition
+struct SKILLLABPRESENTATION_API FSkillLabAnimationDefinition
 {
 	int32 SchemaVersion = 1;
 	float MovementThreshold = 0.01f;
@@ -14,7 +14,7 @@ struct SKILLLAB_API FSkillLabAnimationDefinition
 	float DirectionMax = 180.0f;
 };
 
-class SKILLLAB_API FSkillLabAnimationDefinitionProvider
+class SKILLLABPRESENTATION_API FSkillLabAnimationDefinitionProvider
 {
 public:
 	static const FSkillLabAnimationDefinition& Get();

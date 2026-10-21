@@ -6,7 +6,7 @@
 
 ## 当前共享基线依赖
 
-表现必须遵守 `../../../../../CharacterPresentation/02-SkillActionPresentation.md` 与 `../../../../../SkillSystem/02-RequestLifecycle.md`、`../../../../../SkillSystem/06-FeedbackAndObservability.md`：运行层事实是权威；动作开始、释放/效果与施法终态是不同事实；旧施法事件不得影响新施法。
+表现必须遵守 `../../../../../Baseline/CharacterPresentation/02-SkillActionPresentation.md` 与 `../../../../../Baseline/SkillSystem/02-RequestLifecycle.md`、`../../../../../Baseline/SkillSystem/06-FeedbackAndObservability.md`：运行层事实是权威；动作开始、释放/效果与施法终态是不同事实；旧施法事件不得影响新施法。
 
 ## 本批策划承诺
 

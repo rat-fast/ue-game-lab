@@ -31,4 +31,8 @@ Batches/<BatchName>/
 
 ## 当前状态
 
-旧的 Native Animation 批次已归档。新的第一批需要在共享基线和策划需求重新建立后创建。
+当前角色表现 Lua 试点由 [CharacterPresentationLuaPilot](../CharacterPresentationLuaPilot/README.md) 作为唯一程序任务入口，需求以 [Batch02-LuaCharacterPresentationPilot](../../Planning/CharacterPresentation/Batches/Batch02-LuaCharacterPresentationPilot/README.md) 为准。
+
+Lua 任务目录已有架构交接和实现/验证状态记录。记录显示 Lua 接入、构建及局部自动化已完成，但 P0/P1 尚未通过：缺少可见 PIE/视口验收，且仍有 Fall、施法竞态复现和技能差异化可见反馈等证据缺口；独立 Review 文档尚未建立。不得将“已有实现记录”表述为整批已验收。
+
+`Batches/Batch01-CharacterFoundation/` 是先前的角色基础实现批次，保留其实现和 Review 记录作历史参考；其未关闭切片项不等同于 Lua 试点状态，也不作为 Lua 批次入口。

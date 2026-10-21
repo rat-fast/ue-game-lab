@@ -8,7 +8,6 @@
 
 class USkillLabAbilitySystemComponent;
 class USkillLabSkillGameplayAbility;
-class USkillLabSkillPresentationRouter;
 class USkillLabSkillBehavior;
 class USkillLabSkillEffectEventAdapter;
 class USkillLabSkillEffectExecutor;
@@ -67,8 +66,6 @@ public:
 	UFUNCTION(BlueprintPure, Category="SkillLab|Skill") float GetStageRemaining() const;
 	UFUNCTION(BlueprintPure, Category="SkillLab|Skill") FName GetActiveSkillId() const;
 	UFUNCTION(BlueprintPure, Category="SkillLab|Skill") int32 GetActiveCastId() const { return ActiveCastId; }
-	/** Presentation adapters use this bridge instead of subscribing to runtime internals. */
-	USkillLabSkillPresentationRouter* GetPresentationRouter() const { return PresentationRouter; }
 	void GetGrantedSkillIds(TArray<FName>& OutIds) const;
 
 	void NotifyAbilityActivated(USkillLabSkillGameplayAbility* Ability);
@@ -93,7 +90,6 @@ private:
 	/** GAS owns the ability instance; Runtime only observes the active instance. */
 	UPROPERTY(Transient) TWeakObjectPtr<USkillLabSkillGameplayAbility> ActiveAbility;
 	UPROPERTY(Transient) TObjectPtr<USkillLabSkillBehavior> ActiveBehavior;
-	UPROPERTY(Transient) TObjectPtr<USkillLabSkillPresentationRouter> PresentationRouter;
 	UPROPERTY(Transient) TObjectPtr<USkillLabSkillEffectEventAdapter> EffectEventAdapter;
 	UPROPERTY(Transient) TObjectPtr<USkillLabSkillEffectExecutor> EffectExecutor;
 	UPROPERTY(Transient) TObjectPtr<USkillLabSkillLoadout> Loadout;

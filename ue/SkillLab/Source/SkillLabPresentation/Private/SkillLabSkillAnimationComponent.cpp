@@ -9,7 +9,6 @@
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "SkillLabSkillDefinitionProvider.h"
-#include "SkillLabSkillPresentationRouter.h"
 #include "SkillLabSkillRuntimeComponent.h"
 #include "SkillLabSkillTypes.h"
 
@@ -22,47 +21,43 @@ void USkillLabSkillAnimationComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	SkillRuntime = GetOwner() ? GetOwner()->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
-	if (SkillRuntime && SkillRuntime->GetPresentationRouter())
-	{
-		SkillRuntime->GetPresentationRouter()->OnPresentationEvent.AddUObject(this, &USkillLabSkillAnimationComponent::HandleSkillEvent);
-	}
 }
 
 void USkillLabSkillAnimationComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	if (SkillRuntime && SkillRuntime->GetPresentationRouter())
-	{
-		SkillRuntime->GetPresentationRouter()->OnPresentationEvent.RemoveAll(this);
-	}
 	StopCastMontage(ActiveCastId);
 	SkillRuntime = nullptr;
 	Super::EndPlay(EndPlayReason);
 }
 
-void USkillLabSkillAnimationComponent::HandleSkillEvent(const FSkillLabSkillResult& Result)
+bool USkillLabSkillAnimationComponent::PlayCastAction(const int32 CastId, const FName SkillId)
 {
-	switch (Result.Event)
-	{
-	case ESkillLabSkillEvent::Started:
-		PlayCastMontage(Result);
-		break;
-	case ESkillLabSkillEvent::Cancelled:
-	case ESkillLabSkillEvent::Completed:
-		// A late completion from an older cast must never stop the new montage.
-		if (Result.CastId == ActiveCastId)
-		{
-			StopCastMontage(Result.CastId);
-		}
-		break;
-	default:
-		break;
-	}
+	FSkillLabSkillResult Result;
+	Result.CastId = CastId;
+	Result.SkillId = SkillId;
+	return PlayCastMontage(Result);
+}
+
+void USkillLabSkillAnimationComponent::StopCastAction(const int32 CastId)
+{
+	StopCastMontage(CastId);
 }
 
 bool USkillLabSkillAnimationComponent::PlayCastMontage(const FSkillLabSkillResult& Result)
 {
 	if (!SkillRuntime || Result.CastId <= 0)
 	{
+		return false;
+	}
+	// Started may be repeated or arrive late. It must not interrupt a newer cast.
+	if (ActiveCastId == Result.CastId)
+	{
+		return true;
+	}
+	if (ActiveCastId > Result.CastId)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SkillLabAnimation] Ignoring stale Started Cast=%d; active Cast=%d"),
+			Result.CastId, ActiveCastId);
 		return false;
 	}
 	// Tear down the previous cast before resolving the replacement binding. A

@@ -41,7 +41,7 @@
 ## 实现必读文件
 
 - `ue/SkillLab/Docs/Planning/CharacterPresentation/Batches/Batch01-AIAdaptedAnimationPipeline/Infrastructure/01-StructuredAnimationContent.md`、`02-MontageProductionEntry.md`
-- `ue/SkillLab/Docs/CharacterPresentation/03-AssetsAndVerification.md`、`02-SkillActionPresentation.md`
+- `ue/SkillLab/Docs/Baseline/CharacterPresentation/03-AssetsAndVerification.md`、`02-SkillActionPresentation.md`
 - `ue/SkillLab/Source/SkillLabSkills/Public/SkillLabSkillTypes.h`
 - `ue/SkillLab/Source/SkillLabSkills/Public/SkillLabSkillDefinitionProvider.h`、`Private/SkillLabSkillDefinitionProvider.cpp`
 - `ue/SkillLab/Source/SkillLabSkills/Public/SkillLabSkillAnimationComponent.h`、`Private/SkillLabSkillAnimationComponent.cpp`

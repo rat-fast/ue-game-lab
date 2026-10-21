@@ -6,9 +6,9 @@
 
 ## 当前共享基线依赖
 
-- 角色基础表现边界、资产证据和未验证项：`../../../../CharacterPresentation/01-CharacterPresentation.md`、`../../../../CharacterPresentation/03-AssetsAndVerification.md`。
-- 技能动作与运行事件语义：`../../../../CharacterPresentation/02-SkillActionPresentation.md`。
-- 技能阶段、终态与可观察事实：`../../../../SkillSystem/02-RequestLifecycle.md`、`../../../../SkillSystem/06-FeedbackAndObservability.md`。
+- 角色基础表现边界、资产证据和未验证项：`../../../../Baseline/CharacterPresentation/01-CharacterPresentation.md`、`../../../../Baseline/CharacterPresentation/03-AssetsAndVerification.md`。
+- 技能动作与运行事件语义：`../../../../Baseline/CharacterPresentation/02-SkillActionPresentation.md`。
+- 技能阶段、终态与可观察事实：`../../../../Baseline/SkillSystem/02-RequestLifecycle.md`、`../../../../Baseline/SkillSystem/06-FeedbackAndObservability.md`。
 - 当前基线提交为表现共享基线入口所记载的提交。资产路径和代码存在不等于运行验证通过；本批不重做基线冻结。
 
 ## 需求入口

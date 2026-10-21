@@ -13,6 +13,7 @@
 #include "SkillLabSkillRuntimeComponent.h"
 #include "SkillLabSkillAnimationComponent.h"
 #include "SkillLabCharacterAnimationStateComponent.h"
+#include "SkillLabCharacterPresentationLuaComponent.h"
 #include "AbilitySystemComponent.h"
 
 ASkillLabCharacter::ASkillLabCharacter()
@@ -41,6 +42,7 @@ ASkillLabCharacter::ASkillLabCharacter()
 	SkillComponent = CreateDefaultSubobject<USkillLabSkillRuntimeComponent>(TEXT("SkillComponent"));
 	SkillAnimationComponent = CreateDefaultSubobject<USkillLabSkillAnimationComponent>(TEXT("SkillAnimation"));
 	CharacterAnimationStateComponent = CreateDefaultSubobject<USkillLabCharacterAnimationStateComponent>(TEXT("CharacterAnimationState"));
+	CharacterPresentationLuaComponent = CreateDefaultSubobject<USkillLabCharacterPresentationLuaComponent>(TEXT("CharacterPresentationLua"));
 }
 
 void ASkillLabCharacter::BeginPlay()

@@ -35,6 +35,7 @@ void USkillLabCharacterAnimationStateComponent::BeginPlay()
 	UpdateSnapshot(0.0f);
 	UE_LOG(LogTemp, Log, TEXT("[SkillLabAnimationState] %s initialized state=%s serial=%d"),
 		*GetNameSafe(GetOwner()), StateName(Snapshot.State), Snapshot.TransitionSerial);
+	OnStateChanged.Broadcast(Snapshot.State, Snapshot.TransitionSerial);
 }
 
 void USkillLabCharacterAnimationStateComponent::TickComponent(
@@ -48,6 +49,7 @@ void USkillLabCharacterAnimationStateComponent::TickComponent(
 
 void USkillLabCharacterAnimationStateComponent::UpdateSnapshot(float DeltaTime)
 {
+	bool bStateChanged = false;
 	const ACharacter* Character = Cast<ACharacter>(GetOwner());
 	if (!Character)
 	{
@@ -109,6 +111,7 @@ void USkillLabCharacterAnimationStateComponent::UpdateSnapshot(float DeltaTime)
 		Snapshot.StateTime = 0.0f;
 		UE_LOG(LogTemp, Log, TEXT("[SkillLabAnimationState] %s %s -> %s serial=%d"),
 			*GetNameSafe(GetOwner()), StateName(OldState), StateName(NewState), Snapshot.TransitionSerial);
+		bStateChanged = true;
 	}
 	else
 	{
@@ -140,7 +143,12 @@ void USkillLabCharacterAnimationStateComponent::UpdateSnapshot(float DeltaTime)
 			++Snapshot.TransitionSerial;
 			UE_LOG(LogTemp, Log, TEXT("[SkillLabAnimationState] %s %s -> %s serial=%d"),
 				*GetNameSafe(GetOwner()), StateName(OldState), StateName(GroundedState), Snapshot.TransitionSerial);
+			bStateChanged = true;
 		}
+	}
+	if (bStateChanged)
+	{
+		OnStateChanged.Broadcast(Snapshot.State, Snapshot.TransitionSerial);
 	}
 }
 

@@ -15,6 +15,11 @@
 			"LoadingPhase": "Default"
 		},
 		{
+			"Name": "SkillLabPresentation",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
 			"Name": "SkillLab",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"

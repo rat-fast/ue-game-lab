@@ -5,7 +5,7 @@
 ## 输入关系
 
 - `../../ProjectContext/`：当前代码事实和代码定位；
-- `../../SkillSystem/`：当前共享功能基线；
+- `../../Baseline/SkillSystem/`：当前共享功能基线；
 - `../../Planning/SkillSystem/`：长期目标、当前批次目标和具体内容设计；
 - `LongTerm/`：长期程序框架；
 - `Batches/<BatchName>/`：某一批次的架构基线、实现交接和 Review 状态。

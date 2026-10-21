@@ -41,7 +41,7 @@
 ## 实现必读文件
 
 - `ue/SkillLab/Docs/Planning/CharacterPresentation/Batches/Batch01-AIAdaptedAnimationPipeline/Infrastructure/00-AnimationDataAndBaseStates.md`
-- `ue/SkillLab/Docs/CharacterPresentation/01-CharacterPresentation.md`、`03-AssetsAndVerification.md`
+- `ue/SkillLab/Docs/Baseline/CharacterPresentation/01-CharacterPresentation.md`、`03-AssetsAndVerification.md`
 - `ue/SkillLab/Docs/ProjectContext/SkillLabCodeArchitecture.md`、`Modules/CharacterPresentation.md`、`Modules/PlayerInteraction.md`
 - `ue/SkillLab/Source/SkillLab/SkillLabCharacter.h`、`SkillLabCharacter.cpp`、`Source/SkillLab/Private/SkillLabPlayerInputComponent.cpp`
 - `ue/SkillLab/Content/SkillLab/BP_SkillLabCharacter.uasset`

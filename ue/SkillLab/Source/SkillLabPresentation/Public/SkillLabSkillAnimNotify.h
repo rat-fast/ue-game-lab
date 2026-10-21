@@ -7,7 +7,7 @@
 
 /** Reusable montage notify. It carries only an event tag, never a SkillId. */
 UCLASS(const, hidecategories=Object, collapsecategories)
-class SKILLLABSKILLS_API USkillLabSkillAnimNotify : public UAnimNotify
+class SKILLLABPRESENTATION_API USkillLabSkillAnimNotify : public UAnimNotify
 {
 	GENERATED_BODY()
 

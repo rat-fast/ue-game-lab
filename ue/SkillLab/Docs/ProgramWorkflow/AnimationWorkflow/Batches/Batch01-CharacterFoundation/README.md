@@ -23,7 +23,7 @@
 
 ## 最小总体依赖
 
-- 三项共同读取 `Docs/CharacterPresentation/01-CharacterPresentation.md`、`02-SkillActionPresentation.md`、`03-AssetsAndVerification.md`，以及对应的 `Docs/SkillSystem/02-RequestLifecycle.md`、`06-FeedbackAndObservability.md`。
+- 三项共同读取 `Docs/Baseline/CharacterPresentation/01-CharacterPresentation.md`、`02-SkillActionPresentation.md`、`03-AssetsAndVerification.md`，以及对应的 `Docs/Baseline/SkillSystem/02-RequestLifecycle.md`、`06-FeedbackAndObservability.md`。
 - A 依赖默认可控角色的真实 Mesh/AnimBP 绑定核对；C 依赖 A 的基础姿势恢复，并复用 B 提供的动画/Montage 内容读回与校验能力。
 - B 不改变技能规则或 `Config/SkillDefinitions.json` 的内容取值；C 按项目三层职责区分稳定 C++ 表现内核、可组合表现流程和文本内容声明，不把动画事件当作命中、扣费或效果事实。
 - 资产、路径和源码存在均不是运行验收证据；具体验证入口和未验证项记录在三份交接中。

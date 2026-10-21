@@ -11,7 +11,6 @@
 #include "SkillLabSkillEffectEventAdapter.h"
 #include "SkillLabSkillEffectExecutor.h"
 #include "SkillLabSkillLoadout.h"
-#include "SkillLabSkillPresentationRouter.h"
 #include "SkillLabTargetingService.h"
 #include "TimerManager.h"
 
@@ -66,10 +65,6 @@ void USkillLabSkillRuntimeComponent::EndPlay(const EEndPlayReason::Type EndPlayR
 		}
 	}
 	ClearInterruptListeners();
-	if (PresentationRouter)
-	{
-		PresentationRouter->Bind(nullptr);
-	}
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -86,11 +81,6 @@ void USkillLabSkillRuntimeComponent::InitializeSkills()
 		return;
 	}
 	ASC->InitializeSkillLabAbilityActorInfo(Owner, Owner);
-	PresentationRouter = NewObject<USkillLabSkillPresentationRouter>(this);
-	if (PresentationRouter)
-	{
-		PresentationRouter->Bind(this);
-	}
 	EffectEventAdapter = NewObject<USkillLabSkillEffectEventAdapter>(this);
 	if (EffectEventAdapter)
 	{

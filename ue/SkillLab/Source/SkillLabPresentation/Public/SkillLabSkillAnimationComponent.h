@@ -20,7 +20,7 @@ struct FAnimNotifyEventReference;
  * back to the runtime with the cast identity that started that montage.
  */
 UCLASS(ClassGroup=(SkillLab), meta=(BlueprintSpawnableComponent))
-class SKILLLABSKILLS_API USkillLabSkillAnimationComponent : public UActorComponent
+class SKILLLABPRESENTATION_API USkillLabSkillAnimationComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -40,8 +40,11 @@ public:
 	UFUNCTION(BlueprintPure, Category="SkillLab|Animation")
 	int32 GetAnimationCastId() const { return ActiveCastId; }
 
+	/** Narrow presentation command used by the Lua policy adapter. */
+	bool PlayCastAction(int32 CastId, FName SkillId);
+	void StopCastAction(int32 CastId);
+
 private:
-	void HandleSkillEvent(const FSkillLabSkillResult& Result);
 	bool PlayCastMontage(const FSkillLabSkillResult& Result);
 	void StopCastMontage(int32 CastId);
 	USkeletalMeshComponent* FindMesh() const;

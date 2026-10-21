@@ -8,6 +8,9 @@
 void USkillLabCharacterAnimInstance::NativeInitializeAnimation()
 {
 	Super::NativeInitializeAnimation();
+	bHasLuaLocomotionIntent = false;
+	bLuaShouldMove = false;
+	bLuaIsFalling = false;
 	ResolveStateComponent();
 }
 
@@ -24,6 +27,14 @@ void USkillLabCharacterAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 	}
 
 	Snapshot = StateComponent->GetSnapshot();
+	PushLegacyAnimBPInputs();
+}
+
+void USkillLabCharacterAnimInstance::SetLuaLocomotionIntent(const bool bShouldMove, const bool bIsFalling)
+{
+	bHasLuaLocomotionIntent = true;
+	bLuaShouldMove = bShouldMove;
+	bLuaIsFalling = bIsFalling;
 	PushLegacyAnimBPInputs();
 }
 
@@ -53,11 +64,13 @@ void USkillLabCharacterAnimInstance::PushLegacyAnimBPInputs()
 	}
 	if (FBoolProperty* ShouldMoveProperty = CastField<FBoolProperty>(GetClass()->FindPropertyByName(TEXT("ShouldMove"))))
 	{
-		ShouldMoveProperty->SetPropertyValue_InContainer(this, Snapshot.bShouldMove);
+		ShouldMoveProperty->SetPropertyValue_InContainer(this,
+			bHasLuaLocomotionIntent ? bLuaShouldMove : Snapshot.bShouldMove);
 	}
 	if (FBoolProperty* IsFallingProperty = CastField<FBoolProperty>(GetClass()->FindPropertyByName(TEXT("IsFalling"))))
 	{
-		IsFallingProperty->SetPropertyValue_InContainer(this, Snapshot.bIsFalling);
+		IsFallingProperty->SetPropertyValue_InContainer(this,
+			bHasLuaLocomotionIntent ? bLuaIsFalling : Snapshot.bIsFalling);
 	}
 	if (FStructProperty* VelocityProperty = CastField<FStructProperty>(GetClass()->FindPropertyByName(TEXT("Velocity"))))
 	{

@@ -10,7 +10,7 @@ class USkillLabSkillRuntimeComponent;
 using FSkillLabSkillPresentationEvent = FSkillLabNativeSkillEvent;
 
 UCLASS()
-class SKILLLABSKILLS_API USkillLabSkillPresentationRouter : public UObject
+class SKILLLABPRESENTATION_API USkillLabSkillPresentationRouter : public UObject
 {
 	GENERATED_BODY()
 public:

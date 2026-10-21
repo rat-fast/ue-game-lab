@@ -18,13 +18,11 @@ SkillLab 使用“共享基线 -> 策划需求 -> 程序/表现实现 -> 独立 
 ## 文档路由
 
 1. 读取 `ProjectContext/README.md` 和相关模块事实；
-2. 读取相关共享基线，如 `CharacterPresentation/` 或 `SkillSystem/`；
+2. 读取相关共享基线，如 `Baseline/CharacterPresentation/` 或 `Baseline/SkillSystem/`；
 3. 读取当前任务的 `Planning/<领域>/`；
 4. 读取当前任务的 `ProgramWorkflow/<领域>/`；
 5. 按交接包读取必要源码、配置、资产和验证证据。
 
 旧批次、归档实验和其他领域的工作流不属于默认上下文。
 
-## 当前重建状态
-
-角色与技能表现文档正在从零建立。旧表现工作流已移到 `experiments/SkillLab/PresentationDocs_PreReset_2026-10-17/`，只能用于历史对照，不得作为当前承诺或实现依据。
+角色表现当前方向：用户已选择以 Lua 作为试点脚本语言。此决定记录项目方向，不代表脚本运行时、UE 接入方案或具体迁移范围已经确定或验证。

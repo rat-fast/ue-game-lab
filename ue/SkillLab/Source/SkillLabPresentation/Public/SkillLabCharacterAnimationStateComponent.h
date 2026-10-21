@@ -16,8 +16,10 @@ enum class ESkillLabCharacterAnimationState : uint8
 	Land UMETA(DisplayName = "Land")
 };
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FSkillLabCharacterAnimationStateChanged, ESkillLabCharacterAnimationState, int32);
+
 USTRUCT(BlueprintType)
-struct SKILLLAB_API FSkillLabCharacterAnimationSnapshot
+struct SKILLLABPRESENTATION_API FSkillLabCharacterAnimationSnapshot
 {
 	GENERATED_BODY()
 
@@ -55,7 +57,7 @@ struct SKILLLAB_API FSkillLabCharacterAnimationSnapshot
  * resource selection to the AnimInstance/AnimBP.
  */
 UCLASS(ClassGroup = (SkillLab), meta = (BlueprintSpawnableComponent))
-class SKILLLAB_API USkillLabCharacterAnimationStateComponent : public UActorComponent
+class SKILLLABPRESENTATION_API USkillLabCharacterAnimationStateComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -75,6 +77,7 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "SkillLab|Animation")
 	int32 GetTransitionSerial() const { return Snapshot.TransitionSerial; }
+	FSkillLabCharacterAnimationStateChanged OnStateChanged;
 
 protected:
 	virtual void BeginPlay() override;

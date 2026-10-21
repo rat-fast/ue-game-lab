@@ -41,4 +41,4 @@
 
 ## 与其他基线的关系
 
-角色和基础状态见 `01-CharacterPresentation.md`；技能事件和动作清理见 `02-SkillActionPresentation.md`；具体内容要求、工具批次和验收条件分别见 `../Planning/CharacterPresentation/` 与 `../ProgramWorkflow/AnimationWorkflow/`。
+角色和基础状态见 `01-CharacterPresentation.md`；技能事件和动作清理见 `02-SkillActionPresentation.md`；具体内容要求、工具批次和验收条件分别见 `../../Planning/CharacterPresentation/` 与 `../../ProgramWorkflow/AnimationWorkflow/`。

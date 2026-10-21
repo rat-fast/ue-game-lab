@@ -46,6 +46,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Animation", meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class USkillLabCharacterAnimationStateComponent> CharacterAnimationStateComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkillLab|Animation", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<class USkillLabCharacterPresentationLuaComponent> CharacterPresentationLuaComponent;
+
 	UPROPERTY(Transient)
 	TObjectPtr<class UStaticMeshComponent> TrainingDummyBody;
 
