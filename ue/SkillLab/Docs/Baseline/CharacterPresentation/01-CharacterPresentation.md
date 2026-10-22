@@ -1,32 +1,25 @@
-# 角色基础表现基线
+# 角色基础表现
 
 ## 职责
 
-定义角色 Mesh、AnimBP/AnimInstance 和基础动作在表现层的业务边界。技能规则、属性、输入和施法生命周期分别由 `../SkillSystem/` 与项目代码文档负责。
+说明基础角色行动状态表现的业务边界和当前证据。本文不冻结 AnimBP、状态机、类、资产绑定或运动实现。
 
-## 已确认业务承诺
+## 当前承诺
 
-- 角色表现观察技能和角色运行事实，不能自行决定技能是否成功、命中、扣费或完成。
-- 基础移动表现与技能动作是可分离职责；技能动作退出后应接续角色当时真实的基础状态，不应无条件回到 `Idle`。是否保留收招表现仍待确认，具体资源和技术载体不在本页冻结。
-- 项目继续使用 UE 的骨骼、姿势求值、融合和压缩能力；本方向只要求把项目级逻辑放到可维护的代码/内容入口，不要求重写 UE 底层动画能力。
+- 角色表现可以呈现待机、移动、跳跃、下落、落地等基础行动状态；当前策划试点覆盖 `Idle`、`Move`、`Jump`、`Fall`、`Land`。
+- 表现状态应反映角色运行事实，动画图和 UE 动画系统负责可见姿势求值；表现逻辑不能反过来伪造移动或技能事实。
+- 技能动作结束或取消后的基础姿势恢复属于体验要求，但须以可见运行验收证明。
 
-## a2c5969 中已实现事实
+## 历史快照与当前实现状态
 
-- `ASkillLabCharacter` 创建角色动画状态组件；该组件从 `ACharacter`/`UCharacterMovementComponent` 读取速度、方向、加速度和 Falling 状态，形成 `Idle`、`Move`、`Jump`、`Fall`、`Land` 快照。
-- `USkillLabCharacterAnimInstance` 读取快照并桥接到既有 `ABP_Unarmed` 变量。`ABP_Unarmed` 仍由 UE 动画状态机和资源求值姿势；代码没有替换骨骼融合或姿势求值。
-- Git 基线包含 `SK_Mannequin`、Manny/Quinn Mesh、`ABP_Unarmed`、Idle/Walk/Jog/Jump 等基础动画资源。训练假人路径会隐藏 Skeletal Mesh 并使用临时静态几何体，不能作为正式角色外观事实。
+Git 快照 `a2c5969` 曾包含角色状态快照与既有 `ABP_Unarmed` 的接入以及相关基础资源。其存在不证明当前工作树状态，也不证明正式入口的可见质量。2026-10-22 当前程序交接称 Lua 基础状态意图接入已实现，UE 5.8 构建、局部自动化及 NullRHI Probe 有记录；相关源码未提交，且交接指出没有可见 PIE/视口验收。
 
-## 现有证据已验证范围
-
-- a2c5969 的实现交接记录了 UE 5.8 构建、AnimBP 资产编译和默认角色运行烟测；本地存在 `Saved/Logs/SkillLabAnimationVisual-Acceptance.log`、`Saved/AnimationStateVisual/` 和 `Saved/AnimAssetVerify.log`，记录过 AnimInstance 消费快照及 `Idle -> Move -> Jump -> Fall -> Land` 迁移。
-- 上述材料是未在本轮重跑的本地历史证据；它支持状态链曾被运行观察，不等于本轮重新验证，也没有提供迁移前/迁移后一对一质量对照或完整技能结束后姿势验收。
+玩家反馈游戏内表现与改造前基本一致，属于有限人工观察；不能由此推断五态链完整、Fall 可见、技能动作恢复正确或全部边界通过。
 
 ## 当前限制与待确认
 
-- `BP_SkillLabCharacter` 的默认 Mesh、Skeleton、Anim Class、状态机内部结构和 Socket 绑定虽可从基线资产定位，但没有在本轮重新打开 UE 核验。
-- 没有当前可复现证据证明 Idle、Move、Jump、Fall、Land 在正式入口中的主观视觉质量、所有边界迁移或技能动作结束后的姿势恢复。
-- 不把 `ABP_Unarmed` 的节点、状态机、BlendSpace、Slot 或类名冻结为公共承诺；基础动作是否扩展到受击、死亡等状态待策划确认。
+未有可见证据完整核验五态视觉和迁移、技能动作结束/取消后的姿势恢复、正式角色资产内部绑定或不同入口的表现一致性。受击、死亡等额外表现不属于当前已确认基线。
 
-## 与其他基线的关系
+## 关系
 
-技能动作和施法事件见 `02-SkillActionPresentation.md`；资产、内容工具和证据等级见 `03-AssetsAndVerification.md`；技能阶段和结果以 `../SkillSystem/02-RequestLifecycle.md`、`../SkillSystem/06-FeedbackAndObservability.md` 为准。
+技能动作与事件见 `02-SkillActionPresentation.md`；证据和资产限制见 `03-AssetsAndVerification.md`。

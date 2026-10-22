@@ -64,6 +64,7 @@ FSkillLabSkillResult USkillLabSkillEffectExecutor::Apply(const USkillLabSkillBeh
 		: (Definition.Effect == ESkillLabEffectKind::DamageOverTime ? ESkillLabEffectOperation::DamageOverTime : ESkillLabEffectOperation::Damage);
 	const FSkillLabEffectResult EffectResult = USkillLabEffectResolver::Apply(EffectRequest);
 	Result.bSuccess = EffectResult.bApplied;
+	Result.bEffectApplied = EffectResult.bApplied;
 	Result.ActualAmount = EffectResult.ActualAmount;
 	Result.HealthAfter = EffectResult.HealthAfter;
 	Result.Reason = EffectResult.Reason;

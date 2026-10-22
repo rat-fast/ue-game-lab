@@ -57,6 +57,8 @@ struct SKILLLABSKILLS_API FSkillLabSkillResult
 {
 	GENERATED_BODY()
 	UPROPERTY(BlueprintReadOnly) bool bSuccess = false;
+	/** True only when the authoritative effect request was accepted by GAS. */
+	UPROPERTY(BlueprintReadOnly) bool bEffectApplied = false;
 	UPROPERTY(BlueprintReadOnly) FName Reason = NAME_None;
 	UPROPERTY(BlueprintReadOnly) FName SkillId = NAME_None;
 	UPROPERTY(BlueprintReadOnly) ESkillLabSkillEvent Event = ESkillLabSkillEvent::Completed;
@@ -77,6 +79,7 @@ struct SKILLLABSKILLS_API FSkillLabSkillResult
 	UPROPERTY(BlueprintReadOnly) float StageDuration = 0.0f;
 	UPROPERTY(BlueprintReadOnly) FName EffectInstanceId = NAME_None;
 	UPROPERTY(BlueprintReadOnly) float EffectDuration = 0.0f;
+	UPROPERTY(BlueprintReadOnly) FName EffectOperationId = NAME_None;
 };
 
 USTRUCT(BlueprintType)
@@ -106,6 +109,8 @@ struct SKILLLABSKILLS_API FSkillLabSkillDefinition
 	UPROPERTY(BlueprintReadOnly) float PowerCoefficient = 0.0f;
 	UPROPERTY(BlueprintReadOnly) FGameplayTagContainer BlockedByTags;
 	UPROPERTY(BlueprintReadOnly) TSubclassOf<UGameplayAbility> AbilityClass;
+	/** Optional restricted composition script. The path is relative to Config/. */
+	UPROPERTY(BlueprintReadOnly) FString LuaScript;
 	/** Skill-owned projectile tuning; intentionally plain C++ data rather than JSON/Blueprint content. */
 	FSkillLabProjectileParameters ProjectileParameters;
 };

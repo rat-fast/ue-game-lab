@@ -39,7 +39,7 @@ namespace
 		if (!Json.IsValid()) return Fail(OutError, TEXT("skill entry must be an object"));
 		static const TSet<FString> KnownFields = {
 			TEXT("id"), TEXT("cost"), TEXT("cooldown"), TEXT("magnitude"), TEXT("powerCoefficient"),
-			TEXT("windup"), TEXT("active"), TEXT("recovery"), TEXT("duration"), TEXT("period"), TEXT("blockedBy"),
+			TEXT("windup"), TEXT("active"), TEXT("recovery"), TEXT("duration"), TEXT("period"), TEXT("blockedBy"), TEXT("luaScript"),
 			TEXT("castMontage"), TEXT("castAnimation")
 		};
 		for (const TPair<FString, TSharedPtr<FJsonValue>>& Field : Json->Values)
@@ -51,6 +51,14 @@ namespace
 			return Fail(OutError, TEXT("id must be a nonempty string without surrounding whitespace"));
 		Out.SkillId = FName(*Id);
 		if (Out.SkillId.IsNone()) return Fail(OutError, TEXT("id cannot be None"));
+		const TSharedPtr<FJsonValue> LuaValue = Json->TryGetField(TEXT("luaScript"));
+		if (LuaValue.IsValid())
+		{
+			if (LuaValue->Type != EJson::String || !LuaValue->TryGetString(Out.LuaScript) || Out.LuaScript.IsEmpty())
+				return Fail(OutError, TEXT("luaScript must be a nonempty relative path"));
+			if (FPaths::IsRelative(Out.LuaScript) == false || Out.LuaScript.Contains(TEXT("..")))
+				return Fail(OutError, TEXT("luaScript must stay below Config"));
+		}
 		const TSharedPtr<FJsonValue> MontageValue = Json->TryGetField(TEXT("castMontage"));
 		if (MontageValue.IsValid())
 		{
@@ -132,13 +140,31 @@ namespace
 			FString Error;
 			if (!Value.IsValid() || Value->Type != EJson::Object || !Parse(Value->AsObject(), Definition, Error))
 			{
+				const bool bScriptEntry = Value.IsValid() && Value->Type == EJson::Object
+					&& Value->AsObject()->HasField(TEXT("luaScript"));
+				if (bScriptEntry)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("[SkillLabSkills] Script-backed definition skipped at skills[%d]: %s; other definitions remain available"),
+						Index, Error.IsEmpty() ? TEXT("invalid object") : *Error);
+					continue;
+				}
 				UE_LOG(LogTemp, Error, TEXT("[SkillLabSkills] Definition load rejected at skills[%d]: %s; previous definitions retained"), Index, Error.IsEmpty() ? TEXT("invalid object") : *Error); return false;
 			}
 			if (OutCandidates.Contains(Definition.SkillId))
 			{
+				if (!Definition.LuaScript.IsEmpty())
+				{
+					UE_LOG(LogTemp, Warning, TEXT("[SkillLabSkills] Duplicate script-backed definition skipped at skills[%d]: id=%s"), Index, *Definition.SkillId.ToString());
+					continue;
+				}
 				UE_LOG(LogTemp, Error, TEXT("[SkillLabSkills] Definition load rejected: duplicate id '%s'; previous definitions retained"), *Definition.SkillId.ToString()); return false;
 			}
 			OutCandidates.Add(Definition.SkillId, Definition);
+		}
+		if (OutCandidates.IsEmpty())
+		{
+			UE_LOG(LogTemp, Error, TEXT("[SkillLabSkills] Definition load rejected: no valid skill definitions remain; previous definitions retained"));
+			return false;
 		}
 		return true;
 	}

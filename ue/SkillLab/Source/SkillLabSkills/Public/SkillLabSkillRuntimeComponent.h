@@ -107,7 +107,17 @@ private:
 	bool bCommitted = false;
 	bool bFinishing = false;
 	bool bShuttingDown = false;
+	bool bResetting = false;
+	uint64 RuntimeGeneration = 1;
+	uint64 ActiveCastGeneration = 0;
+	bool bEffectSubmitted = false;
+	FName ActiveEffectOperationId = NAME_None;
+	FSkillLabSkillResult ActiveEffectResult;
+	TArray<FSkillLabSkillResult> ActiveEffectResults;
 	FName OutcomeReason;
+	TSet<int32> AcceptedRequestIds;
+	TArray<int32> AcceptedRequestOrder;
+	static constexpr int32 MaxAcceptedRequestHistory = 128;
 
 	FSkillLabSkillResult Reject(const FSkillLabSkillRequest& Request, FName Reason);
 	FSkillLabSkillResult MakeResult() const;
@@ -120,5 +130,8 @@ private:
 	void ClearInterruptListeners();
 	void OnBlockingTagChanged(FGameplayTag Tag, int32 Count);
 	bool CheckGates(FName& OutReason) const;
+	void RememberRequestId(int32 RequestId);
+	void ForgetRequestId(int32 RequestId);
+	void ClearPendingCast();
 	void ForwardEffectEvent(const FSkillLabSkillResult& Result);
 };

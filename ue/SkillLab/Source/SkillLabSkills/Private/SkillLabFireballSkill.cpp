@@ -17,7 +17,7 @@ namespace
 		Definition.Effect = ESkillLabEffectKind::Damage;
 		Definition.Range = 1200.0f;
 		Definition.AbilityClass = USkillLabSkillGameplayAbility::StaticClass();
-		Definition.BehaviorClass = USkillLabFireballBehavior::StaticClass();
+		Definition.BehaviorClass = USkillLabLuaSkillBehavior::StaticClass();
 		Definition.ProjectileParameters.Speed = 1250.0f;
 		Definition.ProjectileParameters.CollisionRadius = 18.0f;
 		Definition.ProjectileParameters.Lifetime = 5.0f;

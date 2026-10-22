@@ -16,7 +16,7 @@ namespace
 		Definition.Range = 1000.0f;
 		Definition.Radius = 350.0f;
 		Definition.AbilityClass = USkillLabSkillGameplayAbility::StaticClass();
-		Definition.BehaviorClass = USkillLabAreaBurstBehavior::StaticClass();
+		Definition.BehaviorClass = USkillLabLuaSkillBehavior::StaticClass();
 	}
 }
 

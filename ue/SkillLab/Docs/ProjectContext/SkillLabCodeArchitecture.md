@@ -15,7 +15,7 @@ SkillLab 是一个单机技能系统实验项目：`SkillLab` 模块提供玩家
 | 角色与玩家控制 | `Source/SkillLab/SkillLabCharacter.*`、`SkillLabPlayerController.*` | 组合 ASC、技能运行组件、动画组件、相机；控制器连接输入/HUD/测试命令，不直接结算效果 |
 | 角色与技能表现 | `Source/SkillLabPresentation/` | 独立 Runtime 模块；含状态采集、AnimInstance 适配、Lua 5.4.8、事件 Router、技能动作和通用反馈。依赖 `SkillLabSkills` 读取技能事实 |
 | 玩家输入、技能快捷键与 HUD | `Source/SkillLab/Public/SkillLab*Input*`、`SkillLabSkillShortcutComponent.*`、`SkillLabHUD*` | 快捷键列表是输入和 HUD 的共同来源；目标解析和展示通过 `SkillLabSkills` 的公开接口完成 |
-| 技能运行时与内容 | `Source/SkillLabSkills/Public/SkillLabSkillRuntimeComponent.h` 及同模块实现 | 负责定义加载、loadout、请求门控、Cast 生命周期、行为注册/执行、事件转发；不拥有角色移动和 HUD 布局 |
+| 技能运行时与内容 | `Source/SkillLabSkills/Public/SkillLabSkillRuntimeComponent.h` 及同模块实现 | 负责定义加载、loadout、请求门控、Cast 生命周期、行为注册/执行、Lua 组合宿主和事件转发；不拥有角色移动和 HUD 布局 |
 | 目标与技能行为 | `SkillLabTargetingService.*`、`SkillLab*SkillBehavior.*`、`SkillLabFireball*`、`SkillLabAreaBurstSkill.*`、`SkillLabMendSkill.*`、`SkillLabBurningSkill.*` | 位于 `SkillLabSkills`；目标关系/距离/视线和具体执行方式在此表达；效果数值交给 `SkillLabGAS` |
 | GAS 属性与效果结算 | `Source/SkillLabGAS/Public/SkillLabAbilitySystemComponent.h`、`SkillLabCombatAttributeSet.h`、`SkillLabDamageCalculation.h` | 负责生命、能量、护甲、力量、伤害减免、生命/能量钳制、死亡 Tag 和持续效果句柄；不决定技能输入或技能槽位 |
 | 测试场与命令 | `SkillLabTestCommandsComponent.*`、`SkillLabTestArenaSubsystem.*`、`Source/*/Private/Tests/*` | 运行时 Exec 命令和训练假人用于 smoke；自动化测试覆盖纯伤害计算、Cast 生命周期、定义解析和 HUD 构建 |
@@ -31,7 +31,8 @@ DefaultEngine.ini
   -> USkillLabSkillRuntimeComponent::SubmitSkillRequest
   -> SkillLabSkillLoadout / SkillLabSkillDefinitionProvider
   -> FSkillLabCastLifecycle + USkillLabSkillGameplayAbility
-  -> SkillLabSkillBehavior（即时、投射物或范围）
+  -> SkillLabSkillBehavior / USkillLabLuaSkillBehavior（即时、投射物或范围）
+  -> Config/Skill_*.lua（仅由已校验的 Lua Behavior 执行受限动作请求）
   -> USkillLabSkillEffectExecutor
   -> USkillLabAbilitySystemComponent / USkillLabCombatAttributeSet
   -> SkillLabSkillEffectEventAdapter / PresentationRouter / HUD / FeedbackActor
@@ -55,7 +56,7 @@ USkillLabSkillRuntimeComponent::OnNativeSkillEvent
   -> Cancelled/Completed: 按 CastId 停止对应动作
 ```
 
-`ASkillLabCharacter` 构造 GAS、技能运行时和表现组件；`SkillLab` 游戏模块依赖 `SkillLabPresentation` 完成角色组装。技能运行时在 `BeginPlay` 初始化 ASC actor info、loadout 和效果执行器，并发布 `FSkillLabSkillResult` 事件；Lua 表现组件创建 Router 并订阅这些事件，EndPlay 时解绑。`SkillLabSkills` 不依赖表现模块、不创建表现对象。控制器的 Exec 命令通过 `USkillLabTestCommandsComponent` 复用快捷键或重置运行时。
+`ASkillLabCharacter` 构造 GAS、技能运行时和表现组件；`SkillLab` 游戏模块依赖 `SkillLabPresentation` 完成角色组装。技能运行时在 `BeginPlay` 初始化 ASC actor info、loadout 和效果执行器，并发布 `FSkillLabSkillResult` 事件；Lua 表现组件创建 Router 并订阅这些事件，EndPlay 时解绑。`SkillLabSkills` 不依赖表现模块、不创建表现对象。技能 Lua 宿主位于 `SkillLabSkills`，使用本模块内置的 Lua 5.4.8 源码，只开放 `SkillLabSkill_RequestAction()` 与 `SkillLabSkill_Finish()`，不能直接访问 ASC、Actor 或表现对象。控制器的 Exec 命令通过 `USkillLabTestCommandsComponent` 复用快捷键或重置运行时。
 
 角色表现链中，`USkillLabCharacterAnimationStateComponent` 从 Character Movement 采集速度、方向、加速度与 Falling 状态，维护五态快照。`USkillLabCharacterPresentationLuaComponent` 订阅状态变化和表现路由事件，将状态/技能结果传入 Lua，并提供播放动作、停止动作、设置 locomotion 意图和日志等窄桥接。Lua 只组合表现策略：当前 `CharacterPresentation.lua` 对 Started 请求动作，对取消/完成请求停止，对命中、阶段、目标和持续效果仅记录日志。若 Lua 脚本或回调不可用，C++ 有原生基础 locomotion 和 Started/终态动作回退；动作资源、Mesh、AnimInstance 或 Montage 播放失败则只记警告并跳过动作，技能运行继续。
 
@@ -74,10 +75,11 @@ USkillLabSkillRuntimeComponent::OnNativeSkillEvent
 
 ## 配置、资产和内容来源
 
-- 数值定义文件：`Config/SkillDefinitions.json`。当前列出 `Skill_Fireball`、`Skill_AreaBurst`、`Skill_Mend`、`Skill_BurningBuff` 的 cost、cooldown、magnitude、powerCoefficient、阶段时间及燃烧 duration/period/block tags。
+- 数值与技能内容定义文件：`Config/SkillDefinitions.json`。当前列出 `Skill_Fireball`、`Skill_AreaBurst`、`Skill_Mend`、`Skill_BurningBuff` 的 `cost`、`cooldown`、`magnitude`、`powerCoefficient`、阶段时间、燃烧 `duration/period`、阻塞标签和 `luaScript` 绑定。技能的目标形状、敌我关系、效果类型、执行模板及投射物结构参数仍由 `SkillLabSkills` 的注册配置提供，Provider 再覆盖 JSON 支持的内容字段。
 - 基础动画调参：`Config/AnimationDefinitions.json` 提供 movement threshold 与方向夹角范围；由 `USkillLabAnimInstance` 路径读取。角色表现五态的阈值/状态采集由 C++ 状态组件负责。
 - Lua 表现策略：`Config/CharacterPresentation.lua` 映射五态至 locomotion intent，并处理技能 Started/终态动作请求；当前命中、阶段和持续效果回调只记日志。Lua 5.4.8 源码位于 `Source/SkillLabPresentation/ThirdParty/lua-5.4.8/`，由 `SkillLabPresentation.Build.cs` 编入独立模块。
 - 技能动作绑定：`SkillDefinitions.json` 中的 `castMontage`/`castAnimation` 软路径由 `SkillLabSkills` 定义提供器解析。当前四技能均配置 `castAnimation`；Sequence 由 UE 动态创建 Montage。`AnimationDefinitions.json` 不保存技能动作绑定。
+- 技能组合脚本：`Config/Skill_Fireball.lua`、`Config/Skill_AreaBurst.lua`、`Config/Skill_Mend.lua`、`Config/Skill_BurningBuff.lua` 由 `luaScript` 相对路径绑定。四个当前技能均注册为 `USkillLabLuaSkillBehavior` 运行；脚本只能请求已由定义校验通过的执行动作，投射物、范围查询、即时效果、实际结算、持续效果和 Cast 终态仍由 C++/GAS 运行链产生。
 - 输入资产：`Content/SkillLab/Input/IMC_SkillLab.uasset`、`IA_MoveClick.uasset`、`IA_CameraLook.uasset`、`IA_CameraZoom.uasset`；技能槽位与确认/取消键当前由 `USkillLabSkillShortcutComponent` 的默认值提供。
 - 运行入口资产：`Content/SkillLab/BP_SkillLabGameMode.uasset`、`BP_SkillLabPlayerController.uasset`、`BP_SkillLabCharacter.uasset`、`L_SkillLab_NavTest.umap`；另有 `L_SkillLab_Test_Box.umap`。
 - 外部启动入口：`Run_SkillLab_DX11.bat` 使用 UE 5.8 `UnrealEditor.exe` 以 `-game -windowed -ResX=1280 -ResY=720 -d3d11 -log` 启动。
@@ -96,6 +98,9 @@ USkillLabSkillRuntimeComponent::OnNativeSkillEvent
 已有日志证明过 `-game -nullrhi -unattended -ExecCmds=SkillSpawnTargets,SkillTest,SkillArea,SkillBurn,SkillTestRecover` 的运行链，并观察到初始化、区域命中、修复和拒绝事件；这属于已有验证证据，不等同于本轮重新执行。
 
 ## 当前限制与未验证项
+
+- 当前四技能 Lua 接入已经有构建和 NullRHI RuntimeProbe 证据，但尚未完成可见 PIE/视口验收。`Skill_Fireball` 未命中/阻挡、`Skill_AreaBurst` 空区域和独立多目标、Mend 受伤治疗迁移、脚本异常注入、效果失败、重复 RequestId、激活失败、Reset/死亡恢复和坏内容恢复仍未逐项运行验证。
+- 当前配置与实现存在明确的分层事实：JSON 绑定 `luaScript` 和可调整内容；四个技能的目标/关系/效果/执行模板及 Fireball 投射物参数仍由各自 C++ 注册入口提供；Lua 宿主和 Runtime/Executor 负责通用动作、身份、去重、清理和真实结果边界。后续若要进一步收敛“纯配置接入”范围，应另行调整实现和文档，不能把当前文档描述当作已完成的架构重构。
 
 - 程序工作流交接记录 UE 5.8 `SkillLabEditor Win64 Development` 构建通过，交接时列出的 CastLifecycle、DefinitionValidation、DamageCalculation 三项自动化逐项通过；对应既有日志分别为 `Saved/Logs/SkillLab-backup-2026.10.21-16.53.57.log`、`...16.54.14.log`、`...16.54.31.log`。模块迁移后本轮全量自动化运行见 `Saved/Logs/SkillLabPresentation-ModuleAutomationAll.log`：`SkillLab.Animation.DefinitionProvider`、`SkillLab.GAS.DamageCalculation`、`SkillLab.Skills.CastLifecycle`、`SkillLab.Skills.DefinitionValidation` 成功，`SkillLab.UI.WidgetTreeBeforeSlate` 失败，断言期望 `SConstraintCanvas`/`SBox`，实际为 `SObjectWidget`。因此本轮不是全套自动化通过。NullRHI RuntimeProbe 另见 `Saved/Logs/SkillLabPresentation-ModuleProbe.log`。
 - `Saved/Logs/SkillLab.log` 记录 2026-10-21 玩家 PIE 中的输入、基础状态迁移和四个技能动作 Montage 播放日志；它是运行日志，不是可归属的用户视觉观察记录，也没有配套视口截图/录屏可作为本轮视觉验收。日志中的入场 Fall→Land 不是玩家跳跃后的完整 Fall 链验证。

@@ -14,7 +14,7 @@ namespace
 		Definition.Effect = ESkillLabEffectKind::Healing;
 		Definition.Range = 800.0f;
 		Definition.AbilityClass = USkillLabSkillGameplayAbility::StaticClass();
-		Definition.BehaviorClass = USkillLabMendBehavior::StaticClass();
+		Definition.BehaviorClass = USkillLabLuaSkillBehavior::StaticClass();
 	}
 }
 

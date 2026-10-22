@@ -16,7 +16,7 @@ namespace
 		Definition.Duration = 4.0f;
 		Definition.Period = 1.0f;
 		Definition.AbilityClass = USkillLabSkillGameplayAbility::StaticClass();
-		Definition.BehaviorClass = USkillLabBurningBehavior::StaticClass();
+		Definition.BehaviorClass = USkillLabLuaSkillBehavior::StaticClass();
 	}
 }
 

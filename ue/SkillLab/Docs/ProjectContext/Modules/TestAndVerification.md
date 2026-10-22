@@ -22,9 +22,9 @@
 
 ## Verification
 
-已定位的自动化测试名：`SkillLab.GAS.DamageCalculation`、`SkillLab.Skills.CastLifecycle`、`SkillLab.Skills.DefinitionValidation`、`SkillLab.UI.WidgetTreeBeforeSlate`、`SkillLab.Animation.DefinitionProvider`。模块迁移后的全量运行日志 `Saved/Logs/SkillLabPresentation-ModuleAutomationAll.log` 显示 DefinitionProvider、DamageCalculation、CastLifecycle、DefinitionValidation 成功；WidgetTreeBeforeSlate 失败，测试期望 HUD 返回 `SConstraintCanvas` 且技能卡返回 `SBox`，实际分别为 `SObjectWidget`（断言位于 `Source/SkillLab/Private/SkillLabHUDWidget.cpp`）。这不是全套自动化通过。程序工作流交接记录的三项既有技能/GAS 自动化曾单独通过。UE 5.8 `SkillLabEditor Win64 Development` 构建本轮通过；首次构建因 `SkillLabAnimationEditor` 缺少迁移后 AnimNotify 头文件依赖失败，补充对 `SkillLabPresentation` 的模块依赖后通过。新模块构建后重跑 NullRHI RuntimeProbe，日志为 `Saved/Logs/SkillLabPresentation-ModuleProbe.log`。
+已定位的自动化测试名：`SkillLab.GAS.DamageCalculation`、`SkillLab.Skills.CastLifecycle`、`SkillLab.Skills.DefinitionValidation`、`SkillLab.UI.WidgetTreeBeforeSlate`、`SkillLab.Animation.DefinitionProvider`。本轮四技能 Lua 自动化日志 `Saved/Logs/Batch02-Lua-FourSkill-Automation.log` 显示 `SkillLab.Skills.CastLifecycle` 和 `SkillLab.Skills.DefinitionValidation` 均为 `Result={Success}`，进程退出码为 `0`。四技能 RuntimeProbe 日志为 `Saved/Logs/Batch02-Lua-FourSkill-RuntimeProbe.log`，在 NullRHI 下记录四个 Lua 技能的事件链、真实效果结果、燃烧周期与 Reset 后资源状态，并以 `SkillLabRuntimeProbe COMPLETE` 结束。UE 5.8 `SkillLabEditor Win64 Development` 构建使用 `D:\Epic\UE_5.8\Engine\Build\BatchFiles\Build.bat SkillLabEditor Win64 Development E:\agent\game\ue\SkillLab\SkillLab.uproject -WaitMutex -NoHotReloadFromIDE`，最终结果为 `Succeeded`。
 
-本轮 NullRHI RuntimeProbe（`Saved/Logs/SkillLabPresentation-ModuleProbe.log`）记录 Lua runtime ready、`ABP_Unarmed_C_0 consumes CharacterAnimationState`、入场 Fall→Land、受控 Jump→Land、四个技能动作组件报告 Montage 播放、燃烧 DamageTick/BuffRemoved、Cast 5 取消与 reset。各采样点的 `USkillLabAnimInstance` 诊断样本仍为 null；这不否定 AnimBP 消费状态接口的记录，也不能证明 Lua intent 造成可见姿势变化。该日志是 NullRHI 运行证据，不是可见 PIE 视口验收。历史玩家 PIE 日志 `Saved/Logs/SkillLab.log` 只记录移动输入、入场 Fall→Land 和技能 Montage 日志，不证明本轮视觉质量。
+四技能 RuntimeProbe 的关键结果为：Fireball 命中并记录请求伤害 `30`、实际伤害 `40`；AreaBurst 非空范围命中并记录请求伤害 `20`、实际伤害 `25`；Mend 两次满血治疗均记录请求 `40`、实际 `0`；BurningBuff 记录效果添加、三次 `DamageTick`（每次实际 `8`）和 `BuffRemoved/EffectTrackingCleared`，Reset 后能量为 `100`、Fireball 冷却为 `0.00`。该日志是 NullRHI 运行证据，不是可见 PIE 视口验收。未单独运行未命中/阻挡、空区域、受伤治疗、脚本失败、效果失败、重复 RequestId、激活失败、死亡后 Reset 和坏内容恢复场景。
 
 ## Current Limitations
 

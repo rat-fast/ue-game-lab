@@ -17,6 +17,8 @@ Planning/SkillSystem/
         └── Infrastructure/   # 为满足本批技能而提取的公共能力需求
 ```
 
+当前 Lua 技能组合层试点见 [Batch02-LuaSkillCompositionPilot](Batches/Batch02-LuaSkillCompositionPilot/README.md)。
+
 ## 阅读方式
 
 - 了解长期能力方向：读 [长期目标](LongTerm/README.md)。
@@ -28,6 +30,6 @@ Planning/SkillSystem/
 
 [共享技能基线](../../Baseline/SkillSystem/README.md)只记录当前已经确认并稳定承诺的公共能力。长期目标和批次策划可以提出尚未具备的新能力；能力实现并验证、经确认后，才考虑纳入基线。程序现状作为能力核对证据，不替代策划需求。
 
-策划定义体验、业务规则、参数含义、反馈和验收。程序技术接口、GAS/C++ 组织、序列化字段与构建/测试流程由 [程序工作流](../../ProgramWorkflow/SkillSystem/README.md)维护。GAS 是程序结构候选，不是本策划目录的既定结论。
+策划定义体验、业务规则、参数含义、反馈和验收，不读取程序工作流或项目实现文档。程序技术接口、GAS/C++ 组织、序列化字段与构建/测试流程由程序侧负责；GAS 是程序结构候选，不是本策划目录的既定结论。
 
 

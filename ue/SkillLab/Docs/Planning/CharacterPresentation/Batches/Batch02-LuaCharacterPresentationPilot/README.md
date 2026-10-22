@@ -7,9 +7,10 @@
 ## 当前入口与需求文档
 
 - [主需求：Lua 角色表现试点](CharacterPresentationLuaPilotRequirements.md)：阶段、玩家可观察需求、验收条件、资源依据、排除项及待确认/待核实问题。
-- [程序任务入口](../../../../ProgramWorkflow/CharacterPresentationLuaPilot/README.md)：当前程序状态与后续产物路由；其中链接到[架构交接与实现验证](../../../../ProgramWorkflow/CharacterPresentationLuaPilot/ArchitectureHandoff.md)，记录 C++/Lua/UE 分工、实现结果、测试证据与未完成的可见验收门槛。
 - 本批是角色表现策划目录当前的 Lua 试点入口。
 - [Batch01：AI 适配的动画表现链路](../Batch01-AIAdaptedAnimationPipeline/README.md)是先前需求和交接参考，不是当前入口；仅选择性复用仍适用的体验边界。
+
+程序架构、实现状态与验证证据由程序侧任务文档维护，不属于本策划入口的阅读依据；策划需求不据此推定玩家体验已验收。
 
 ## 范围摘要
 

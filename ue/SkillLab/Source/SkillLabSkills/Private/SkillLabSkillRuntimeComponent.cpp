@@ -54,6 +54,8 @@ void USkillLabSkillRuntimeComponent::BeginPlay()
 void USkillLabSkillRuntimeComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	bShuttingDown = true;
+	bResetting = true;
+	++RuntimeGeneration;
 	if (EffectEventAdapter) EffectEventAdapter->Clear(true);
 	if (EffectExecutor) EffectExecutor->Shutdown();
 	if (ActiveCastId != 0)
@@ -230,12 +232,22 @@ bool USkillLabSkillRuntimeComponent::CheckGates(FName& OutReason) const
 FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FSkillLabSkillRequest& InRequest)
 {
 	FSkillLabSkillRequest Request = InRequest;
-	Request.RequestId = Request.RequestId > 0 ? Request.RequestId : NextRequestId++;
+	if (Request.RequestId > 0)
+	{
+		if (AcceptedRequestIds.Contains(Request.RequestId))
+		{
+			return Reject(Request, TEXT("RequestDuplicate"));
+		}
+	}
+	else
+	{
+		do { Request.RequestId = NextRequestId++; } while (AcceptedRequestIds.Contains(Request.RequestId));
+	}
 	FSkillLabSkillDefinition Definition;
 	FName Reason;
-	if (bShuttingDown || !GetWorld() || !bInitialized || !ASC.IsValid())
+	if (bShuttingDown || bResetting || !GetWorld() || !bInitialized || !ASC.IsValid())
 	{
-		return Reject(Request, TEXT("NotInitialized"));
+		return Reject(Request, bResetting ? TEXT("Resetting") : TEXT("NotInitialized"));
 	}
 	if (bFinishing || ActiveCastId != 0)
 	{
@@ -244,6 +256,14 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FS
 	if (!FSkillLabSkillDefinitionProvider::Resolve(Request.SkillId, Definition))
 	{
 		return Reject(Request, TEXT("SkillUnknown"));
+	}
+	if (Definition.BehaviorClass == USkillLabLuaSkillBehavior::StaticClass())
+	{
+		FName ScriptReason;
+		if (!USkillLabLuaSkillBehavior::ValidateScript(Definition, ScriptReason))
+		{
+			return Reject(Request, ScriptReason.IsNone() ? TEXT("ScriptUnavailable") : ScriptReason);
+		}
 	}
 	ActiveDefinition = Definition;
 	if (!CheckGates(Reason))
@@ -280,11 +300,17 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FS
 		return Reject(Request, Reason);
 	}
 	Request.Target = ResolvedTarget;
+	RememberRequestId(Request.RequestId);
 
 	ActiveRequest = Request;
 	ActiveCastId = NextCastId++;
+	ActiveCastGeneration = RuntimeGeneration;
 	bCommitted = false;
 	bFinishing = false;
+	bEffectSubmitted = false;
+	ActiveEffectOperationId = NAME_None;
+	ActiveEffectResult = FSkillLabSkillResult();
+	ActiveEffectResults.Reset();
 	OutcomeReason = NAME_None;
 	FSkillLabCastLifecycle::FConfig LifecycleConfig;
 	LifecycleConfig.WindupSeconds = Definition.Phases.WindupSeconds;
@@ -293,6 +319,7 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FS
 	LifecycleConfig.bUseActiveTimeout = Definition.Phases.ActiveSeconds > 0.0f;
 	if (!Lifecycle.Begin(static_cast<uint64>(ActiveCastId), LifecycleConfig, Now))
 	{
+		ForgetRequestId(Request.RequestId);
 		ActiveCastId = 0;
 		ActiveRequest = FSkillLabSkillRequest();
 		ActiveDefinition = FSkillLabSkillDefinition();
@@ -302,7 +329,8 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FS
 	{
 		const FSkillLabCastPhaseToken Token = Lifecycle.GetPhaseToken();
 		Lifecycle.Cancel(Token, Now);
-		FinishCast(true, TEXT("ActivationFailed"));
+		ClearPendingCast();
+		ForgetRequestId(Request.RequestId);
 		return Reject(Request, TEXT("ActivationFailed"));
 	}
 
@@ -433,7 +461,7 @@ void USkillLabSkillRuntimeComponent::ReleaseCast(const FSkillLabCastPhaseToken T
 		ActiveBehavior = NewObject<USkillLabSkillBehavior>(this, ActiveDefinition.BehaviorClass);
 		if (ActiveBehavior)
 		{
-			ActiveBehavior->Initialize(this, ActiveDefinition, ActiveRequest, ActiveCastId);
+			ActiveBehavior->Initialize(this, ActiveDefinition, ActiveRequest, ActiveCastId, ActiveCastGeneration);
 			ActiveBehavior->Execute();
 			return;
 		}
@@ -540,12 +568,62 @@ void USkillLabSkillRuntimeComponent::FinishCast(const bool bCancelled, const FNa
 	Result.Stage = bCancelled ? ESkillLabCastStage::Cancelled : ESkillLabCastStage::Completed;
 	Emit(bCancelled ? ESkillLabSkillEvent::Cancelled : ESkillLabSkillEvent::Completed, Result, Reason);
 	ActiveBehavior = nullptr;
+	bEffectSubmitted = false;
+	ActiveEffectOperationId = NAME_None;
+	ActiveEffectResult = FSkillLabSkillResult();
+	ActiveEffectResults.Reset();
 	ActiveRequest = FSkillLabSkillRequest();
 	ActiveDefinition = FSkillLabSkillDefinition();
 	ActiveCastId = 0;
+	ActiveCastGeneration = 0;
 	StageEndTime = 0.0;
 	bCommitted = false;
 	bFinishing = false;
+}
+
+void USkillLabSkillRuntimeComponent::ClearPendingCast()
+{
+	if (GetWorld())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(PhaseTimer);
+		GetWorld()->GetTimerManager().ClearTimer(ActiveTimeoutTimer);
+	}
+	ClearInterruptListeners();
+	if (ActiveAbility.IsValid())
+	{
+		USkillLabSkillGameplayAbility* Ability = ActiveAbility.Get();
+		ActiveAbility = nullptr;
+		if (Ability) Ability->FinishSkillAbility(true);
+	}
+	ActiveBehavior = nullptr;
+	ActiveRequest = FSkillLabSkillRequest();
+	ActiveDefinition = FSkillLabSkillDefinition();
+	ActiveCastId = 0;
+	ActiveCastGeneration = 0;
+	StageEndTime = 0.0;
+	bCommitted = false;
+	bFinishing = false;
+	bEffectSubmitted = false;
+	ActiveEffectOperationId = NAME_None;
+	ActiveEffectResult = FSkillLabSkillResult();
+}
+
+void USkillLabSkillRuntimeComponent::RememberRequestId(const int32 RequestId)
+{
+	if (RequestId <= 0 || AcceptedRequestIds.Contains(RequestId)) return;
+	AcceptedRequestIds.Add(RequestId);
+	AcceptedRequestOrder.Add(RequestId);
+	while (AcceptedRequestOrder.Num() > MaxAcceptedRequestHistory)
+	{
+		AcceptedRequestIds.Remove(AcceptedRequestOrder[0]);
+		AcceptedRequestOrder.RemoveAt(0);
+	}
+}
+
+void USkillLabSkillRuntimeComponent::ForgetRequestId(const int32 RequestId)
+{
+	AcceptedRequestIds.Remove(RequestId);
+	AcceptedRequestOrder.Remove(RequestId);
 }
 
 void USkillLabSkillRuntimeComponent::NotifyAbilityActivated(USkillLabSkillGameplayAbility* Ability)
@@ -573,6 +651,8 @@ void USkillLabSkillRuntimeComponent::NotifyAbilityEnded(USkillLabSkillGameplayAb
 bool USkillLabSkillRuntimeComponent::IsBehaviorCurrent(const USkillLabSkillBehavior* Behavior, const int32 CastId) const
 {
 	return !bShuttingDown && Behavior && ActiveBehavior == Behavior && ActiveCastId == CastId
+		&& Behavior->RuntimeGeneration == RuntimeGeneration
+		&& !bResetting && !bFinishing
 		&& Lifecycle.GetStage() == FSkillLabCastLifecycle::EStage::Active;
 }
 
@@ -591,6 +671,18 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::ApplyBehaviorEffect(const U
 		Result.Reason = TEXT("CastNotActive");
 		return Result;
 	}
+	for (const FSkillLabSkillResult& Existing : ActiveEffectResults)
+	{
+		if (Existing.TargetActor == Target)
+		{
+			Result = Existing;
+			Result.Reason = TEXT("EffectAlreadySubmitted");
+			return Result;
+		}
+	}
+	bEffectSubmitted = true;
+	ActiveEffectOperationId = FName(*FString::Printf(TEXT("SkillEffect_%d_%d"), CastId, ActiveEffectResults.Num() + 1));
+	Result.EffectOperationId = ActiveEffectOperationId;
 	if (EffectExecutor)
 	{
 		Result = EffectExecutor->Apply(Behavior, CastId, Target, Definition, Result);
@@ -599,6 +691,9 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::ApplyBehaviorEffect(const U
 	{
 		Result.Reason = TEXT("EffectExecutorUnavailable");
 	}
+	Result.EffectOperationId = ActiveEffectOperationId;
+	ActiveEffectResult = Result;
+	ActiveEffectResults.Add(Result);
 	if (!Result.bSuccess)
 	{
 		Emit(ESkillLabSkillEvent::Hit, Result, Result.Reason);
@@ -680,15 +775,25 @@ void USkillLabSkillRuntimeComponent::OnBlockingTagChanged(const FGameplayTag Tag
 
 void USkillLabSkillRuntimeComponent::ResetSkills()
 {
+	if (bShuttingDown) return;
+	bResetting = true;
+	++RuntimeGeneration;
 	CancelActiveCast(TEXT("Reset"));
 	if (EffectEventAdapter) EffectEventAdapter->Clear(true);
+	bEffectSubmitted = false;
+	ActiveEffectOperationId = NAME_None;
+	ActiveEffectResult = FSkillLabSkillResult();
+	ActiveEffectResults.Reset();
 	CooldownEnd.Reset();
+	AcceptedRequestIds.Reset();
+	AcceptedRequestOrder.Reset();
 	if (ASC.IsValid() && ASC->GetCombatAttributeSet())
 	{
 		const USkillLabCombatAttributeSet* Attributes = ASC->GetCombatAttributeSet();
 		ASC->SetNumericAttributeBase(USkillLabCombatAttributeSet::GetHealthAttribute(), Attributes->GetMaxHealth());
 		ASC->SetNumericAttributeBase(USkillLabCombatAttributeSet::GetEnergyAttribute(), Attributes->GetMaxEnergy());
 	}
+	bResetting = false;
 }
 
 void USkillLabSkillRuntimeComponent::ForwardEffectEvent(const FSkillLabSkillResult& Result)
