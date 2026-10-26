@@ -19,6 +19,6 @@
 当前策划入口：
 
 - [Batch02-LuaCharacterPresentationPilot](Batches/Batch02-LuaCharacterPresentationPilot/README.md)：Lua 角色表现流程试点。
-- [Batch03-MontageNotifyPlacement](Batches/Batch03-MontageNotifyPlacement/README.md)：Montage Notify 点位准确性最小验证；目前是待冻结样本和语义的需求框架，尚未进入程序执行。
+- [Batch03-MontageNotifyPlacement](Batches/Batch03-MontageNotifyPlacement/README.md)：AI 技能动作 Notify 配置能力；根据技能事件需求和给定动作自主确定时点，完成实际配置、回读与游戏内验证。当前为功能需求，Agent 工作流和动作读取方法由用户与总控另行讨论。
 
 此前的 [Batch01-AIAdaptedAnimationPipeline](Batches/Batch01-AIAdaptedAnimationPipeline/README.md) 是先前需求与交接参考，不作为 Lua 试点当前入口；其中仍适用的体验边界由 Batch02 选择性引用。
