@@ -24,6 +24,8 @@
 
 已定位的自动化测试名：`SkillLab.GAS.DamageCalculation`、`SkillLab.Skills.CastLifecycle`、`SkillLab.Skills.DefinitionValidation`、`SkillLab.UI.WidgetTreeBeforeSlate`、`SkillLab.Animation.DefinitionProvider`。本轮四技能 Lua 自动化日志 `Saved/Logs/Batch02-Lua-FourSkill-Automation.log` 显示 `SkillLab.Skills.CastLifecycle` 和 `SkillLab.Skills.DefinitionValidation` 均为 `Result={Success}`，进程退出码为 `0`。四技能 RuntimeProbe 日志为 `Saved/Logs/Batch02-Lua-FourSkill-RuntimeProbe.log`，在 NullRHI 下记录四个 Lua 技能的事件链、真实效果结果、燃烧周期与 Reset 后资源状态，并以 `SkillLabRuntimeProbe COMPLETE` 结束。UE 5.8 `SkillLabEditor Win64 Development` 构建使用 `D:\Epic\UE_5.8\Engine\Build\BatchFiles\Build.bat SkillLabEditor Win64 Development E:\agent\game\ue\SkillLab\SkillLab.uproject -WaitMutex -NoHotReloadFromIDE`，最终结果为 `Succeeded`。
 
+Lua Runtime 模块迁移后的定向证据见 `Saved/Logs/LuaRuntimeModule-Boundary-Automation-AfterDeletion.log`、`Saved/Logs/LuaRuntimeModule-Automation-AfterDeletion.log` 和 `Saved/Logs/LuaRuntimeModule-RuntimeProbe-AfterDeletion.log`：`SkillLab.LuaRuntime.Boundary`、`SkillLab.Skills.CastLifecycle`、`SkillLab.Skills.DefinitionValidation` 均为 `Result={Success}`，NullRHI RuntimeProbe 以 `SkillLabRuntimeProbe COMPLETE` 结束。`SkillLab Win64 Development` Game target 已成功构建，复核日志为 `Saved/Logs/LuaRuntimeModule-GameTarget-Build.log`。
+
 四技能 RuntimeProbe 的关键结果为：Fireball 命中并记录请求伤害 `30`、实际伤害 `40`；AreaBurst 非空范围命中并记录请求伤害 `20`、实际伤害 `25`；Mend 两次满血治疗均记录请求 `40`、实际 `0`；BurningBuff 记录效果添加、三次 `DamageTick`（每次实际 `8`）和 `BuffRemoved/EffectTrackingCleared`，Reset 后能量为 `100`、Fireball 冷却为 `0.00`。该日志是 NullRHI 运行证据，不是可见 PIE 视口验收。未单独运行未命中/阻挡、空区域、受伤治疗、脚本失败、效果失败、重复 RequestId、激活失败、死亡后 Reset 和坏内容恢复场景。
 
 ## Current Limitations

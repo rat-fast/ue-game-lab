@@ -6,7 +6,7 @@
 #include "SkillLabCharacterPresentationLuaComponent.generated.h"
 
 struct FSkillLabSkillResult;
-struct lua_State;
+struct FSkillLabLuaState;
 class USkillLabSkillRuntimeComponent;
 class USkillLabSkillAnimationComponent;
 class USkillLabSkillPresentationRouter;
@@ -23,10 +23,10 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
-	static int32 LuaPlaySkillAction(lua_State* State);
-	static int32 LuaStopSkillAction(lua_State* State);
-	static int32 LuaSetLocomotionIntent(lua_State* State);
-	static int32 LuaLog(lua_State* State);
+	static int32 LuaPlaySkillAction(FSkillLabLuaState* State);
+	static int32 LuaStopSkillAction(FSkillLabLuaState* State);
+	static int32 LuaSetLocomotionIntent(FSkillLabLuaState* State);
+	static int32 LuaLog(FSkillLabLuaState* State);
 	void HandleSkillEvent(const FSkillLabSkillResult& Result);
 	void HandleBaseStateChanged(ESkillLabCharacterAnimationState State, int32 TransitionSerial);
 	bool LoadScript();
@@ -45,5 +45,5 @@ private:
 	TObjectPtr<USkillLabCharacterAnimationStateComponent> AnimationState;
 	UPROPERTY(Transient)
 	TObjectPtr<USkillLabSkillPresentationRouter> SkillPresentationRouter;
-	lua_State* Lua = nullptr;
+	FSkillLabLuaState* Lua = nullptr;
 };

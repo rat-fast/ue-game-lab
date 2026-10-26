@@ -3,7 +3,12 @@
 	"EngineAssociation": "5.8",
 	"Category": "",
 	"Description": "",
-		"Modules": [
+	"Modules": [
+		{
+			"Name": "SkillLabLuaRuntime",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
 		{
 			"Name": "SkillLabGAS",
 			"Type": "Runtime",

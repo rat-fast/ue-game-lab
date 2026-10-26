@@ -10,7 +10,7 @@
 
 - `USkillLabCharacterAnimationStateComponent` 采集 `Idle`、`Move`、`Jump`、`Fall`、`Land` 状态事实并广播迁移。
 - `USkillLabCharacterPresentationLuaComponent` 加载 `Config/CharacterPresentation.lua`，将状态和技能结构化事件交给 Lua 编排，并通过类型化回调请求表现动作。
-- Lua 由项目内 `Source/SkillLabPresentation/ThirdParty/lua-5.4.8/` 提供；Lua 负责表现意图，不负责技能规则或动画求值。
+- `SkillLabPresentation` 通过 Private dependency 使用 `SkillLabLuaRuntime` 的 opaque facade；Lua 5.4.8 唯一源码由 `Source/SkillLabLuaRuntime/ThirdParty/lua-5.4.8/` 提供。Lua 负责表现意图，不负责技能规则或动画求值。
 - `USkillLabCharacterAnimInstance` 是角色表现链的桥接 AnimInstance：缓存 Lua locomotion 意图，并将状态快照字段写入 `ABP_Unarmed` 既有输入；`USkillLabAnimInstance` 是单独的 MovementComponent 直接采样路径。
 - `USkillLabSkillAnimationComponent` 按 `CastId` 播放/停止技能动作；重复 Started 幂等，旧于活动 Cast 的 Started 被忽略。此身份保护由先前程序 Review 确认，迁移后代码位于 `Source/SkillLabPresentation/Private/SkillLabSkillAnimationComponent.cpp`。
 - `USkillLabSkillPresentationRouter` 与 `ASkillLabSkillFeedbackActor` 提供屏幕文字、范围环、目标框和数值占位反馈；FeedbackActor 也用于游戏模块的地面选点预览。`DefaultEngine.ini` 的 `[CoreRedirects]` 保留迁移前反射类、快照结构和状态枚举路径的兼容映射。

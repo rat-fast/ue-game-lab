@@ -7,66 +7,57 @@
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
 
-extern "C"
-{
-#include "lua.h"
-#include "lauxlib.h"
-}
+#include "SkillLabLua.h"
 
 namespace
 {
-	void LuaInstructionHook(lua_State* State, lua_Debug*)
+	USkillLabLuaSkillBehavior* GetLuaBehavior(FSkillLabLuaState* State)
 	{
-		luaL_error(State, "instruction budget exceeded");
+		return static_cast<USkillLabLuaSkillBehavior*>(SkillLabLua::GetCallbackContext(State));
 	}
 
-	USkillLabLuaSkillBehavior* GetLuaBehavior(lua_State* State)
-	{
-		return static_cast<USkillLabLuaSkillBehavior*>(lua_touserdata(State, lua_upvalueindex(1)));
-	}
-
-	int LuaApplyEffect(lua_State* State)
+	int LuaApplyEffect(FSkillLabLuaState* State)
 	{
 		USkillLabLuaSkillBehavior* Behavior = GetLuaBehavior(State);
 		const bool bApplied = Behavior && Behavior->RequestDeclaredEffect();
 		const FSkillLabSkillResult* Result = Behavior ? &Behavior->GetEffectResult() : nullptr;
-		lua_newtable(State);
-		lua_pushboolean(State, bApplied); lua_setfield(State, -2, "applied");
+		SkillLabLua::NewTable(State);
+		SkillLabLua::PushBoolean(State, bApplied); SkillLabLua::SetField(State, -2, "applied");
 		if (Result)
 		{
 			FTCHARToUTF8 ReasonUtf8(*Result->Reason.ToString());
-			lua_pushstring(State, ReasonUtf8.Get()); lua_setfield(State, -2, "reason");
-			lua_pushnumber(State, Result->RequestedAmount); lua_setfield(State, -2, "requestedAmount");
-			lua_pushnumber(State, Result->ActualAmount); lua_setfield(State, -2, "actualAmount");
-			lua_pushnumber(State, Result->HealthBefore); lua_setfield(State, -2, "healthBefore");
-			lua_pushnumber(State, Result->HealthAfter); lua_setfield(State, -2, "healthAfter");
+			SkillLabLua::PushString(State, ReasonUtf8.Get()); SkillLabLua::SetField(State, -2, "reason");
+			SkillLabLua::PushNumber(State, Result->RequestedAmount); SkillLabLua::SetField(State, -2, "requestedAmount");
+			SkillLabLua::PushNumber(State, Result->ActualAmount); SkillLabLua::SetField(State, -2, "actualAmount");
+			SkillLabLua::PushNumber(State, Result->HealthBefore); SkillLabLua::SetField(State, -2, "healthBefore");
+			SkillLabLua::PushNumber(State, Result->HealthAfter); SkillLabLua::SetField(State, -2, "healthAfter");
 		}
 		return 1;
 	}
 
-	int LuaRequestAction(lua_State* State)
+	int LuaRequestAction(FSkillLabLuaState* State)
 	{
 		USkillLabLuaSkillBehavior* Behavior = GetLuaBehavior(State);
 		const bool bAccepted = Behavior && Behavior->RequestDeclaredAction();
 		const FSkillLabSkillResult* Result = Behavior ? &Behavior->GetEffectResult() : nullptr;
-		lua_newtable(State);
-		lua_pushboolean(State, bAccepted); lua_setfield(State, -2, "accepted");
+		SkillLabLua::NewTable(State);
+		SkillLabLua::PushBoolean(State, bAccepted); SkillLabLua::SetField(State, -2, "accepted");
 		if (Result)
 		{
-			lua_pushboolean(State, Result->bEffectApplied); lua_setfield(State, -2, "applied");
-			lua_pushboolean(State, Behavior->IsActionPending()); lua_setfield(State, -2, "pending");
-			lua_pushboolean(State, Behavior->IsActionCompleted()); lua_setfield(State, -2, "completed");
+			SkillLabLua::PushBoolean(State, Result->bEffectApplied); SkillLabLua::SetField(State, -2, "applied");
+			SkillLabLua::PushBoolean(State, Behavior->IsActionPending()); SkillLabLua::SetField(State, -2, "pending");
+			SkillLabLua::PushBoolean(State, Behavior->IsActionCompleted()); SkillLabLua::SetField(State, -2, "completed");
 			FTCHARToUTF8 ReasonUtf8(*Result->Reason.ToString());
-			lua_pushstring(State, ReasonUtf8.Get()); lua_setfield(State, -2, "reason");
-			lua_pushnumber(State, Result->ActualAmount); lua_setfield(State, -2, "actualAmount");
+			SkillLabLua::PushString(State, ReasonUtf8.Get()); SkillLabLua::SetField(State, -2, "reason");
+			SkillLabLua::PushNumber(State, Result->ActualAmount); SkillLabLua::SetField(State, -2, "actualAmount");
 		}
 		return 1;
 	}
 
-	int LuaFinish(lua_State* State)
+	int LuaFinish(FSkillLabLuaState* State)
 	{
 		USkillLabLuaSkillBehavior* Behavior = GetLuaBehavior(State);
-		lua_pushboolean(State, Behavior && Behavior->RequestFinish());
+		SkillLabLua::PushBoolean(State, Behavior && Behavior->RequestFinish());
 		return 1;
 	}
 
@@ -118,20 +109,20 @@ bool USkillLabLuaSkillBehavior::ValidateScript(const FSkillLabSkillDefinition& I
 		OutReason = TEXT("ScriptUnavailable");
 		return false;
 	}
-	lua_State* Lua = luaL_newstate();
+	FSkillLabLuaState* Lua = SkillLabLua::Create();
 	if (!Lua)
 	{
 		OutReason = TEXT("ScriptUnavailable");
 		return false;
 	}
-	lua_sethook(Lua, &LuaInstructionHook, LUA_MASKCOUNT, 100000);
+	SkillLabLua::SetInstructionBudget(Lua, 100000);
 	FTCHARToUTF8 Utf8(*Script);
-	const bool bLoaded = luaL_loadbuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*ScriptPath)) == LUA_OK;
-	const bool bExecuted = bLoaded && lua_pcall(Lua, 0, 0, 0) == LUA_OK;
-	const bool bHasEntry = bExecuted && (lua_getglobal(Lua, "OnSkillCast"), lua_isfunction(Lua, -1));
+	const bool bLoaded = SkillLabLua::LoadBuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*ScriptPath));
+	const bool bExecuted = bLoaded && SkillLabLua::Call(Lua, 0, 0);
+	const bool bHasEntry = bExecuted && (SkillLabLua::GetGlobal(Lua, "OnSkillCast"), SkillLabLua::IsFunction(Lua, -1));
 	if (!bLoaded || !bExecuted) OutReason = TEXT("ScriptError");
 	else if (!bHasEntry) OutReason = TEXT("ScriptEntryMissing");
-	lua_close(Lua);
+	SkillLabLua::Close(Lua);
 	return OutReason.IsNone();
 }
 
@@ -259,47 +250,45 @@ void USkillLabLuaSkillBehavior::RunScript()
 		Fail(TEXT("ScriptUnavailable"));
 		return;
 	}
-	lua_State* Lua = luaL_newstate();
+	FSkillLabLuaState* Lua = SkillLabLua::Create();
 	if (!Lua)
 	{
 		Fail(TEXT("ScriptUnavailable"));
 		return;
 	}
-	lua_sethook(Lua, &LuaInstructionHook, LUA_MASKCOUNT, 100000);
+	SkillLabLua::SetInstructionBudget(Lua, 100000);
 	FTCHARToUTF8 Utf8(*Script);
-	if (luaL_loadbuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*ScriptPath)) != LUA_OK
-		|| lua_pcall(Lua, 0, 0, 0) != LUA_OK)
+	if (!SkillLabLua::LoadBuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*ScriptPath))
+		|| !SkillLabLua::Call(Lua, 0, 0))
 	{
-		lua_close(Lua);
+		SkillLabLua::Close(Lua);
 		Fail(TEXT("ScriptError"));
 		return;
 	}
-	lua_getglobal(Lua, "OnSkillCast");
-	if (!lua_isfunction(Lua, -1))
+	SkillLabLua::GetGlobal(Lua, "OnSkillCast");
+	if (!SkillLabLua::IsFunction(Lua, -1))
 	{
-		lua_close(Lua);
+		SkillLabLua::Close(Lua);
 		Fail(TEXT("ScriptEntryMissing"));
 		return;
 	}
-	lua_newtable(Lua);
-	lua_pushinteger(Lua, CastId); lua_setfield(Lua, -2, "castId");
-	lua_pushinteger(Lua, Request.RequestId); lua_setfield(Lua, -2, "requestId");
+	SkillLabLua::NewTable(Lua);
+	SkillLabLua::PushInteger(Lua, CastId); SkillLabLua::SetField(Lua, -2, "castId");
+	SkillLabLua::PushInteger(Lua, Request.RequestId); SkillLabLua::SetField(Lua, -2, "requestId");
 	FTCHARToUTF8 SkillUtf8(*Definition.SkillId.ToString());
-	lua_pushstring(Lua, SkillUtf8.Get()); lua_setfield(Lua, -2, "skillId");
-	lua_pushlightuserdata(Lua, this);
-	lua_pushcclosure(Lua, &LuaRequestAction, 1);
-	lua_setglobal(Lua, "SkillLabSkill_RequestAction");
-	lua_pushlightuserdata(Lua, this);
-	lua_pushcclosure(Lua, &LuaFinish, 1);
-	lua_setglobal(Lua, "SkillLabSkill_Finish");
-	if (lua_pcall(Lua, 1, 0, 0) != LUA_OK)
+	SkillLabLua::PushString(Lua, SkillUtf8.Get()); SkillLabLua::SetField(Lua, -2, "skillId");
+	SkillLabLua::PushCallback(Lua, &LuaRequestAction, this);
+	SkillLabLua::SetGlobal(Lua, "SkillLabSkill_RequestAction");
+	SkillLabLua::PushCallback(Lua, &LuaFinish, this);
+	SkillLabLua::SetGlobal(Lua, "SkillLabSkill_Finish");
+	if (!SkillLabLua::Call(Lua, 1, 0))
 	{
-		lua_close(Lua);
+		SkillLabLua::Close(Lua);
 		Fail(TEXT("ScriptError"));
 		return;
 	}
 	const bool bCompleted = bFinished;
-	lua_close(Lua);
+	SkillLabLua::Close(Lua);
 	if (!bCompleted && IsCurrent() && !bActionPending)
 	{
 		Fail(bEffectRequested && !EffectResult.bEffectApplied && !EffectResult.Reason.IsNone()

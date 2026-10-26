@@ -12,12 +12,7 @@
 #include "SkillLabCharacterAnimInstance.h"
 #include "UObject/UnrealType.h"
 
-extern "C"
-{
-#include "lua.h"
-#include "lauxlib.h"
-#include "lualib.h"
-}
+#include "SkillLabLua.h"
 
 namespace
 {
@@ -116,8 +111,9 @@ void USkillLabCharacterPresentationLuaComponent::EndPlay(const EEndPlayReason::T
 	}
 	if (Lua)
 	{
-		lua_close(Lua);
+		SkillLabLua::Close(Lua);
 		Lua = nullptr;
+		UE_LOG(LogTemp, Log, TEXT("[SkillLabLuaPresentation] %s runtime closed (EndPlay)"), *GetNameSafe(GetOwner()));
 	}
 	Super::EndPlay(EndPlayReason);
 }
@@ -132,20 +128,20 @@ bool USkillLabCharacterPresentationLuaComponent::LoadScript()
 		return false;
 	}
 
-	Lua = luaL_newstate();
+	Lua = SkillLabLua::Create();
 	if (!Lua)
 	{
 		UE_LOG(LogTemp, Error, TEXT("[SkillLabLuaPresentation] Lua state allocation failed"));
 		return false;
 	}
-	luaL_openlibs(Lua);
+	SkillLabLua::OpenLibraries(Lua);
 	RegisterBridgeFunctions();
 	FTCHARToUTF8 Utf8(*Script);
-	if (luaL_loadbuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*ScriptPath)) != LUA_OK
-		|| lua_pcall(Lua, 0, 0, 0) != LUA_OK)
+	if (!SkillLabLua::LoadBuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*ScriptPath))
+		|| !SkillLabLua::Call(Lua, 0, 0))
 	{
 		LogLuaError(TEXT("load"));
-		lua_close(Lua);
+		SkillLabLua::Close(Lua);
 		Lua = nullptr;
 		return false;
 	}
@@ -154,36 +150,32 @@ bool USkillLabCharacterPresentationLuaComponent::LoadScript()
 
 void USkillLabCharacterPresentationLuaComponent::RegisterBridgeFunctions()
 {
-	lua_newtable(Lua);
-	lua_pushlightuserdata(Lua, this);
-	lua_pushcclosure(Lua, &LuaPlaySkillAction, 1);
-	lua_setfield(Lua, -2, "PlaySkillAction");
-	lua_pushlightuserdata(Lua, this);
-	lua_pushcclosure(Lua, &LuaStopSkillAction, 1);
-	lua_setfield(Lua, -2, "StopSkillAction");
-	lua_pushlightuserdata(Lua, this);
-	lua_pushcclosure(Lua, &LuaSetLocomotionIntent, 1);
-	lua_setfield(Lua, -2, "SetLocomotionIntent");
-	lua_pushlightuserdata(Lua, this);
-	lua_pushcclosure(Lua, &LuaLog, 1);
-	lua_setfield(Lua, -2, "Log");
-	lua_setglobal(Lua, "SkillLabPresentation");
+	SkillLabLua::NewTable(Lua);
+	SkillLabLua::PushCallback(Lua, &LuaPlaySkillAction, this);
+	SkillLabLua::SetField(Lua, -2, "PlaySkillAction");
+	SkillLabLua::PushCallback(Lua, &LuaStopSkillAction, this);
+	SkillLabLua::SetField(Lua, -2, "StopSkillAction");
+	SkillLabLua::PushCallback(Lua, &LuaSetLocomotionIntent, this);
+	SkillLabLua::SetField(Lua, -2, "SetLocomotionIntent");
+	SkillLabLua::PushCallback(Lua, &LuaLog, this);
+	SkillLabLua::SetField(Lua, -2, "Log");
+	SkillLabLua::SetGlobal(Lua, "SkillLabPresentation");
 }
 
-int32 USkillLabCharacterPresentationLuaComponent::LuaPlaySkillAction(lua_State* State)
+int32 USkillLabCharacterPresentationLuaComponent::LuaPlaySkillAction(FSkillLabLuaState* State)
 {
-	auto* Self = static_cast<USkillLabCharacterPresentationLuaComponent*>(lua_touserdata(State, lua_upvalueindex(1)));
-	const int32 CastId = static_cast<int32>(luaL_checkinteger(State, 1));
-	const FName SkillId(UTF8_TO_TCHAR(luaL_checkstring(State, 2)));
+	auto* Self = static_cast<USkillLabCharacterPresentationLuaComponent*>(SkillLabLua::GetCallbackContext(State));
+	const int32 CastId = static_cast<int32>(SkillLabLua::CheckInteger(State, 1));
+	const FName SkillId(UTF8_TO_TCHAR(SkillLabLua::CheckString(State, 2)));
 	const bool bPlayed = Self && Self->SkillAnimation && Self->SkillAnimation->PlayCastAction(CastId, SkillId);
-	lua_pushboolean(State, bPlayed);
+	SkillLabLua::PushBoolean(State, bPlayed);
 	return 1;
 }
 
-int32 USkillLabCharacterPresentationLuaComponent::LuaStopSkillAction(lua_State* State)
+int32 USkillLabCharacterPresentationLuaComponent::LuaStopSkillAction(FSkillLabLuaState* State)
 {
-	auto* Self = static_cast<USkillLabCharacterPresentationLuaComponent*>(lua_touserdata(State, lua_upvalueindex(1)));
-	const int32 CastId = static_cast<int32>(luaL_checkinteger(State, 1));
+	auto* Self = static_cast<USkillLabCharacterPresentationLuaComponent*>(SkillLabLua::GetCallbackContext(State));
+	const int32 CastId = static_cast<int32>(SkillLabLua::CheckInteger(State, 1));
 	if (Self && Self->SkillAnimation)
 	{
 		Self->SkillAnimation->StopCastAction(CastId);
@@ -191,11 +183,11 @@ int32 USkillLabCharacterPresentationLuaComponent::LuaStopSkillAction(lua_State* 
 	return 0;
 }
 
-int32 USkillLabCharacterPresentationLuaComponent::LuaSetLocomotionIntent(lua_State* State)
+int32 USkillLabCharacterPresentationLuaComponent::LuaSetLocomotionIntent(FSkillLabLuaState* State)
 {
-	auto* Self = static_cast<USkillLabCharacterPresentationLuaComponent*>(lua_touserdata(State, lua_upvalueindex(1)));
-	const bool bShouldMove = lua_toboolean(State, 1) != 0;
-	const bool bIsFalling = lua_toboolean(State, 2) != 0;
+	auto* Self = static_cast<USkillLabCharacterPresentationLuaComponent*>(SkillLabLua::GetCallbackContext(State));
+	const bool bShouldMove = SkillLabLua::ToBoolean(State, 1) != 0;
+	const bool bIsFalling = SkillLabLua::ToBoolean(State, 2) != 0;
 	if (Self)
 	{
 		TArray<USkeletalMeshComponent*> Meshes;
@@ -209,10 +201,10 @@ int32 USkillLabCharacterPresentationLuaComponent::LuaSetLocomotionIntent(lua_Sta
 	return 0;
 }
 
-int32 USkillLabCharacterPresentationLuaComponent::LuaLog(lua_State* State)
+int32 USkillLabCharacterPresentationLuaComponent::LuaLog(FSkillLabLuaState* State)
 {
-	auto* Self = static_cast<USkillLabCharacterPresentationLuaComponent*>(lua_touserdata(State, lua_upvalueindex(1)));
-	const char* Message = luaL_checkstring(State, 1);
+	auto* Self = static_cast<USkillLabCharacterPresentationLuaComponent*>(SkillLabLua::GetCallbackContext(State));
+	const char* Message = SkillLabLua::CheckString(State, 1);
 	if (Self)
 	{
 		UE_LOG(LogTemp, Log, TEXT("[SkillLabLuaPresentation] %s"), UTF8_TO_TCHAR(Message));
@@ -254,28 +246,28 @@ bool USkillLabCharacterPresentationLuaComponent::CallSkillCallback(const FSkillL
 	{
 		return false;
 	}
-	lua_getglobal(Lua, "OnSkillEvent");
-	if (!lua_isfunction(Lua, -1))
+	SkillLabLua::GetGlobal(Lua, "OnSkillEvent");
+	if (!SkillLabLua::IsFunction(Lua, -1))
 	{
-		lua_pop(Lua, 1);
+		SkillLabLua::Pop(Lua, 1);
 		return false;
 	}
-	lua_newtable(Lua);
+	SkillLabLua::NewTable(Lua);
 	auto SetString = [this](const char* Key, const TCHAR* Value)
 	{
 		FTCHARToUTF8 Utf8(Value);
-		lua_pushlstring(Lua, Utf8.Get(), Utf8.Length());
-		lua_setfield(Lua, -2, Key);
+		SkillLabLua::PushString(Lua, Utf8.Get(), Utf8.Length());
+		SkillLabLua::SetField(Lua, -2, Key);
 	};
-	lua_pushinteger(Lua, Result.CastId); lua_setfield(Lua, -2, "castId");
-	lua_pushinteger(Lua, Result.RequestId); lua_setfield(Lua, -2, "requestId");
+	SkillLabLua::PushInteger(Lua, Result.CastId); SkillLabLua::SetField(Lua, -2, "castId");
+	SkillLabLua::PushInteger(Lua, Result.RequestId); SkillLabLua::SetField(Lua, -2, "requestId");
 	SetString("skillId", *Result.SkillId.ToString());
 	SetString("event", ToString(Result.Event));
 	SetString("stage", ToString(Result.Stage));
-	lua_pushboolean(Lua, Result.bSuccess); lua_setfield(Lua, -2, "success");
-	lua_pushnumber(Lua, Result.ActualAmount); lua_setfield(Lua, -2, "actualAmount");
+	SkillLabLua::PushBoolean(Lua, Result.bSuccess); SkillLabLua::SetField(Lua, -2, "success");
+	SkillLabLua::PushNumber(Lua, Result.ActualAmount); SkillLabLua::SetField(Lua, -2, "actualAmount");
 	SetString("reason", *Result.Reason.ToString());
-	if (lua_pcall(Lua, 1, 0, 0) != LUA_OK)
+	if (!SkillLabLua::Call(Lua, 1, 0))
 	{
 		LogLuaError(TEXT("OnSkillEvent"));
 		return false;
@@ -291,18 +283,18 @@ bool USkillLabCharacterPresentationLuaComponent::CallStateCallback(
 	{
 		return false;
 	}
-	lua_getglobal(Lua, "OnBaseStateChanged");
-	if (!lua_isfunction(Lua, -1))
+	SkillLabLua::GetGlobal(Lua, "OnBaseStateChanged");
+	if (!SkillLabLua::IsFunction(Lua, -1))
 	{
-		lua_pop(Lua, 1);
+		SkillLabLua::Pop(Lua, 1);
 		return false;
 	}
 	FTCHARToUTF8 StateUtf8(ToString(State));
-	lua_pushlstring(Lua, StateUtf8.Get(), StateUtf8.Length());
-	lua_pushinteger(Lua, TransitionSerial);
-	lua_pushboolean(Lua, bShouldMove);
-	lua_pushboolean(Lua, bIsFalling);
-	if (lua_pcall(Lua, 4, 0, 0) != LUA_OK)
+	SkillLabLua::PushString(Lua, StateUtf8.Get(), StateUtf8.Length());
+	SkillLabLua::PushInteger(Lua, TransitionSerial);
+	SkillLabLua::PushBoolean(Lua, bShouldMove);
+	SkillLabLua::PushBoolean(Lua, bIsFalling);
+	if (!SkillLabLua::Call(Lua, 4, 0))
 	{
 		LogLuaError(TEXT("OnBaseStateChanged"));
 		return false;
@@ -350,8 +342,8 @@ void USkillLabCharacterPresentationLuaComponent::ApplyNativeLocomotionFallback(
 
 void USkillLabCharacterPresentationLuaComponent::LogLuaError(const TCHAR* Callback)
 {
-	const char* Error = lua_tostring(Lua, -1);
+	const char* Error = SkillLabLua::ToString(Lua, -1);
 	UE_LOG(LogTemp, Error, TEXT("[SkillLabLuaPresentation] %s failed: %s"), Callback,
 		UTF8_TO_TCHAR(Error ? Error : "unknown Lua error"));
-	lua_pop(Lua, 1);
+	SkillLabLua::Pop(Lua, 1);
 }

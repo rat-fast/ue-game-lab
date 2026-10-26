@@ -9,7 +9,6 @@ public class SkillLabPresentation : ModuleRules
 		{
 			"Core", "CoreUObject", "Engine", "GameplayTags", "SkillLabSkills"
 		});
-		PrivateDependencyModuleNames.AddRange(new string[] { "AnimGraphRuntime", "Json" });
-		PrivateIncludePaths.Add(System.IO.Path.Combine(ModuleDirectory, "ThirdParty", "lua-5.4.8", "src"));
+		PrivateDependencyModuleNames.AddRange(new string[] { "AnimGraphRuntime", "Json", "SkillLabLuaRuntime" });
 	}
 }

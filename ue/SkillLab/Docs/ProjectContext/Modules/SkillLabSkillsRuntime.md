@@ -10,7 +10,7 @@
 - 定义与数据：`FSkillLabSkillDefinition`、`FSkillLabSkillRequest`、`FSkillLabSkillResult`、`FSkillLabSkillDefinitionProvider`；数值来源为 `Config/SkillDefinitions.json`。
 - 执行边界：`USkillLabSkillBehaviorRegistry`、`USkillLabSkillBehavior`、`USkillLabLuaSkillBehavior`、`USkillLabSkillEffectExecutor`、`USkillLabSkillEffectEventAdapter`。
 - 当前行为样本：`USkillLabFireballSkill`/`ASkillLabFireballProjectile`、`USkillLabAreaBurstBehavior`、`USkillLabMendBehavior`、`USkillLabBurningBehavior` 的注册配置仍提供结构能力；四个当前定义实际使用通用 `USkillLabLuaSkillBehavior`，脚本位于 `Config/Skill_Fireball.lua`、`Config/Skill_AreaBurst.lua`、`Config/Skill_Mend.lua` 和 `Config/Skill_BurningBuff.lua`。
-- Lua 依赖：`Source/SkillLabSkills/ThirdParty/lua-5.4.8/src/` 由 `SkillLabSkills.Build.cs` 编译进 Skills 模块。技能宿主不调用 `luaL_openlibs`，只绑定 `SkillLabSkill_RequestAction()` 和 `SkillLabSkill_Finish()`。
+- Lua 依赖：`SkillLabSkills` 通过 Private dependency 使用 `SkillLabLuaRuntime` 的 opaque facade；Lua 5.4.8 唯一源码位于 `Source/SkillLabLuaRuntime/ThirdParty/lua-5.4.8/src/`，不再由 Skills 编译。技能宿主不调用 `luaL_openlibs`，只绑定 `SkillLabSkill_RequestAction()` 和 `SkillLabSkill_Finish()`。
 - 目标解析与技能行为继续位于 `SkillLabSkills`；表现桥、反馈 Actor 与技能动画组件位于独立 `SkillLabPresentation` 模块。运行时只发布 `OnNativeSkillEvent`，不创建或持有表现对象。
 
 ## Runtime Entry

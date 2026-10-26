@@ -4,16 +4,17 @@
 
 ## 项目角色
 
-SkillLab 是一个单机技能系统实验项目：`SkillLab` 模块提供玩家角色、控制器、输入、HUD 和测试场；`SkillLabSkills` 模块提供技能定义、loadout、请求门控、施法生命周期、目标/行为/事件；`SkillLabPresentation` 模块提供角色/技能动画适配、Lua 表现编排和通用反馈；`SkillLabGAS` 模块提供 Gameplay Ability System（GAS）承载的战斗属性、即时伤害/治疗和持续伤害结算。
+SkillLab 是一个单机技能系统实验项目：`SkillLab` 模块提供玩家角色、控制器、输入、HUD 和测试场；`SkillLabSkills` 模块提供技能定义、loadout、请求门控、施法生命周期、目标/行为/事件；`SkillLabPresentation` 模块提供角色/技能动画适配、Lua 表现编排和通用反馈；`SkillLabGAS` 模块提供 Gameplay Ability System（GAS）承载的战斗属性、即时伤害/治疗和持续伤害结算；`SkillLabLuaRuntime` 是整个 SkillLab 工程可按需依赖的业务无关 Lua 运行时模块。
 
-项目文件为 `SkillLab.uproject`，声明四个 Runtime 模块（含 `SkillLabPresentation`）及一个 Editor 模块并启用 `GameplayAbilities`、`ModelContextProtocol`、`AllToolsets` 等插件。当前默认地图和 GameMode 来自 `Config/DefaultEngine.ini`：`/Game/SkillLab/L_SkillLab_NavTest` 与 `/Game/SkillLab/BP_SkillLabGameMode.BP_SkillLabGameMode_C`。
+项目文件为 `SkillLab.uproject`，声明五个 Runtime 模块（含 `SkillLabLuaRuntime`）及一个 Editor 模块并启用 `GameplayAbilities`、`ModelContextProtocol`、`AllToolsets` 等插件。当前默认地图和 GameMode 来自 `Config/DefaultEngine.ini`：`/Game/SkillLab/L_SkillLab_NavTest` 与 `/Game/SkillLab/BP_SkillLabGameMode.BP_SkillLabGameMode_C`。
 
 ## 模块地图
 
 | 稳定职责 | 代码入口 | 主要依赖与边界 |
 | --- | --- | --- |
 | 角色与玩家控制 | `Source/SkillLab/SkillLabCharacter.*`、`SkillLabPlayerController.*` | 组合 ASC、技能运行组件、动画组件、相机；控制器连接输入/HUD/测试命令，不直接结算效果 |
-| 角色与技能表现 | `Source/SkillLabPresentation/` | 独立 Runtime 模块；含状态采集、AnimInstance 适配、Lua 5.4.8、事件 Router、技能动作和通用反馈。依赖 `SkillLabSkills` 读取技能事实 |
+| 角色与技能表现 | `Source/SkillLabPresentation/` | 独立 Runtime 模块；含状态采集、AnimInstance 适配、Lua 表现编排、事件 Router、技能动作和通用反馈。通过 `SkillLabLuaRuntime` facade 使用 Lua，依赖 `SkillLabSkills` 读取技能事实 |
+| 公共 Lua 运行时 | `Source/SkillLabLuaRuntime/`、`SkillLabLua.h` | 业务无关的 Lua 5.4.8 唯一源码、VM 生命周期、受保护调用、指令预算和 opaque facade；只依赖 `Core`，不依赖 Skills、Presentation、GAS 或角色表现模块 |
 | 玩家输入、技能快捷键与 HUD | `Source/SkillLab/Public/SkillLab*Input*`、`SkillLabSkillShortcutComponent.*`、`SkillLabHUD*` | 快捷键列表是输入和 HUD 的共同来源；目标解析和展示通过 `SkillLabSkills` 的公开接口完成 |
 | 技能运行时与内容 | `Source/SkillLabSkills/Public/SkillLabSkillRuntimeComponent.h` 及同模块实现 | 负责定义加载、loadout、请求门控、Cast 生命周期、行为注册/执行、Lua 组合宿主和事件转发；不拥有角色移动和 HUD 布局 |
 | 目标与技能行为 | `SkillLabTargetingService.*`、`SkillLab*SkillBehavior.*`、`SkillLabFireball*`、`SkillLabAreaBurstSkill.*`、`SkillLabMendSkill.*`、`SkillLabBurningSkill.*` | 位于 `SkillLabSkills`；目标关系/距离/视线和具体执行方式在此表达；效果数值交给 `SkillLabGAS` |
@@ -56,7 +57,7 @@ USkillLabSkillRuntimeComponent::OnNativeSkillEvent
   -> Cancelled/Completed: 按 CastId 停止对应动作
 ```
 
-`ASkillLabCharacter` 构造 GAS、技能运行时和表现组件；`SkillLab` 游戏模块依赖 `SkillLabPresentation` 完成角色组装。技能运行时在 `BeginPlay` 初始化 ASC actor info、loadout 和效果执行器，并发布 `FSkillLabSkillResult` 事件；Lua 表现组件创建 Router 并订阅这些事件，EndPlay 时解绑。`SkillLabSkills` 不依赖表现模块、不创建表现对象。技能 Lua 宿主位于 `SkillLabSkills`，使用本模块内置的 Lua 5.4.8 源码，只开放 `SkillLabSkill_RequestAction()` 与 `SkillLabSkill_Finish()`，不能直接访问 ASC、Actor 或表现对象。控制器的 Exec 命令通过 `USkillLabTestCommandsComponent` 复用快捷键或重置运行时。
+`ASkillLabCharacter` 构造 GAS、技能运行时和表现组件；`SkillLab` 游戏模块依赖 `SkillLabPresentation` 完成角色组装。技能运行时在 `BeginPlay` 初始化 ASC actor info、loadout 和效果执行器，并发布 `FSkillLabSkillResult` 事件；Lua 表现组件创建 Router 并订阅这些事件，EndPlay 时解绑。`SkillLabSkills` 不依赖表现模块、不创建表现对象。技能 Lua 宿主位于 `SkillLabSkills`，通过 Private dependency 使用 `SkillLabLuaRuntime` 的 opaque facade；Lua 5.4.8 源码不再归属业务模块，只开放 `SkillLabSkill_RequestAction()` 与 `SkillLabSkill_Finish()`，不能直接访问 ASC、Actor 或表现对象。控制器的 Exec 命令通过 `USkillLabTestCommandsComponent` 复用快捷键或重置运行时。
 
 角色表现链中，`USkillLabCharacterAnimationStateComponent` 从 Character Movement 采集速度、方向、加速度与 Falling 状态，维护五态快照。`USkillLabCharacterPresentationLuaComponent` 订阅状态变化和表现路由事件，将状态/技能结果传入 Lua，并提供播放动作、停止动作、设置 locomotion 意图和日志等窄桥接。Lua 只组合表现策略：当前 `CharacterPresentation.lua` 对 Started 请求动作，对取消/完成请求停止，对命中、阶段、目标和持续效果仅记录日志。若 Lua 脚本或回调不可用，C++ 有原生基础 locomotion 和 Started/终态动作回退；动作资源、Mesh、AnimInstance 或 Montage 播放失败则只记警告并跳过动作，技能运行继续。
 
@@ -77,7 +78,7 @@ USkillLabSkillRuntimeComponent::OnNativeSkillEvent
 
 - 数值与技能内容定义文件：`Config/SkillDefinitions.json`。当前列出 `Skill_Fireball`、`Skill_AreaBurst`、`Skill_Mend`、`Skill_BurningBuff` 的 `cost`、`cooldown`、`magnitude`、`powerCoefficient`、阶段时间、燃烧 `duration/period`、阻塞标签和 `luaScript` 绑定。技能的目标形状、敌我关系、效果类型、执行模板及投射物结构参数仍由 `SkillLabSkills` 的注册配置提供，Provider 再覆盖 JSON 支持的内容字段。
 - 基础动画调参：`Config/AnimationDefinitions.json` 提供 movement threshold 与方向夹角范围；由 `USkillLabAnimInstance` 路径读取。角色表现五态的阈值/状态采集由 C++ 状态组件负责。
-- Lua 表现策略：`Config/CharacterPresentation.lua` 映射五态至 locomotion intent，并处理技能 Started/终态动作请求；当前命中、阶段和持续效果回调只记日志。Lua 5.4.8 源码位于 `Source/SkillLabPresentation/ThirdParty/lua-5.4.8/`，由 `SkillLabPresentation.Build.cs` 编入独立模块。
+- Lua 表现策略：`Config/CharacterPresentation.lua` 映射五态至 locomotion intent，并处理技能 Started/终态动作请求；当前命中、阶段和持续效果回调只记日志。`SkillLabPresentation` 通过 Private dependency 使用 `SkillLabLuaRuntime` 的 opaque facade；Lua 5.4.8 唯一源码位于 `Source/SkillLabLuaRuntime/ThirdParty/lua-5.4.8/`，是引入的 Lua.org/PUC-Rio 第三方源码，不是 SkillLab 自研代码，由 `SkillLabLuaRuntime` 统一编译维护。
 - 技能动作绑定：`SkillDefinitions.json` 中的 `castMontage`/`castAnimation` 软路径由 `SkillLabSkills` 定义提供器解析。当前四技能均配置 `castAnimation`；Sequence 由 UE 动态创建 Montage。`AnimationDefinitions.json` 不保存技能动作绑定。
 - 技能组合脚本：`Config/Skill_Fireball.lua`、`Config/Skill_AreaBurst.lua`、`Config/Skill_Mend.lua`、`Config/Skill_BurningBuff.lua` 由 `luaScript` 相对路径绑定。四个当前技能均注册为 `USkillLabLuaSkillBehavior` 运行；脚本只能请求已由定义校验通过的执行动作，投射物、范围查询、即时效果、实际结算、持续效果和 Cast 终态仍由 C++/GAS 运行链产生。
 - 输入资产：`Content/SkillLab/Input/IMC_SkillLab.uasset`、`IA_MoveClick.uasset`、`IA_CameraLook.uasset`、`IA_CameraZoom.uasset`；技能槽位与确认/取消键当前由 `USkillLabSkillShortcutComponent` 的默认值提供。
