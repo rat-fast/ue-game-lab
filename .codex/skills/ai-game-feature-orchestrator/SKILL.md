@@ -24,7 +24,7 @@ description: 协调游戏功能从用户目标到策划需求与程序交付的�
 
 1. `AGENTS.md`：仓库范围、目录约定、语言规则和 Skill 路由。
 2. `<ProjectRoot>/Docs/README.md`：这个 UE 项目的文档分区、当前入口和阅读边界；如果不存在，记录缺失，不凭目录名称猜测项目约定。
-3. 与任务直接相关的项目策划入口和领域基线；项目代码事实、模块地图和程序工作流由后续程序主控读取。
+3. 相关领域基线入口和本次涉及的正文、当前需求；任务路径不明时再查领域策划索引。UE 入口按功能总控分支执行，项目代码事实、模块地图和程序工作流由后续程序主控读取。
 
 总控不得为了了解实现而读取 `Docs/ProjectContext/` 或 `Docs/ProgramWorkflow/`。如果需要知道当前代码、接口、资产、运行链或验证结果，只能把问题交给程序主控；不得把程序侧文档摘要转写成自己的判断。
 
@@ -32,9 +32,9 @@ description: 协调游戏功能从用户目标到策划需求与程序交付的�
 
 根据用户目标选择一个或多个领域，按以下优先级读取：
 
-1. 领域共享基线入口：`<ProjectRoot>/Docs/Baseline/<Domain>/README.md`，以及入口明确引用的当前有效基线正文。例如 SkillLab 的角色表现基线在 `Docs/Baseline/CharacterPresentation/`，技能业务基线在 `Docs/Baseline/SkillSystem/`。
-2. 领域策划入口：`<ProjectRoot>/Docs/Planning/<Domain>/README.md`。如果存在当前任务或批次入口，再读取它指向的需求文档，例如 `Docs/Planning/CharacterPresentation/Batches/<BatchName>/README.md` 及其需求文件。
-3. 只在任务明确需要时读取相关的策划资源需求或历史策划批次；历史文档必须由当前策划入口标为参考/归档后才使用，不能因为文件路径相似就当成当前规则。
+1. 领域共享基线入口：`<ProjectRoot>/Docs/Baseline/<Domain>/README.md`，以及当前目标涉及的有效正文；不把入口的全部链接视为必读。例如 SkillLab 的角色表现基线在 `Docs/Baseline/CharacterPresentation/`，技能业务基线在 `Docs/Baseline/SkillSystem/`。
+2. 当前任务的策划需求及范围/状态。已知准确路径时直达该任务入口或正文；定位不明时再查 `<ProjectRoot>/Docs/Planning/<Domain>/README.md`，不逐级重读所有目录 README。
+3. 只在任务明确需要时读取相关策划资源需求、旧批次或长期方向。使用旧策划前说明用户或当前入口确认的复用目的、适用章节，以及它属于背景还是本次要求；不能因领域相同就继承旧范围。
 4. 程序工作流入口、架构交接、实现摘要、Review 和验证证据不属于总控的读取上下文；由程序主控按职责读取。
 
 如果某一类文档尚不存在，例如新任务还没有 Planning，不要为了满足目录形状创建占位正文，也不要因此读代码。使用已有入口、相关基线和用户目标派发新的 Planning Agent。
@@ -43,8 +43,8 @@ description: 协调游戏功能从用户目标到策划需求与程序交付的�
 
 Skill 文件位于仓库 `.codex/skills/<skill-name>/SKILL.md`。按职责读取，不把所有 Skills 一次性加载：
 
-- 需求还没有形成时，读取 `ai-game-feature-planning/SKILL.md`，交给策划 Planning Agent 使用；
-- 涉及程序侧工作时，读取 `ai-program-workflow-orchestrator/SKILL.md`，交给程序主控 Agent 使用；
+- 派发策划时给出 `ai-game-feature-planning/SKILL.md`，由策划 Agent 读取；总控需要确认交接边界时只补相关段落；
+- 派发程序侧工作时给出 `ai-program-workflow-orchestrator/SKILL.md`，由程序主控读取；总控不为派发而全文加载其技术流程；
 - 进入 UE 项目时，遵循 `ue-project-context/SKILL.md` 的项目入口路由；
 - 只有任务明确进入 AI Native 方法论或生产架构讨论时，才读取 `ai-native-design-collaborator` 或根目录 `AI_NATIVE_GAME_DEV_PRINCIPLES.md` 的相关内容；
 - 只有总控自己要维护项目当前文档时，才读取 `project-documentation/SKILL.md`。
@@ -82,10 +82,16 @@ Planning 不存在时，从用户目标、相关基线和已有策划文档准�
 
 对新的独立任务，策划 Planning Agent 与程序主控 Agent 使用各自的新对话上下文，不复用主题相近但目标不同的旧 Agent 对话，也不把其中一个作为另一个的 subagent。持续同一任务、用户要求续用或已有负责人正在处理同一交付时，可沿用对应原对话。不得把程序主控应组织的架构、实现或独立 Review 直接塞进策划 Agent，也不由总控绕过程序主控逐个派发这些程序专项 Agent。实际创建对话时遵循当前对话工具的授权要求。
 
+### 独立对话工具
+
+当用户要求开启新的策划 Agent、程序主控 Agent 或其他需要用户直接参与的独立任务时，调用 Codex App 工具 `mcp__codex_app__create_thread`，创建新的本地项目对话，并在提示词中交付目标、范围、文档入口、职责边界和交接要求。创建成功后使用返回的 `threadId` 识别该对话，并在对用户的交付中使用 `::created-thread{threadId="..."}`。
+
+`collaboration.spawn_agent` 只用于当前对话内部的并行 sub-agent 工作，不能代替需要独立对话上下文的策划或程序 Agent；不要用它来响应“开启一个新对话”的请求。已有负责人继续同一任务时，沿用原 `threadId`，通过 `mcp__codex_app__send_message_to_thread` 发送后续任务；不要为同一交付重复创建新对话。
+
 每次派发都提供下游完成工作所需的上下文和清晰边界：
 
 - 目标、来源、范围、明确排除项和审核节点；
-- 必须读取的策划文档和共享基线路径及其用途，不要求读取无关历史；
+- 必须读取的策划/基线正文路径及用途，必要时给章节；导航、旧材料和长期方向列为按需，并说明复用目的，不要求读取无关历史；
 - 明确禁止策划 Agent 读取 `Docs/ProjectContext/`、`Docs/ProgramWorkflow/`、源码、配置、Blueprint、资产内部结构和运行日志；
 - 交付物、建议落点、与其他文档的关系；
 - 可自行核实的事项与必须回报总控/用户的未决事项；

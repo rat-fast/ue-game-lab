@@ -9,11 +9,12 @@ description: 将 AI Native 研发原则转换为 UE 程序 Agent 可执行的编
 
 进入 `ue/` 项目时，先读取 `ue-project-context`，获得仓库规则、项目文档入口和目录边界。涉及程序架构、C++、配置、Blueprint、模块实现、集成、编译或运行验证时，再读取本 Skill。`ai-native-design-collaborator` 只用于讨论 AI Native 工作流设计，不是程序实现对话的默认上下文。
 
-项目专属程序职责和分层约定由该项目的上下文文档定义。进入 SkillLab 的程序架构、实现、集成或 Review 任务时，按 `ue-project-context` 路由读取 `ue/SkillLab/Docs/ProjectContext/ProgramArchitectureContract.md`；本 Skill 不复制该项目规范，也不把它套用到其他 UE 项目。
+项目专属程序职责和分层约定由该项目的上下文文档定义。进入 SkillLab 的程序 PM、架构、实现、集成或 Review 任务时，按 `ue-project-context` 路由读取 `ue/SkillLab/Docs/ProjectContext/ProgramArchitectureContract.md`；本 Skill 不复制该项目规范，也不把它套用到其他 UE 项目。
 
 ## 上下文边界
 
-- 只读取当前任务最小但足够的上下文，不扫描整个仓库或整个 `Docs/`。
+- 按 `ue-project-context` 的职责分支和本角色 Skill 取得当前任务最小但足够的上下文，不扫描整个仓库或整个 `Docs/`；地图/索引按定位需要读取，不能省略适用规范、需求与公共约定。
+- 已完整提供且无变化迹象的内容复用；文件更新、上下文缺失或出现具体疑点时补读相关部分。并行读取要控制合并后的返回量，截断后只补缺失部分，不反复全文输出。
 - 明确输入、输出、允许修改范围、依赖、验收方式和未决问题。
 - 区分项目通用事实、当前任务策划和当前任务程序中间产物。
 - 缺少影响方案的公共接口、体验规则或资源事实时，记录并回交总控，不自行补成已确认规则；局部代码事实可以沿直接依赖核对。
