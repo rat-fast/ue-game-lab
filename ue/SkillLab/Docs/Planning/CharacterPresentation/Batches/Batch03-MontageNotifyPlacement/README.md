@@ -1,28 +1,30 @@
-# Batch03：AI 技能动作 Notify 配置能力
+# Batch03：动作观察与技能 Notify 配置能力
 
 ## 目标与范围
 
-建立供技能配置使用的完整功能：AI 根据技能事件需求和给定动作，自主观察动作、确定 Notify 时点，通过适合 AI 修改的入口完成游戏实际配置与接入，并回读、验证实际触发与动作的对应关系。正常配置不依赖用户逐个指定或检查帧位。
+建立同一批次内两个相互衔接但职责独立的能力：通用 AnimSequence 动作总览，以及技能 Notify 自动配置。前者为 AI 提供可复查的动作观察材料，后者根据技能事件需求和给定动作自主确定 Notify 时点，通过适合 AI 修改的入口完成游戏实际配置与接入，并回读、验证实际触发与动作的对应关系。
 
 本批覆盖事件语义输入、动作判断、点位配置、运行接入、结果回读、异常反馈和游戏内验收。具体技能的内容需求决定事件数量和动作范围。
 
 ## 文档
 
-- [AI 技能动作 Notify 配置需求](MontageNotifyPlacementRequirements.md)：功能行为、程序能力需求、业务边界、验收场景及待核实项。
+- [AnimSequence 动作总览需求](AnimSequenceActionOverviewRequirements.md)：通用动作观察任务；为本批 Notify 配置和其他内容流程提供可复查的动作材料。
+- [Notify 自动配置需求](MontageNotifyPlacementRequirements.md)：技能 Notify 配置行为、程序能力需求、业务边界、验收场景及待核实项。
 
 ## 读取与交接
 
-程序、表现与验证线先读本入口、[需求正文](MontageNotifyPlacementRequirements.md)、[角色表现共享基线](../../../../Baseline/CharacterPresentation/README.md)及其 `02-SkillActionPresentation.md`、`03-AssetsAndVerification.md`，再读[技能生命周期基线](../../../../Baseline/SkillSystem/02-RequestLifecycle.md)和[技能反馈基线](../../../../Baseline/SkillSystem/06-FeedbackAndObservability.md)。程序侧按自身工作流读取技术事实，评估所需能力及配套修改。
+程序、表现与验证线先读本入口、[动作总览需求](AnimSequenceActionOverviewRequirements.md)和[Notify 配置需求](MontageNotifyPlacementRequirements.md)，再读[角色表现共享基线](../../../../Baseline/CharacterPresentation/README.md)及其 `02-SkillActionPresentation.md`、`03-AssetsAndVerification.md`，以及[技能生命周期基线](../../../../Baseline/SkillSystem/02-RequestLifecycle.md)和[技能反馈基线](../../../../Baseline/SkillSystem/06-FeedbackAndObservability.md)。程序侧按自身工作流读取技术事实，评估各自能力及配套修改。
 
-- 程序交接：正文第 5、6、9 节，提供适合 AI 使用的配置、接入、回读与验证能力，核实当前接口和资产事实。
-- 表现与内容配置交接：正文第 3、4、7 节，依据具体技能事件与动作判断位置、处理歧义，交付可实际使用的配置。
-- 验收交接：正文第 8 节，核对事件意图、动作依据、真实配置和游戏内结果。
+- 动作观察交接：动作总览正文第 3、5、6、7 节，提供总览图、manifest 和动作语义结果。
+- 程序交接：Notify 正文第 5、6、9 节，提供适合 AI 使用的配置、接入、回读与验证能力，核实当前接口和资产事实。
+- 表现与内容配置交接：动作总览正文产物交给 Notify 正文第 3、4、7 节消费，依据具体技能事件判断位置、处理歧义，交付可实际使用的配置。
+- 验收交接：动作总览正文第 7 节和 Notify 正文第 8 节，分别核对观察产物与事件意图、真实配置和游戏内结果。
 - 总控交接：专用 Skill / Agent、派发者、上下文分配、编排顺序，以及 AI 读取动作的高效方法，由用户与总控另行讨论。本文只提出能力与产物要求，不固定“逻辑先配完、表现再配置”等对话顺序。
 
 ## 状态与边界
 
 - 当前阶段：依据 2026-10-27 用户讨论修订为功能需求，供后续程序能力建设和内容配置使用；本文不宣称已实现或验收。
-- 已确定：AI 自主判断帧位、完成实际配置并验证；提供便于 AI 修改的入口；减少逐点人工操作。已取消原先单样本验证的任务范围限制。
+- 已确定：本批包含动作总览和 Notify 自动配置两个独立任务；AI 自主判断帧位、完成实际配置并验证；提供便于 AI 修改的入口；减少逐点人工操作。已取消原先单样本验证的任务范围限制。
 - 待定：Agent 工作流、动作读取方法、具体技术方案；具体内容的动作、事件需求和容差随内容配置明确。
 - Notify 可为技能逻辑提供执行请求的时机，业务许可与结果仍由技能逻辑决定。本次新增需求与现有基线表述的衔接见正文第 6 节，现有接口可用性由程序侧核实。
 - 范围外：角色基础状态全面改造、正式美术资源制作、全项目资产清点、与本功能无关的完整表现回归。资源选择与制作流程由总控另行讨论。
