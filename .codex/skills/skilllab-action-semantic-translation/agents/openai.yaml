@@ -1,0 +1,7 @@
+interface:
+  display_name: "SkillLab 动作语义翻译"
+  short_description: "逐页观察动作总览图并整理语义记录"
+  default_prompt: "Use $skilllab-action-semantic-translation to translate the specified SkillLab action overview images into visual observations."
+
+policy:
+  allow_implicit_invocation: false

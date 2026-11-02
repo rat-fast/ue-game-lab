@@ -1,0 +1,7 @@
+interface:
+  display_name: "SkillLab 技能内容配置"
+  short_description: "调整已支持的技能 Lua 与 JSON 内容"
+  default_prompt: "Use $skilllab-skill-content-configuration to configure the specified SkillLab skill content within its existing supported interfaces."
+
+policy:
+  allow_implicit_invocation: false
