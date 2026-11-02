@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotify.h"
+#include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "GameplayTagContainer.h"
 #include "SkillLabSkillAnimNotify.generated.h"
 
@@ -16,6 +17,23 @@ public:
 	FGameplayTag EventTag;
 
 	virtual void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+		const FAnimNotifyEventReference& EventReference) override;
+	virtual FString GetNotifyName_Implementation() const override;
+};
+
+/** Project-owned state notify used by structured montage patches. */
+UCLASS(const, hidecategories=Object, collapsecategories)
+class SKILLLABPRESENTATION_API USkillLabSkillAnimNotifyState : public UAnimNotifyState
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="SkillLab|Animation")
+	FGameplayTag EventTag;
+
+	virtual void NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+		float TotalDuration, const FAnimNotifyEventReference& EventReference) override;
+	virtual void NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
 		const FAnimNotifyEventReference& EventReference) override;
 	virtual FString GetNotifyName_Implementation() const override;
 };

@@ -1,0 +1,22 @@
+{
+  "kind": "actionObservation",
+  "asset": "<UE AnimSequence asset path>",
+  "generationId": "<manifest generationId>",
+  "inputPreviewFingerprintSha256": "<manifest inputPreviewFingerprintSha256>",
+  "manifest": "<absolute or project-relative manifest path>",
+  "judgments": [
+    {
+      "label": "<可观察阶段>",
+      "sourceFrames": [0, 0],
+      "sourceSeconds": [0.0, 0.0],
+      "evidence": {
+        "page": 0,
+        "cells": [[0, 0], [0, 0]]
+      },
+      "basis": "<根据图片可以复查的姿势变化>",
+      "uncertainty": "<尚未确认的部分>"
+    }
+  ],
+  "candidates": [],
+  "uncertainties": []
+}

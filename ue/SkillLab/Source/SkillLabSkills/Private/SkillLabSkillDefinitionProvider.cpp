@@ -34,13 +34,23 @@ namespace
 		return true;
 	}
 
+	bool ReadString(const FJsonObject& Json, const TCHAR* Field, FString& OutString, const bool bRequired, FString& OutError)
+	{
+		const TSharedPtr<FJsonValue> Value = Json.TryGetField(Field);
+		if (!Value.IsValid()) return !bRequired || Fail(OutError, FString::Printf(TEXT("required string '%s' is missing"), Field));
+		if (Value->Type != EJson::String || !Value->TryGetString(OutString) || OutString.IsEmpty() || OutString != OutString.TrimStartAndEnd())
+			return Fail(OutError, FString::Printf(TEXT("'%s' must be a nonempty string without surrounding whitespace"), Field));
+		return true;
+	}
+
 	bool Parse(const TSharedPtr<FJsonObject>& Json, FSkillLabSkillDefinition& Out, FString& OutError)
 	{
 		if (!Json.IsValid()) return Fail(OutError, TEXT("skill entry must be an object"));
 		static const TSet<FString> KnownFields = {
 			TEXT("id"), TEXT("cost"), TEXT("cooldown"), TEXT("magnitude"), TEXT("powerCoefficient"),
 			TEXT("windup"), TEXT("active"), TEXT("recovery"), TEXT("duration"), TEXT("period"), TEXT("blockedBy"), TEXT("luaScript"),
-			TEXT("castMontage"), TEXT("castAnimation")
+			TEXT("castMontage"), TEXT("castAnimation"), TEXT("releaseTrigger"), TEXT("releaseEventTag"),
+			TEXT("releaseEventTimeout")
 		};
 		for (const TPair<FString, TSharedPtr<FJsonValue>>& Field : Json->Values)
 			if (!KnownFields.Contains(Field.Key)) return Fail(OutError, FString::Printf(TEXT("unknown skill field '%s'"), *Field.Key));
@@ -88,6 +98,25 @@ namespace
 			|| !ReadNumber(*Json, TEXT("recovery"), Out.Phases.RecoverySeconds, false, OutError) || !ReadNumber(*Json, TEXT("duration"), Out.Duration, false, OutError)
 			|| !ReadNumber(*Json, TEXT("period"), Out.Period, false, OutError)) return false;
 
+		FString ReleaseTrigger;
+		if (!ReadString(*Json, TEXT("releaseTrigger"), ReleaseTrigger, false, OutError)) return false;
+		if (!ReleaseTrigger.IsEmpty())
+		{
+			if (ReleaseTrigger == TEXT("Timer")) Out.ReleaseTrigger = ESkillLabReleaseTrigger::Timer;
+			else if (ReleaseTrigger == TEXT("GameplayEvent")) Out.ReleaseTrigger = ESkillLabReleaseTrigger::GameplayEvent;
+			else return Fail(OutError, TEXT("releaseTrigger must be 'Timer' or 'GameplayEvent'"));
+		}
+
+		FString ReleaseEventTag;
+		if (!ReadString(*Json, TEXT("releaseEventTag"), ReleaseEventTag, false, OutError)) return false;
+		if (!ReleaseEventTag.IsEmpty())
+		{
+			Out.ReleaseEventTag = FGameplayTag::RequestGameplayTag(FName(*ReleaseEventTag), false);
+			if (!Out.ReleaseEventTag.IsValid()) return Fail(OutError, FString::Printf(TEXT("unknown GameplayTag '%s' in releaseEventTag"), *ReleaseEventTag));
+		}
+
+		if (!ReadNumber(*Json, TEXT("releaseEventTimeout"), Out.ReleaseEventTimeout, false, OutError)) return false;
+
 		const TSharedPtr<FJsonValue> BlockedByValue = Json->TryGetField(TEXT("blockedBy"));
 		if (BlockedByValue.IsValid())
 		{
@@ -112,9 +141,13 @@ namespace
 			|| Out.Duration < 0.0f || Out.Period < 0.0f) return Fail(OutError, TEXT("skill contains a negative duration/value or nonpositive range"));
 		if (Out.TargetShape == ESkillLabTargetShape::Ground && Out.Radius <= 0.0f) return Fail(OutError, TEXT("ground skills require a positive radius"));
 		if (Out.Effect == ESkillLabEffectKind::DamageOverTime && (Out.Duration <= 0.0f || Out.Period <= 0.0f)) return Fail(OutError, TEXT("periodic effects require positive duration and period"));
+		if (!FMath::IsFinite(Out.ReleaseEventTimeout))
+			return Fail(OutError, TEXT("releaseEventTimeout must be finite"));
 		if (Out.ReleaseTrigger == ESkillLabReleaseTrigger::GameplayEvent
-			&& (!Out.ReleaseEventTag.IsValid() || !FMath::IsFinite(Out.ReleaseEventTimeout) || Out.ReleaseEventTimeout <= 0.0f))
-			return Fail(OutError, TEXT("event release requires a registered ReleaseEventTag and positive ReleaseEventTimeout"));
+			&& (!Out.ReleaseEventTag.IsValid() || Out.ReleaseEventTimeout <= 0.0f))
+			return Fail(OutError, TEXT("GameplayEvent release requires a registered releaseEventTag and positive releaseEventTimeout"));
+		if (Out.ReleaseTrigger == ESkillLabReleaseTrigger::Timer && Out.ReleaseEventTag.IsValid())
+			return Fail(OutError, TEXT("Timer release cannot configure releaseEventTag"));
 		return true;
 	}
 

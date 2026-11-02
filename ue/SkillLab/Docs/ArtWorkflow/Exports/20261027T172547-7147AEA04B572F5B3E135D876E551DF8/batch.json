@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "batchId": "20261027T172547-7147AEA04B572F5B3E135D876E551DF8",
+  "outputRoot": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports",
+  "directory": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports/20261027T172547-7147AEA04B572F5B3E135D876E551DF8",
+  "status": "incomplete",
+  "items": [
+    {
+      "asset": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_Attack_03.MM_Attack_03",
+      "directory": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports/20261027T172547-7147AEA04B572F5B3E135D876E551DF8/0000-863494B44AE2F4F2C5FACC879CE8F24B",
+      "status": "complete"
+    },
+    {
+      "asset": "/Game/Characters/Mannequins/Anims/Unarmed/Jump/MM_Land.MM_Land",
+      "directory": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports/20261027T172547-7147AEA04B572F5B3E135D876E551DF8/0001-E71482504D6B874E7AFECB987E1FAD2D",
+      "status": "complete"
+    },
+    {
+      "asset": "/Game/Characters/Mannequins/Anims/Rifle/Jump/MM_Rifle_Jump_RecoveryAdditive.MM_Rifle_Jump_RecoveryAdditive",
+      "directory": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports/20261027T172547-7147AEA04B572F5B3E135D876E551DF8/0002-3113E5924CDE069A0B9E51BCA02FE74A",
+      "status": "failed"
+    },
+    {
+      "asset": "/Game/Missing/DoesNotExist.DoesNotExist",
+      "directory": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports/20261027T172547-7147AEA04B572F5B3E135D876E551DF8/0003-2C1059AD42316152124D64845A63AE82",
+      "status": "failed"
+    }
+  ]
+}

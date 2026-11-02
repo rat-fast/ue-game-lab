@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "batchId": "20261027T171823-C2FABA3941D303496B2F72AD533CF2EE",
+  "outputRoot": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports",
+  "directory": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports/20261027T171823-C2FABA3941D303496B2F72AD533CF2EE",
+  "status": "incomplete",
+  "items": [
+    {
+      "asset": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_Attack_03.MM_Attack_03",
+      "directory": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports/20261027T171823-C2FABA3941D303496B2F72AD533CF2EE/0000-A0F515F543CA3148535E949696F2828D",
+      "status": "failed"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "asset": "/Game/Characters/Mannequins/Anims/Pistol/MM_Pistol_Fire_Montage.MM_Pistol_Fire_Montage",
+  "source": {
+    "observation": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Observations/MM_Attack_03.observation.json",
+    "generationId": "0000-863494B44AE2F4F2C5FACC879CE8F24B",
+    "inputPreviewFingerprintSha256": "1cb416af8ba3b6d63950633652cbc75caced01e7cd03bf8f0d6e6d733afc4a20"
+  },
+  "duplicatePolicy": "replace",
+  "operations": [
+    { "op": "upsert", "id": "Batch03.test.instant", "kind": "instant", "eventTag": "SkillLab.Event.Cast", "time": 0.10, "evidence": { "sourceFrames": [3], "sourceSeconds": [0.10], "basis": "test", "uncertainty": "low" } }
+  ]
+}

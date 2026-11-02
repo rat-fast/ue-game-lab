@@ -1,0 +1,88 @@
+{
+  "kind": "verificationExample_notFormalContentContract",
+  "asset": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_Attack_03.MM_Attack_03",
+  "generationId": "0000-863494B44AE2F4F2C5FACC879CE8F24B",
+  "inputPreviewFingerprintSha256": "1cb416af8ba3b6d63950633652cbc75caced01e7cd03bf8f0d6e6d733afc4a20",
+  "manifest": "E:\\agent\\game\\ue\\SkillLab\\Docs\\ArtWorkflow\\Exports\\20261027T172547-7147AEA04B572F5B3E135D876E551DF8\\0000-863494B44AE2F4F2C5FACC879CE8F24B\\manifest.json",
+  "judgments": [
+    {
+      "label": "提膝准备",
+      "sourceFrames": [
+        3,
+        8
+      ],
+      "evidence": {
+        "page": 0,
+        "cells": [
+          [
+            0,
+            3
+          ],
+          [
+            2,
+            0
+          ]
+        ]
+      },
+      "basis": "腿从站立向提膝姿势变化，双臂保持护势。"
+    },
+    {
+      "label": "高位踢出",
+      "sourceFrames": [
+        9,
+        15
+      ],
+      "evidence": {
+        "page": 1,
+        "cells": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            3
+          ]
+        ]
+      },
+      "basis": "可见腿向高位伸出，12至15帧接近伸展保持。"
+    },
+    {
+      "label": "回收与转身",
+      "sourceFrames": [
+        16,
+        26
+      ],
+      "evidence": {
+        "page": 1,
+        "cells": [
+          [
+            1,
+            0
+          ],
+          [
+            2,
+            3
+          ]
+        ]
+      },
+      "basis": "腿回收下降，躯干转动后恢复支撑。"
+    }
+  ],
+  "candidates": [
+    {
+      "sourceFrame": 12,
+      "sourceSeconds": 0.4,
+      "page": 1,
+      "row": 0,
+      "column": 0,
+      "meaning": "可观察的高位伸展候选",
+      "uncertainty": "不是接触、伤害或 Notify 事实；缺目标和实际播放映射，不据此写点。"
+    }
+  ],
+  "uncertainties": [
+    "固定世界坐标视角，不自动识别角色正面。",
+    "此例只验证总览可供独立观察；不确定阶段边界可由内容负责人进一步复查。",
+    "未提供 Animation Editor 同时刻截图对照，不宣称已排除所有单帧偏差。"
+  ]
+}

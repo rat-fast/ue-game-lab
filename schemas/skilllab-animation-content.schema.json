@@ -1,34 +1,90 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "SkillLab structured animation content patch",
-  "type": "object",
-  "required": ["asset"],
-  "additionalProperties": false,
-  "properties": {
-    "asset": { "type": "string", "minLength": 1, "description": "UE object path to UAnimMontage" },
-    "rateScale": { "type": "number", "exclusiveMinimum": 0 },
-    "blendInTime": { "type": "number", "minimum": 0 },
-    "blendOutTime": { "type": "number", "minimum": 0 },
-    "slot": { "type": "string", "minLength": 1, "description": "Slot name only; resolve SlotGroup through the Skeleton slot registry" },
-    "section": {
+  "title": "SkillLab structured animation content",
+  "oneOf": [
+    {
       "type": "object",
+      "required": ["version", "asset", "source", "duplicatePolicy", "operations"],
       "additionalProperties": false,
-      "required": ["name"],
       "properties": {
-        "name": { "type": "string", "minLength": 1 },
-        "startTime": { "type": "number", "minimum": 0 },
-        "next": { "type": "string" }
+        "version": { "const": 1 },
+        "asset": { "type": "string", "minLength": 1 },
+        "source": {
+          "type": "object",
+          "required": ["observation", "generationId", "inputPreviewFingerprintSha256"],
+          "additionalProperties": false,
+          "properties": {
+            "observation": { "type": "string", "minLength": 1 },
+            "generationId": { "type": "string", "minLength": 1 },
+            "inputPreviewFingerprintSha256": { "type": "string", "pattern": "^[0-9A-Fa-f]{64}$" }
+          }
+        },
+        "duplicatePolicy": { "enum": ["error", "replace"] },
+        "operations": {
+          "type": "array", "minItems": 1,
+          "items": {
+            "oneOf": [
+              { "$ref": "#/$defs/delete" },
+              { "$ref": "#/$defs/instant" },
+              { "$ref": "#/$defs/state" }
+            ]
+          }
+        }
       }
     },
-    "notify": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["time", "eventTag"],
+    {
+      "type": "object", "required": ["asset"], "additionalProperties": false,
       "properties": {
-        "time": { "type": "number", "minimum": 0 },
-        "eventTag": { "type": "string", "minLength": 1 }
+        "asset": { "type": "string", "minLength": 1 },
+        "rateScale": { "type": "number", "exclusiveMinimum": 0 },
+        "blendInTime": { "type": "number", "minimum": 0 },
+        "blendOutTime": { "type": "number", "minimum": 0 },
+        "slot": { "type": "string", "minLength": 1 },
+        "section": { "type": "object", "additionalProperties": false, "required": ["name"], "properties": { "name": { "type": "string", "minLength": 1 }, "startTime": { "type": "number", "minimum": 0 }, "next": { "type": "string" } } },
+        "notify": { "type": "object", "additionalProperties": false, "required": ["time", "eventTag"], "properties": { "time": { "type": "number", "minimum": 0 }, "eventTag": { "type": "string", "minLength": 1 } } },
+        "segment": { "type": "string", "minLength": 1 }
+      }
+    }
+  ],
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "required": ["basis", "uncertainty"],
+      "additionalProperties": false,
+      "properties": {
+        "sourceFrames": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+        "sourceSeconds": { "type": "array", "items": { "type": "number", "minimum": 0 } },
+        "basis": { "type": "string", "minLength": 1 },
+        "uncertainty": { "type": "string", "minLength": 1 }
       }
     },
-    "segment": { "type": "string", "minLength": 1, "description": "UAnimSequenceBase object path; current writer replaces the first segment of the first Slot track after Skeleton compatibility validation" }
+    "delete": {
+      "type": "object",
+      "required": ["op", "id"],
+      "additionalProperties": false,
+      "properties": { "op": { "const": "delete" }, "id": { "type": "string", "minLength": 1 } }
+    },
+    "instant": {
+      "type": "object",
+      "required": ["op", "id", "kind", "eventTag", "time", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "op": { "const": "upsert" }, "id": { "type": "string", "minLength": 1 },
+        "kind": { "const": "instant" }, "eventTag": { "type": "string", "minLength": 1 },
+        "time": { "type": "number", "minimum": 0 }, "evidence": { "$ref": "#/$defs/evidence" }
+      }
+    },
+    "state": {
+      "type": "object",
+      "required": ["op", "id", "kind", "eventTag", "stateClass", "startTime", "endTime", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "op": { "const": "upsert" }, "id": { "type": "string", "minLength": 1 },
+        "kind": { "const": "state" }, "eventTag": { "type": "string", "minLength": 1 },
+        "stateClass": { "enum": ["SkillLabSkillAnimNotifyState", "/Script/SkillLabPresentation.SkillLabSkillAnimNotifyState"] },
+        "startTime": { "type": "number", "minimum": 0 }, "endTime": { "type": "number", "exclusiveMinimum": 0 },
+        "evidence": { "$ref": "#/$defs/evidence" }
+      }
+    }
   }
 }

@@ -1,0 +1,22 @@
+{
+	"schemaVersion": 1,
+	"generator": "SkillLabActionOverview/1",
+	"engine": "5.8.0-55116800+++UE5+Release-5.8",
+	"generatedUtc": "2026-10-27T17:25:50.445Z",
+	"batchId": "20261027T172547-7147AEA04B572F5B3E135D876E551DF8",
+	"generationId": "0002-3113E5924CDE069A0B9E51BCA02FE74A",
+	"asset": "/Game/Characters/Mannequins/Anims/Rifle/Jump/MM_Rifle_Jump_RecoveryAdditive.MM_Rifle_Jump_RecoveryAdditive",
+	"outputRoot": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports",
+	"directory": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Exports/20261027T172547-7147AEA04B572F5B3E135D876E551DF8/0002-3113E5924CDE069A0B9E51BCA02FE74A",
+	"status": "failed",
+	"visualVerification": "pendingIndependentInspection",
+	"playbackMapping": "sourceOnly_notEstablished",
+	"optionalOverlays": "disabled_bonesSocketsWeaponsTrails",
+	"error":
+	{
+		"stage": "compatibility",
+		"reason": "暂不支持 Additive：需要单独定义基准姿势",
+		"frame": -1
+	},
+	"frames": []
+}

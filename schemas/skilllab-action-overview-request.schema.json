@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SkillLab 只读 AnimSequence 动作总览请求",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["assets"],
+  "properties": {
+    "assets": {
+      "description": "完整 AnimSequence 对象路径；不绑定技能，可混合成功/失败项。",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1024,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "mesh": {
+      "description": "可选的批次预览 Mesh 覆盖；不提供时只读动画/Skeleton 已保存预览引用。",
+      "type": "string"
+    }
+  }
+}

@@ -150,7 +150,7 @@ bool USkillLabSkillAnimationComponent::ForwardCastEvent(const int32 CastId, cons
 }
 
 bool USkillLabSkillAnimationComponent::ForwardAnimNotify(UAnimSequenceBase* Animation, const FGameplayTag EventTag,
-	const FAnimNotifyEventReference& EventReference)
+	const FAnimNotifyEventReference& EventReference, const bool bStateEnd)
 {
 	if (!Animation || !ActiveMontage || (Animation != ActiveMontage.Get() && Animation != ActiveNotifyAnimation.Get()) || !ActiveAnimInstance
 		|| !ActiveAnimInstance->Montage_IsPlaying(ActiveMontage) || ActiveCastId <= 0
@@ -164,7 +164,10 @@ bool USkillLabSkillAnimationComponent::ForwardAnimNotify(UAnimSequenceBase* Anim
 	{
 		return false;
 	}
-	return ForwardCastEvent(ActiveCastId, EventTag);
+	// A Notify State has two callbacks.  The runtime event contract is a point
+	// event, so the end callback is validated against the same cast/instance but
+	// is deliberately not replayed as a second gameplay event.
+	return bStateEnd ? true : ForwardCastEvent(ActiveCastId, EventTag);
 }
 
 void USkillLabSkillAnimationComponent::StopCastMontage(const int32 CastId)

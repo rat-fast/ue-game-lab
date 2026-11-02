@@ -18,6 +18,7 @@
 #include "UObject/SoftObjectPath.h"
 #include "UObject/UObjectGlobals.h"
 #include "SkillLabSkillAnimNotify.h"
+#include "SkillLabAnimationNotifyPatch.h"
 
 namespace
 {
@@ -131,8 +132,14 @@ namespace
 		}
 		for (const FAnimNotifyEvent& Notify : Montage->Notifies)
 		{
+			const FString Id = Notify.NotifyName.IsNone() ? TEXT("<missing-id>") : Notify.NotifyName.ToString();
 			FString Name = Notify.Notify ? Notify.Notify->GetNotifyName() : (Notify.NotifyStateClass ? GetNameSafe(Notify.NotifyStateClass) : TEXT("<null>"));
-			Report.NotifyTags.Add(FString::Printf(TEXT("%s@%.3f"), *Name, Notify.GetTriggerTime()));
+			Report.NotifyTags.Add(FString::Printf(TEXT("%s:%s@%.3f"), *Id, *Name, Notify.GetTriggerTime()));
+			const FGameplayTag Tag = Notify.Notify ? Cast<USkillLabSkillAnimNotify>(Notify.Notify) ? Cast<USkillLabSkillAnimNotify>(Notify.Notify)->EventTag : FGameplayTag()
+				: (Notify.NotifyStateClass && Cast<USkillLabSkillAnimNotifyState>(Notify.NotifyStateClass) ? Cast<USkillLabSkillAnimNotifyState>(Notify.NotifyStateClass)->EventTag : FGameplayTag());
+			Report.NotifyDetails.Add(Notify.NotifyStateClass
+				? FString::Printf(TEXT("%s|state|%s|%.3f|%.3f"), *Id, *Tag.ToString(), Notify.GetTriggerTime(), Notify.GetEndTriggerTime())
+				: FString::Printf(TEXT("%s|instant|%s|%.3f"), *Id, *Tag.ToString(), Notify.GetTriggerTime()));
 		}
 	}
 
@@ -280,8 +287,20 @@ namespace
 		Root->SetBoolField(TEXT("saved"), Report.bSaved);
 		Root->SetBoolField(TEXT("reloaded"), Report.bReloaded);
 		Root->SetBoolField(TEXT("valid"), Report.bValid);
+		Root->SetBoolField(TEXT("assetUnchanged"), Report.bAssetUnchanged);
+		Root->SetBoolField(TEXT("diffValid"), Report.bDiffValid);
+		Root->SetStringField(TEXT("sourceObservation"), Report.SourceObservation);
+		Root->SetStringField(TEXT("sourceGenerationId"), Report.SourceGenerationId);
+		Root->SetStringField(TEXT("sourceInputPreviewFingerprintSha256"), Report.SourceInputPreviewFingerprintSha256);
+		Root->SetStringField(TEXT("duplicatePolicy"), Report.DuplicatePolicy);
 		auto SetStrings = [&Root](const TCHAR* Name, const TArray<FString>& Values){ TArray<TSharedPtr<FJsonValue>> Json; for (const FString& Value : Values) Json.Add(MakeShared<FJsonValueString>(Value)); Root->SetArrayField(Name, Json); };
-		SetStrings(TEXT("slots"), Report.Slots); SetStrings(TEXT("sections"), Report.Sections); SetStrings(TEXT("segments"), Report.SegmentAssets); SetStrings(TEXT("notifies"), Report.NotifyTags);
+		SetStrings(TEXT("slots"), Report.Slots); SetStrings(TEXT("sections"), Report.Sections); SetStrings(TEXT("segments"), Report.SegmentAssets); SetStrings(TEXT("notifies"), Report.NotifyTags); SetStrings(TEXT("notifyDetails"), Report.NotifyDetails);
+		TArray<TSharedPtr<FJsonValue>> OperationValues;
+		for (const FSkillLabAnimationPatchOperationReport& Operation : Report.Operations)
+		{
+			TSharedRef<FJsonObject> Json = MakeShared<FJsonObject>(); Json->SetStringField(TEXT("id"), Operation.Id); Json->SetStringField(TEXT("op"), Operation.Op); Json->SetStringField(TEXT("status"), Operation.Status); Json->SetStringField(TEXT("before"), Operation.Before); Json->SetStringField(TEXT("after"), Operation.After); Json->SetStringField(TEXT("issueCode"), Operation.IssueCode); OperationValues.Add(MakeShared<FJsonValueObject>(Json));
+		}
+		Root->SetArrayField(TEXT("operations"), OperationValues);
 		if (BeforeReport)
 		{
 			WriteSnapshot(Root, TEXT("before."), *BeforeReport);
@@ -295,6 +314,7 @@ namespace
 		Root->SetArrayField(TEXT("issues"), Issues);
 		FString Text; FJsonSerializer::Serialize(Root, TJsonWriterFactory<>::Create(&Text)); FFileHelper::SaveStringToFile(Text, *Filename);
 	}
+
 }
 
 USkillLabAnimationContentCommandlet::USkillLabAnimationContentCommandlet()
@@ -311,6 +331,11 @@ int32 USkillLabAnimationContentCommandlet::Main(const FString& Params)
 	const FString SpecFilename = GetParam(Parsed, TEXT("Spec"));
 	const FString ReportFilename = GetParam(Parsed, TEXT("Report"));
 	if (SpecFilename.IsEmpty() || ReportFilename.IsEmpty()) { UE_LOG(LogTemp, Error, TEXT("Usage: -run=SkillLabAnimationContent -Spec=<json> -Report=<json> [-Write]")); return 2; }
+	if (SkillLabAnimationNotifyPatch::IsPatchDocument(SpecFilename))
+	{
+		return SkillLabAnimationNotifyPatch::Run(SpecFilename, ReportFilename, HasFlag(Params, TEXT("-Write")));
+	}
+
 	FSkillLabAnimationContentSpec Spec; FString Error;
 	FSkillLabAnimationContentReport Report;
 	TOptional<FSkillLabAnimationContentReport> BeforeReport;

@@ -35,7 +35,7 @@ public:
 
 	/** Bridge used by SkillLabAnimNotify. Animation must be the active cast montage. */
 	bool ForwardAnimNotify(UAnimSequenceBase* Animation, FGameplayTag EventTag,
-		const FAnimNotifyEventReference& EventReference);
+		const FAnimNotifyEventReference& EventReference, bool bStateEnd = false);
 
 	UFUNCTION(BlueprintPure, Category="SkillLab|Animation")
 	int32 GetAnimationCastId() const { return ActiveCastId; }
