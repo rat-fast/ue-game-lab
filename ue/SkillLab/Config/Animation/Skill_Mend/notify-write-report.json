@@ -1,0 +1,41 @@
+{
+	"asset": "/Game/SkillLab/Animations/AM_Skill_Mend.AM_Skill_Mend",
+	"class": "/Script/Engine.AnimMontage",
+	"skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"sourceObservation": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/MM_Attack_01/source-to-montage.json",
+	"sourceGenerationId": "0002-234473E04723AC5A52EDF38767E14A82",
+	"sourceInputPreviewFingerprintSha256": "665fc290c547e64677475a626b71f345b0de86a1c18b59cf03dcfde7b146b5f1",
+	"duplicatePolicy": "replace",
+	"saved": true,
+	"reloaded": true,
+	"valid": true,
+	"assetUnchanged": false,
+	"diffValid": true,
+	"notifyDetails": [
+		"instant|Skill_Mend.release.01|SkillLab.Event.Cast|0.500000|0.500000"
+	],
+	"retainedNotifyDetails": [],
+	"before.Asset": "/Game/SkillLab/Animations/AM_Skill_Mend.AM_Skill_Mend",
+	"before.Class": "/Script/Engine.AnimMontage",
+	"before.Skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"before.NotifyDetails": [
+		"instant|Skill_Mend.release.01|SkillLab.Event.Cast|0.466667|0.466667"
+	],
+	"after.Asset": "/Game/SkillLab/Animations/AM_Skill_Mend.AM_Skill_Mend",
+	"after.Class": "/Script/Engine.AnimMontage",
+	"after.Skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"after.NotifyDetails": [
+		"instant|Skill_Mend.release.01|SkillLab.Event.Cast|0.500000|0.500000"
+	],
+	"operations": [
+		{
+			"id": "Skill_Mend.release.01",
+			"op": "upsert",
+			"status": "updated",
+			"before": "instant|Skill_Mend.release.01|SkillLab.Event.Cast|0.466667|0.466667",
+			"after": "instant|Skill_Mend.release.01|SkillLab.Event.Cast|0.500000|0.500000",
+			"issueCode": ""
+		}
+	],
+	"issues": []
+}

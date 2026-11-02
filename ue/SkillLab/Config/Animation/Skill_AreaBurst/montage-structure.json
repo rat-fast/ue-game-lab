@@ -1,0 +1,47 @@
+{
+  "skillId": "Skill_AreaBurst",
+  "asset": "/Game/SkillLab/Animations/AM_Skill_AreaBurst.AM_Skill_AreaBurst",
+  "sourceAsset": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_ChargedAttack.MM_ChargedAttack",
+  "class": "/Script/Engine.AnimMontage",
+  "skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+  "sourceSkeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+  "sourceLength": 1.8333333730697632,
+  "sourceRateScale": 1.0,
+  "montageLength": 1.8333333730697632,
+  "montageRateScale": 1.0,
+  "blendIn": 0.07999999821186066,
+  "blendOut": 0.11999999731779099,
+  "enableAutoBlendOut": true,
+  "isDynamic": false,
+  "saved": true,
+  "slots": [
+    {
+      "slot": "DefaultSlot",
+      "segments": [
+        {
+          "source": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_ChargedAttack.MM_ChargedAttack",
+          "start_pos": 0.0,
+          "anim_start_time": 0.0,
+          "anim_end_time": 1.8333333730697632,
+          "anim_play_rate": 1.0,
+          "looping_count": 1,
+          "cached_play_length": 1.8333333730697632
+        }
+      ]
+    }
+  ],
+  "sectionNames": [
+    "Default"
+  ],
+  "sourceNotifyEvents": "[]",
+  "sections": [
+    "Default@0.000->None"
+  ],
+  "notifyDetails": [
+    "Skill_AreaBurst.release.01|instant|SkillLab.Event.Cast|1.200"
+  ],
+  "freshProcessReadback": true,
+  "topologyUnchangedByNotifyPatch": true,
+  "windup": 1.2,
+  "recovery": 0.633333
+}

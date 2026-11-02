@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SkillLab 正式动作总览 overview.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "assetObjectPath", "objectName", "generationId", "status",
+    "frameRateNumerator", "frameRateDenominator", "sampleCount",
+    "durationSeconds", "frameRule", "pages", "layout"
+  ],
+  "properties": {
+    "assetObjectPath": {"type": "string", "minLength": 1},
+    "objectName": {"type": "string", "minLength": 1},
+    "generationId": {"type": "string", "minLength": 1},
+    "status": {"const": "complete"},
+    "frameRateNumerator": {"type": "integer", "minimum": 1},
+    "frameRateDenominator": {"type": "integer", "minimum": 1},
+    "sampleCount": {"type": "integer", "minimum": 1},
+    "durationSeconds": {"type": "number", "minimum": 0},
+    "frameRule": {"type": "string", "minLength": 1},
+    "pages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["page", "image", "firstFrame", "lastFrame"],
+        "properties": {
+          "page": {"type": "integer", "minimum": 0},
+          "image": {"type": "string", "pattern": "^page-[0-9]{4,}\\.png$"},
+          "firstFrame": {"type": "integer", "minimum": 0},
+          "lastFrame": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["columns", "rows", "indexBase"],
+      "properties": {
+        "columns": {"type": "integer", "minimum": 1},
+        "rows": {"type": "integer", "minimum": 1},
+        "indexBase": {"const": 0}
+      }
+    }
+  }
+}

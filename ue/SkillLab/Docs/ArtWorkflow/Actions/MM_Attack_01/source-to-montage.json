@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "kind": "sourceToMontageMapping",
+  "asset": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_Attack_01.MM_Attack_01",
+  "generationId": "0002-234473E04723AC5A52EDF38767E14A82",
+  "inputPreviewFingerprintSha256": "665fc290c547e64677475a626b71f345b0de86a1c18b59cf03dcfde7b146b5f1",
+  "status": "complete",
+  "skillId": "Skill_Mend",
+  "overview": "overview.json",
+  "observation": "observation.md",
+  "pages": [
+    {
+      "image": "page-0000.png",
+      "sha256": "f2ffa39969492ad23c3f815cfa2e1e9698865226820f08eed73eab2e2a4cfe1d"
+    },
+    {
+      "image": "page-0001.png",
+      "sha256": "d3c6ef3efaec4a24c8e941415efec202bf293ee823823ae38b31cced38662c90"
+    },
+    {
+      "image": "page-0002.png",
+      "sha256": "e426c7cbc4eb580f3e145f7a674eb108821533193823a2666a267c5f39e07ab3"
+    }
+  ],
+  "playbackMapping": {
+    "targetAsset": "/Game/SkillLab/Animations/AM_Skill_Mend.AM_Skill_Mend",
+    "skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+    "sourceSkeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+    "sourceLengthSeconds": 1.0,
+    "montageLengthSeconds": 1.0,
+    "sourceRateScale": 1,
+    "montageRateScale": 1,
+    "slots": [
+      {
+        "slot": "DefaultSlot",
+        "segments": [
+          {
+            "source": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_Attack_01.MM_Attack_01",
+            "start_pos": 0.0,
+            "anim_start_time": 0.0,
+            "anim_end_time": 1.0,
+            "anim_play_rate": 1.0,
+            "looping_count": 1,
+            "cached_play_length": 1.0
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "name": "Default",
+        "startTime": 0,
+        "next": "None",
+        "endTime": 1.0
+      }
+    ],
+    "runtimeConditions": {
+      "entry": "SkillDefinitions.json castMontage -> PlayCastMontage / PlaySkillAction",
+      "playRate": 1,
+      "startPosition": 0,
+      "sectionJumps": false,
+      "looping": false,
+      "blendInTime": 0.07999999821186066,
+      "blendOutTime": 0.11999999731779099,
+      "enableAutoBlendOut": true,
+      "stopCondition": "现有Completed/Cancelled停止动作；无需等待源动作末尾",
+      "meshCondition": "兼容SK_Mannequin的Mesh、有效AnimInstance和DefaultSlot求值；未启动游戏验证"
+    },
+    "formula": "单个正向完整Segment、一次循环：montageSeconds = start_pos + (sourceSeconds - anim_start_time) / (anim_play_rate * sourceRateScale)；本例为1:1。正常playRate=1、montageRateScale=1时从起播算的墙钟时间相同，中断/掉帧另行实测。",
+    "mappingStatus": "verified_single_full_segment",
+    "readback": "../../../../Config/Animation/Skill_Mend/montage-structure.json"
+  },
+  "release": {
+    "id": "Skill_Mend.release.01",
+    "eventTag": "SkillLab.Event.Cast",
+    "semantic": "请求一次治疗；治疗目标和实际恢复量仍由现有技能逻辑裁定",
+    "count": 1,
+    "sourceSeconds": 0.5,
+    "sourceFramePosition": 15.0,
+    "montageSeconds": 0.5,
+    "basis": "按用户本轮指定：取f15，水平直拳充分伸展区间的中间位置，避免拳尚未到位就生效。 已读取动作语义及分页图；真实完整单段Montage时间映射为1:1。",
+    "uncertainty": "这是用户指定的游戏内测试候选配置，尚未进行游戏或PIE验收；不从图像推断实际命中或效果成功。",
+    "sourceReferenceFrame": 15,
+    "selectionReason": "按用户本轮指定：取f15，水平直拳充分伸展区间的中间位置，避免拳尚未到位就生效。"
+  },
+  "verification": {
+    "creationSaved": true,
+    "structureReport": "../../../../Config/Animation/Skill_Mend/montage-structure.json",
+    "patchReport": "../../../../Config/Animation/Skill_Mend/notify-write-report.json",
+    "freshReadbackReport": "../../../../Config/Animation/Skill_Mend/notify-readback-report.json",
+    "runtimeVerified": false,
+    "saved": true,
+    "reloaded": true,
+    "valid": true,
+    "diffValid": true,
+    "freshProcessReadbackValid": true,
+    "unrelatedNotifyCountBefore": 0,
+    "unrelatedNotifyCountAfter": 0,
+    "notifyCount": 1,
+    "topologyUnchangedByNotifyPatch": true
+  },
+  "manifest": "E:/agent/game/ue/SkillLab/Config/Animation/Skill_Mend/action-overview-manifest.json",
+  "timingAuthority": {
+    "reason": "以用户本轮提供的四项明确配置值为准，覆盖此前选点建议。",
+    "frameRule": "源帧索引从0开始；30fps、播放倍率1，源到Montage映射1:1；秒数保留6位。",
+    "recoveryPolicy": "2/3/4后摇候选覆盖释放点到源末帧的剩余时间，实际仍从技能行为完成后开始计时，先按行为很快完成测试；1在投射物结果返回后再停顿0.20秒。",
+    "windup": 0.5,
+    "recovery": 0.5
+  }
+}

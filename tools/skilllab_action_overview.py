@@ -6,7 +6,10 @@ from fractions import Fraction
 import hashlib
 import json
 import math
+import os
 from pathlib import Path
+import re
+import shutil
 import subprocess
 import sys
 import uuid
@@ -17,6 +20,7 @@ REPO = Path(__file__).resolve().parents[1]
 PROJECT = REPO / "ue/SkillLab/SkillLab.uproject"
 EDITOR = Path("D:/Epic/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe")
 COLS, ROWS, HEADER, LABEL = 4, 3, 84, 32
+DIAGNOSTIC_DIRS = {"metadataOnly": "MetadataOnly", "failed": "Failed", "incomplete": "Incomplete"}
 
 
 def read(path):
@@ -208,11 +212,173 @@ def validate_manifest(directory, m=None):
     return m
 
 
-def publish_batch(directory):
+def asset_object_name(asset_path):
+    object_part = asset_path.rsplit("/", 1)[-1]
+    return object_part.rsplit(".", 1)[-1]
+
+
+def asset_key(asset_path, all_asset_paths):
+    """Readable object name when unique; append a stable path hash on name collisions."""
+    name = re.sub(r"[^A-Za-z0-9_.-]+", "_", asset_object_name(asset_path)).strip("._")
+    require(name, f"无法从对象路径取得有效资产名: {asset_path}")
+    colliding_paths = {path for path in all_asset_paths if asset_object_name(path) == asset_object_name(asset_path)}
+    if len(colliding_paths) <= 1:
+        return name
+    return f"{name}--{hashlib.sha256(asset_path.encode('utf-8')).hexdigest()[:8]}"
+
+
+def official_overview(manifest):
+    timing = manifest["timing"]
+    return {
+        "assetObjectPath": manifest["asset"],
+        "objectName": asset_object_name(manifest["asset"]),
+        "generationId": manifest["generationId"],
+        "status": "complete",
+        "frameRateNumerator": timing["numerator"],
+        "frameRateDenominator": timing["denominator"],
+        "sampleCount": timing["sampleCount"],
+        "durationSeconds": timing["durationSeconds"],
+        "frameRule": "seconds=frameIndex*frameRateDenominator/frameRateNumerator; frameIndex=0..sampleCount-1; source endpoint included",
+        "pages": [{"page": p["page"], "image": p["image"], "firstFrame": p["firstFrame"], "lastFrame": p["lastFrame"]}
+                  for p in manifest["pages"]],
+        "layout": {"columns": manifest["layout"]["columns"], "rows": manifest["layout"]["rows"],
+                   "indexBase": manifest["layout"]["indexBase"]},
+    }
+
+
+def validate_official_overview(directory, overview=None):
+    directory = Path(directory).resolve()
+    overview = overview or read(directory / "overview.json")
+    expected = {"assetObjectPath", "objectName", "generationId", "status", "frameRateNumerator",
+                "frameRateDenominator", "sampleCount", "durationSeconds", "frameRule", "pages", "layout"}
+    require(set(overview) == expected, "正式 overview.json 字段不符合精简契约")
+    require(overview["status"] == "complete", "非 complete 不得进入 Actions")
+    require(overview["objectName"] == asset_object_name(overview["assetObjectPath"]), "对象名与完整资产路径不一致")
+    num, den, count = overview["frameRateNumerator"], overview["frameRateDenominator"], overview["sampleCount"]
+    require(all(isinstance(v, int) and not isinstance(v, bool) for v in (num, den, count)) and num > 0 and den > 0 and count > 0,
+            "帧率和样本数必须为正整数")
+    require(math.isfinite(overview["durationSeconds"]) and overview["durationSeconds"] >= 0, "无效动作时长")
+    require(abs(float(Fraction((count - 1) * den, num)) - overview["durationSeconds"]) < 1e-5, "帧率推导末帧时间与时长不一致")
+    require(overview["frameRule"] == "seconds=frameIndex*frameRateDenominator/frameRateNumerator; frameIndex=0..sampleCount-1; source endpoint included",
+            "frameRule 不符合帧时间推导契约")
+    require(overview["layout"] == {"columns": COLS, "rows": ROWS, "indexBase": 0}, "页格布局无效")
+    pages = overview["pages"]
+    require(len(pages) == math.ceil(count / (COLS * ROWS)), "分页数与样本数不一致")
+    for index, page in enumerate(pages):
+        first = index * COLS * ROWS
+        last = min(count, (index + 1) * COLS * ROWS) - 1
+        expected_image = f"page-{index:04d}.png"
+        require(page == {"page": index, "image": expected_image, "firstFrame": first, "lastFrame": last},
+                f"页序、文件名或首末帧范围不一致: {index}")
+        image_path = local_file(directory, page["image"])
+        decode(image_path)
+    return overview
+
+
+def existing_asset_paths(actions_root, diagnostics_root):
+    paths = set()
+    for root, pattern in ((actions_root, "**/overview.json"), (diagnostics_root, "**/report.json")):
+        if not root.exists():
+            continue
+        for file in root.glob(pattern):
+            try:
+                data = read(file)
+                asset = data.get("assetObjectPath", data.get("asset"))
+                if isinstance(asset, str) and asset:
+                    paths.add(asset)
+            except (OSError, ValueError, TypeError):
+                continue
+    return paths
+
+
+def archive_complete(manifest, staging_dir, actions_root, all_asset_paths):
+    staging_dir = Path(staging_dir).resolve()
+    actions_root = Path(actions_root).resolve()
+    key = asset_key(manifest["asset"], all_asset_paths)
+    target = actions_root / key
+    target.mkdir(parents=True, exist_ok=True)
+    current_index = target / "overview.json"
+    if current_index.exists():
+        current = validate_official_overview(target)
+        require(current["assetObjectPath"] == manifest["asset"],
+                f"资产目录已属于其他对象路径: {target}")
+    temp = actions_root / f".{key}.{uuid.uuid4().hex}.tmp"
+    backup = actions_root / f".{key}.{uuid.uuid4().hex}.backup"
+    temp.mkdir()
+    moved_old = []
+    installed = []
+    try:
+        compact = official_overview(manifest)
+        for page in compact["pages"]:
+            source = local_file(staging_dir, page["image"])
+            copy_target = temp / page["image"]
+            require(not copy_target.exists(), f"归档页重复: {copy_target.name}")
+            shutil.copyfile(source, copy_target)
+        write(temp / "overview.json", compact)
+        validate_official_overview(temp, compact)
+        backup.mkdir()
+        old_files = [file for file in (current_index, *target.glob("page-*.png")) if file.exists()]
+        for old_file in old_files:
+            os.replace(old_file, backup / old_file.name)
+            moved_old.append(old_file.name)
+        for page in compact["pages"]:
+            os.replace(temp / page["image"], target / page["image"])
+            installed.append(page["image"])
+        os.replace(temp / "overview.json", current_index)
+        installed.append("overview.json")
+    except Exception:
+        for name in installed:
+            (target / name).unlink(missing_ok=True)
+        for name in moved_old:
+            old_file = backup / name
+            if old_file.exists():
+                os.replace(old_file, target / name)
+        shutil.rmtree(temp, ignore_errors=True)
+        shutil.rmtree(backup, ignore_errors=True)
+        raise
+    shutil.rmtree(temp, ignore_errors=True)
+    shutil.rmtree(backup, ignore_errors=True)
+    legacy_overview = target / "Overview"
+    if legacy_overview.is_dir():
+        shutil.rmtree(legacy_overview)
+    return target
+
+
+def archive_diagnostic(manifest, status, diagnostics_root, all_asset_paths):
+    require(status in ("metadataOnly", "failed", "incomplete"), f"非法诊断状态: {status}")
+    diagnostics_root = Path(diagnostics_root).resolve()
+    key = asset_key(manifest.get("asset", "unknown.Unknown"), all_asset_paths)
+    generation = manifest.get("generationId") or uuid.uuid4().hex
+    target = diagnostics_root / DIAGNOSTIC_DIRS[status] / key / generation
+    require(not target.exists(), f"拒绝覆盖已存在的诊断 generationId: {target}")
+    target.mkdir(parents=True)
+    write(target / "report.json", manifest)
+    return target
+
+
+def publish_batch(directory, art_root=None):
     directory = Path(directory).resolve()
     path = directory / "batch.json"
     batch = read(path)
-    failed = False
+    if art_root is None:
+        staging_root = Path(batch.get("outputRoot", directory)).resolve()
+        # Default local staging is <project>/Saved/ActionOverviews.
+        skilllab_root = staging_root.parent.parent
+        art_root = skilllab_root / "Docs" / "ArtWorkflow"
+    else:
+        art_root = Path(art_root).resolve()
+    actions_root = art_root / "Actions"
+    diagnostics_root = art_root / "Diagnostics"
+    item_manifests = []
+    all_asset_paths = existing_asset_paths(actions_root, diagnostics_root)
+    for item in batch["items"]:
+        item_dir = Path(item["directory"]).resolve()
+        if item_dir.is_relative_to(directory) and (item_dir / "manifest.json").is_file():
+            manifest = read(item_dir / "manifest.json")
+            if isinstance(manifest.get("asset"), str):
+                all_asset_paths.add(manifest["asset"])
+            item_manifests.append((item, item_dir, manifest))
+    outcomes = []
     for item in batch["items"]:
         try:
             item_dir = Path(item["directory"]).resolve()
@@ -223,18 +389,58 @@ def publish_batch(directory):
                 m = publish(item_dir)
             elif m["status"] == "complete":
                 validate_manifest(item_dir, m)
-            item["status"] = m["status"]
-            if m["status"] != "complete":
-                failed = True
+            if m["status"] == "complete":
+                archived = archive_complete(m, item_dir, actions_root, all_asset_paths)
+                item["status"] = "complete"
+                item["archiveDirectory"] = str(archived)
+                outcomes.append("complete")
+            elif m["status"] in ("metadataOnly", "failed", "incomplete"):
+                archived = archive_diagnostic(m, m["status"], diagnostics_root, all_asset_paths)
+                item["status"] = m["status"]
+                item["diagnosticDirectory"] = str(archived)
+                outcomes.append(m["status"])
+            else:
+                m["status"] = "failed"
+                m["error"] = {"stage": "publication", "reason": "未知或未完成的逐项状态", "previousStatus": item.get("status")}
+                write(item_dir / "manifest.json", m)
+                archived = archive_diagnostic(m, "failed", diagnostics_root, all_asset_paths)
+                item["status"] = "failed"
+                item["diagnosticDirectory"] = str(archived)
+                outcomes.append("failed")
         except Exception as error:
+            try:
+                if item_dir.is_relative_to(directory) and (item_dir / "manifest.json").is_file():
+                    m = read(item_dir / "manifest.json")
+                    m["status"] = "failed"
+                    m["error"] = {"stage": "archivePublication", "reason": str(error), "frame": -1}
+                    write(item_dir / "manifest.json", m)
+                    archived = archive_diagnostic(m, "failed", diagnostics_root, all_asset_paths)
+                    item["diagnosticDirectory"] = str(archived)
+            except Exception as diagnostic_error:
+                item["diagnosticError"] = str(diagnostic_error)
             item["status"] = "failed"
             item["publicationError"] = str(error)
-            failed = True
+            outcomes.append("failed")
         print(json.dumps(item, ensure_ascii=False))
-    batch["status"] = "incomplete" if failed else "complete"
+    if outcomes and all(status == "metadataOnly" for status in outcomes):
+        batch_status = "metadataOnly"
+    elif outcomes and all(status == "failed" for status in outcomes):
+        batch_status = "failed"
+    elif outcomes and all(status == "complete" for status in outcomes):
+        batch_status = "complete"
+    else:
+        batch_status = "incomplete"
+    batch["status"] = batch_status
+    batch["items"] = [item for item in batch["items"]]
+    if batch_status != "complete":
+        batch_dir = diagnostics_root / DIAGNOSTIC_DIRS[batch_status] / "Batches" / batch["batchId"]
+        require(not batch_dir.exists(), f"拒绝覆盖批次诊断: {batch_dir}")
+        batch_dir.mkdir(parents=True)
+        batch["diagnosticDirectory"] = str(batch_dir)
+        write(batch_dir / "batch.json", batch)
     write(path, batch)
     print(f"Batch={path} Status={batch['status']}")
-    return 2 if failed else 0
+    return 0 if batch_status == "complete" else 2
 
 
 def mark_interrupted(receipt, reason):
@@ -250,10 +456,10 @@ def mark_interrupted(receipt, reason):
         manifest = Path(item["directory"]) / "manifest.json"
         if manifest.is_file():
             m = read(manifest)
-            m["status"] = "failed"
+            m["status"] = "incomplete"
             m["error"] = {"stage": "processInterrupted", "reason": reason, "frame": -1}
             write(manifest, m)
-        item["status"] = "failed"
+        item["status"] = "incomplete"
         item["publicationError"] = reason
     batch["status"] = "incomplete"
     write(path, batch)
@@ -278,8 +484,12 @@ def main():
         p.add_argument("directory", type=Path)
     args = parser.parse_args()
     if args.command == "validate":
-        m = validate_manifest(args.directory)
-        print(f"Integrity=passed Asset={m['asset']} Frames={len(m['frames'])} Pages={len(m['pages'])} Visual={m['visualVerification']}")
+        if (args.directory / "overview.json").is_file():
+            m = validate_official_overview(args.directory)
+            print(f"Integrity=passed Asset={m['assetObjectPath']} Frames={m['sampleCount']} Pages={len(m['pages'])} OfficialOverview=true")
+        else:
+            m = validate_manifest(args.directory)
+            print(f"Integrity=passed Asset={m['asset']} Frames={len(m['frames'])} Pages={len(m['pages'])} Visual={m['visualVerification']}")
         return 0
     if args.command == "publish-batch":
         return publish_batch(args.directory)

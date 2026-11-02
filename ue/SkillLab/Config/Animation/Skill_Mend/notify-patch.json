@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "asset": "/Game/SkillLab/Animations/AM_Skill_Mend.AM_Skill_Mend",
+  "source": {
+    "observation": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/MM_Attack_01/source-to-montage.json",
+    "generationId": "0002-234473E04723AC5A52EDF38767E14A82",
+    "inputPreviewFingerprintSha256": "665fc290c547e64677475a626b71f345b0de86a1c18b59cf03dcfde7b146b5f1"
+  },
+  "duplicatePolicy": "replace",
+  "operations": [
+    {
+      "op": "upsert",
+      "id": "Skill_Mend.release.01",
+      "kind": "instant",
+      "eventTag": "SkillLab.Event.Cast",
+      "time": 0.5,
+      "evidence": {
+        "sourceFrames": [
+          15
+        ],
+        "sourceSeconds": [
+          0.5
+        ],
+        "basis": "按用户本轮指定：取f15，水平直拳充分伸展区间的中间位置，避免拳尚未到位就生效。 已读取动作语义及分页图；真实完整单段Montage时间映射为1:1。",
+        "uncertainty": "这是用户指定的游戏内测试候选配置，尚未进行游戏或PIE验收；不从图像推断实际命中或效果成功。"
+      }
+    }
+  ]
+}

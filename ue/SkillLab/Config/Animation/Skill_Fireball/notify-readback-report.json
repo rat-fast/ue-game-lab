@@ -1,0 +1,34 @@
+{
+	"asset": "/Game/SkillLab/Animations/AM_Skill_Fireball.AM_Skill_Fireball",
+	"class": "/Script/Engine.AnimMontage",
+	"skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"rateScale": 1,
+	"blendInTime": 0.079999998211860657,
+	"blendOutTime": 0.11999999731779099,
+	"saved": false,
+	"reloaded": false,
+	"valid": true,
+	"assetUnchanged": true,
+	"diffValid": false,
+	"sourceObservation": "",
+	"sourceGenerationId": "",
+	"sourceInputPreviewFingerprintSha256": "",
+	"duplicatePolicy": "",
+	"slots": [
+		"DefaultSlot"
+	],
+	"sections": [
+		"Default@0.000->None"
+	],
+	"segments": [
+		"/Game/SkillLab/Animations/AS_FireballCast.AS_FireballCast"
+	],
+	"notifies": [
+		"Skill_Fireball.release.01:SkillLab.Event.Cast@0.367"
+	],
+	"notifyDetails": [
+		"Skill_Fireball.release.01|instant|SkillLab.Event.Cast|0.367"
+	],
+	"operations": [],
+	"issues": []
+}

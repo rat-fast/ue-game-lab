@@ -1,0 +1,41 @@
+{
+	"asset": "/Game/SkillLab/Animations/AM_Skill_Fireball.AM_Skill_Fireball",
+	"class": "/Script/Engine.AnimMontage",
+	"skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"sourceObservation": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/AS_FireballCast/source-to-montage.json",
+	"sourceGenerationId": "0000-DEA3A83341284488507BBB96EBEAF920",
+	"sourceInputPreviewFingerprintSha256": "f4316ff6c352894c9f6b100cde7f891734057aa770f4de3b5add8ec9a104d953",
+	"duplicatePolicy": "replace",
+	"saved": true,
+	"reloaded": true,
+	"valid": true,
+	"assetUnchanged": false,
+	"diffValid": true,
+	"notifyDetails": [
+		"instant|Skill_Fireball.release.01|SkillLab.Event.Cast|0.366667|0.366667"
+	],
+	"retainedNotifyDetails": [],
+	"before.Asset": "/Game/SkillLab/Animations/AM_Skill_Fireball.AM_Skill_Fireball",
+	"before.Class": "/Script/Engine.AnimMontage",
+	"before.Skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"before.NotifyDetails": [
+		"instant|Skill_Fireball.release.01|SkillLab.Event.Cast|0.300000|0.300000"
+	],
+	"after.Asset": "/Game/SkillLab/Animations/AM_Skill_Fireball.AM_Skill_Fireball",
+	"after.Class": "/Script/Engine.AnimMontage",
+	"after.Skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"after.NotifyDetails": [
+		"instant|Skill_Fireball.release.01|SkillLab.Event.Cast|0.366667|0.366667"
+	],
+	"operations": [
+		{
+			"id": "Skill_Fireball.release.01",
+			"op": "upsert",
+			"status": "updated",
+			"before": "instant|Skill_Fireball.release.01|SkillLab.Event.Cast|0.300000|0.300000",
+			"after": "instant|Skill_Fireball.release.01|SkillLab.Event.Cast|0.366667|0.366667",
+			"issueCode": ""
+		}
+	],
+	"issues": []
+}

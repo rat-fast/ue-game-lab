@@ -1,0 +1,67 @@
+{
+  "checks": [
+    {
+      "skillId": "Skill_Fireball",
+      "castMontage": "/Game/SkillLab/Animations/AM_Skill_Fireball.AM_Skill_Fireball",
+      "loaded": true,
+      "isDynamic": false,
+      "length": 0.6666666865348816,
+      "sectionNames": [
+        "Default"
+      ],
+      "notifyCount": 1,
+      "events": "[{trigger_weight_threshold: 0.000010, notify_name: \"Skill_Fireball.release.01\", notify: \"/Script/SkillLabPresentation.SkillLabSkillAnimNotify'/Game/SkillLab/Animations/AM_Skill_Fireball.AM_Skill_Fireball:SkillLabSkillAnimNotify_0'\", notify_state_class: None, montage_tick_type: Queued, notify_trigger_chance: 1.000000, notify_filter_type: NoFiltering, notify_filter_lod: 0, can_be_filtered_via_request: True, trigger_on_dedicated_server: True, trigger_on_follower: False}]"
+    },
+    {
+      "skillId": "Skill_AreaBurst",
+      "castMontage": "/Game/SkillLab/Animations/AM_Skill_AreaBurst.AM_Skill_AreaBurst",
+      "loaded": true,
+      "isDynamic": false,
+      "length": 1.8333333730697632,
+      "sectionNames": [
+        "Default"
+      ],
+      "notifyCount": 1,
+      "events": "[{trigger_weight_threshold: 0.000010, notify_name: \"Skill_AreaBurst.release.01\", notify: \"/Script/SkillLabPresentation.SkillLabSkillAnimNotify'/Game/SkillLab/Animations/AM_Skill_AreaBurst.AM_Skill_AreaBurst:SkillLabSkillAnimNotify_0'\", notify_state_class: None, montage_tick_type: Queued, notify_trigger_chance: 1.000000, notify_filter_type: NoFiltering, notify_filter_lod: 0, can_be_filtered_via_request: True, trigger_on_dedicated_server: True, trigger_on_follower: False}]"
+    },
+    {
+      "skillId": "Skill_Mend",
+      "castMontage": "/Game/SkillLab/Animations/AM_Skill_Mend.AM_Skill_Mend",
+      "loaded": true,
+      "isDynamic": false,
+      "length": 1.0,
+      "sectionNames": [
+        "Default"
+      ],
+      "notifyCount": 1,
+      "events": "[{trigger_weight_threshold: 0.000010, notify_name: \"Skill_Mend.release.01\", notify: \"/Script/SkillLabPresentation.SkillLabSkillAnimNotify'/Game/SkillLab/Animations/AM_Skill_Mend.AM_Skill_Mend:SkillLabSkillAnimNotify_0'\", notify_state_class: None, montage_tick_type: Queued, notify_trigger_chance: 1.000000, notify_filter_type: NoFiltering, notify_filter_lod: 0, can_be_filtered_via_request: True, trigger_on_dedicated_server: True, trigger_on_follower: False}]"
+    },
+    {
+      "skillId": "Skill_BurningBuff",
+      "castMontage": "/Game/SkillLab/Animations/AM_Skill_BurningBuff.AM_Skill_BurningBuff",
+      "loaded": true,
+      "isDynamic": false,
+      "length": 1.0,
+      "sectionNames": [
+        "Default"
+      ],
+      "notifyCount": 1,
+      "events": "[{trigger_weight_threshold: 0.000010, notify_name: \"Skill_BurningBuff.release.01\", notify: \"/Script/SkillLabPresentation.SkillLabSkillAnimNotify'/Game/SkillLab/Animations/AM_Skill_BurningBuff.AM_Skill_BurningBuff:SkillLabSkillAnimNotify_0'\", notify_state_class: None, montage_tick_type: Queued, notify_trigger_chance: 1.000000, notify_filter_type: NoFiltering, notify_filter_lod: 0, can_be_filtered_via_request: True, trigger_on_dedicated_server: True, trigger_on_follower: False}]"
+    }
+  ],
+  "provider": {
+    "method": "SkillLabPlayerController CDO.SkillReloadDefinitions",
+    "callReturned": true,
+    "result": "None",
+    "gameOrPIEStarted": false,
+    "evidenceLine": "[2026.11.02-18.58.21:157][  0]LogTemp: [SkillLabTesting] SkillDefinitions reload succeeded",
+    "evidenceLog": "E:/agent/game/ue/SkillLab/Saved/Logs/ContentConfigurationDefinitions.log",
+    "reloadSucceeded": true
+  },
+  "timingAuthority": {
+    "reason": "以用户本轮提供的四项明确配置值为准，覆盖此前选点建议。",
+    "frameRule": "源帧索引从0开始；30fps、播放倍率1，源到Montage映射1:1；秒数保留6位。",
+    "recoveryPolicy": "2/3/4后摇候选覆盖释放点到源末帧的剩余时间，实际仍从技能行为完成后开始计时，先按行为很快完成测试；1在投射物结果返回后再停顿0.20秒。"
+  },
+  "skillDefinitionsSha256": "504a2e3ebcf13399dd1a33f60686ad9a2a68ef804b503afdb47703e0fe4b7dff"
+}

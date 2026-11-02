@@ -1,0 +1,41 @@
+{
+	"asset": "/Game/SkillLab/Animations/AM_Skill_BurningBuff.AM_Skill_BurningBuff",
+	"class": "/Script/Engine.AnimMontage",
+	"skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"sourceObservation": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/MM_Attack_02/source-to-montage.json",
+	"sourceGenerationId": "0003-F59B55AB409F6EE1672AA0899CBC3F58",
+	"sourceInputPreviewFingerprintSha256": "99f890646c53fa9b705e860bc31ce57b9539679ebf278526720c9e818fb18178",
+	"duplicatePolicy": "replace",
+	"saved": true,
+	"reloaded": true,
+	"valid": true,
+	"assetUnchanged": false,
+	"diffValid": true,
+	"notifyDetails": [
+		"instant|Skill_BurningBuff.release.01|SkillLab.Event.Cast|0.533333|0.533333"
+	],
+	"retainedNotifyDetails": [],
+	"before.Asset": "/Game/SkillLab/Animations/AM_Skill_BurningBuff.AM_Skill_BurningBuff",
+	"before.Class": "/Script/Engine.AnimMontage",
+	"before.Skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"before.NotifyDetails": [
+		"instant|Skill_BurningBuff.release.01|SkillLab.Event.Cast|0.466667|0.466667"
+	],
+	"after.Asset": "/Game/SkillLab/Animations/AM_Skill_BurningBuff.AM_Skill_BurningBuff",
+	"after.Class": "/Script/Engine.AnimMontage",
+	"after.Skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"after.NotifyDetails": [
+		"instant|Skill_BurningBuff.release.01|SkillLab.Event.Cast|0.533333|0.533333"
+	],
+	"operations": [
+		{
+			"id": "Skill_BurningBuff.release.01",
+			"op": "upsert",
+			"status": "updated",
+			"before": "instant|Skill_BurningBuff.release.01|SkillLab.Event.Cast|0.466667|0.466667",
+			"after": "instant|Skill_BurningBuff.release.01|SkillLab.Event.Cast|0.533333|0.533333",
+			"issueCode": ""
+		}
+	],
+	"issues": []
+}

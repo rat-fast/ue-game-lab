@@ -1,0 +1,81 @@
+{
+  "asset": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_ChargedAttack.MM_ChargedAttack",
+  "generationId": "0001-38EC10FC4FE5AB1ADDBB75BA5C4DE42B",
+  "inputPreviewFingerprintSha256": "04faf907ddf68a430603a495b6dd50dfa001eb7d486a018cee5f2195568d8741",
+  "status": "complete",
+  "playbackMapping": {
+    "targetAsset": "/Game/SkillLab/Animations/AM_Skill_AreaBurst.AM_Skill_AreaBurst",
+    "skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+    "sourceSkeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+    "sourceLengthSeconds": 1.8333333730697632,
+    "montageLengthSeconds": 1.8333333730697632,
+    "sourceRateScale": 1,
+    "montageRateScale": 1,
+    "slots": [
+      {
+        "slot": "DefaultSlot",
+        "segments": [
+          {
+            "source": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_ChargedAttack.MM_ChargedAttack",
+            "start_pos": 0.0,
+            "anim_start_time": 0.0,
+            "anim_end_time": 1.8333333730697632,
+            "anim_play_rate": 1.0,
+            "looping_count": 1,
+            "cached_play_length": 1.8333333730697632
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "name": "Default",
+        "startTime": 0,
+        "next": "None",
+        "endTime": 1.8333333730697632
+      }
+    ],
+    "runtimeConditions": {
+      "entry": "SkillDefinitions.json castMontage -> PlayCastMontage / PlaySkillAction",
+      "playRate": 1,
+      "startPosition": 0,
+      "sectionJumps": false,
+      "looping": false,
+      "blendInTime": 0.07999999821186066,
+      "blendOutTime": 0.11999999731779099,
+      "enableAutoBlendOut": true,
+      "stopCondition": "现有Completed/Cancelled停止动作；无需等待源动作末尾",
+      "meshCondition": "兼容SK_Mannequin的Mesh、有效AnimInstance和DefaultSlot求值；未启动游戏验证"
+    },
+    "formula": "单个正向完整Segment、一次循环：montageSeconds = start_pos + (sourceSeconds - anim_start_time) / (anim_play_rate * sourceRateScale)；本例为1:1。正常playRate=1、montageRateScale=1时从起播算的墙钟时间相同，中断/掉帧另行实测。",
+    "mappingStatus": "verified_single_full_segment",
+    "readback": "../../../../Config/Animation/Skill_AreaBurst/montage-structure.json"
+  },
+  "kind": "actionOverviewManifest",
+  "publishedOverview": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/MM_ChargedAttack/overview.json",
+  "publishedPages": [
+    {
+      "image": "page-0000.png",
+      "sha256": "5fafb571dd7cf18c48c4fbedfed3c6306d84b6fb96794c482f3729263fd80d64"
+    },
+    {
+      "image": "page-0001.png",
+      "sha256": "c92eb14d1d4b7a5da1ea8cc137ff80e1040279cbdbac4fa20840a76af2ca709e"
+    },
+    {
+      "image": "page-0002.png",
+      "sha256": "26e8dba1a32eb7d2ff4d69603724ac935edf2adebf1f671d786960e4ab1e421b"
+    },
+    {
+      "image": "page-0003.png",
+      "sha256": "292b163ef423e12998b8ac626549f87b359493fa06bca2a0949105614b7e65db"
+    },
+    {
+      "image": "page-0004.png",
+      "sha256": "0c9f171bc458b98c2570623ed97ec8dbd6a9514e3c30e7a0463dbf781f6161cb"
+    }
+  ],
+  "originManifest": "E:/agent/game/ue/SkillLab/Saved/ActionOverviews/20261102T170753-A6779C0F4B30FA1845797C949C3B7728/0001-38EC10FC4FE5AB1ADDBB75BA5C4DE42B/manifest.json",
+  "originPlaybackMapping": "sourceOnly_notEstablished",
+  "mappingEnrichmentSource": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/MM_ChargedAttack/source-to-montage.json"
+}

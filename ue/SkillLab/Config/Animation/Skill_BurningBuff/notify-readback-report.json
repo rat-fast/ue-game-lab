@@ -1,0 +1,34 @@
+{
+	"asset": "/Game/SkillLab/Animations/AM_Skill_BurningBuff.AM_Skill_BurningBuff",
+	"class": "/Script/Engine.AnimMontage",
+	"skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"rateScale": 1,
+	"blendInTime": 0.079999998211860657,
+	"blendOutTime": 0.11999999731779099,
+	"saved": false,
+	"reloaded": false,
+	"valid": true,
+	"assetUnchanged": true,
+	"diffValid": false,
+	"sourceObservation": "",
+	"sourceGenerationId": "",
+	"sourceInputPreviewFingerprintSha256": "",
+	"duplicatePolicy": "",
+	"slots": [
+		"DefaultSlot"
+	],
+	"sections": [
+		"Default@0.000->None"
+	],
+	"segments": [
+		"/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_Attack_02.MM_Attack_02"
+	],
+	"notifies": [
+		"Skill_BurningBuff.release.01:SkillLab.Event.Cast@0.533"
+	],
+	"notifyDetails": [
+		"Skill_BurningBuff.release.01|instant|SkillLab.Event.Cast|0.533"
+	],
+	"operations": [],
+	"issues": []
+}

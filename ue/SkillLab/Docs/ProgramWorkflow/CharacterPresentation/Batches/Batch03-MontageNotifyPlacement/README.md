@@ -2,7 +2,11 @@
 
 ## 当前状态
 
-本批已完成动作总览工具实现及技能定义的 `releaseTrigger` 解析基础设施。动作总览产物统一归档到 `Docs/ArtWorkflow/Exports/`，AI 观察记录归档到 `Docs/ArtWorkflow/Observations/`。当前四个技能仍使用 `castAnimation` 和默认 `Timer`，尚未完成持久 Montage 写回、四技能 Montage 绑定、Notify 点位配置或游戏内时序验收。
+动作总览和动作语义产物已按 AnimSequence 资产归档于 `Docs/ArtWorkflow/Actions/<assetName>/`，主要文件为 `overview.json`、分页图、`observation.md`；不再使用批次型 `Exports/` 和集中式 `Observations/` 作为正式归档。
+
+通用程序能力已提供持久 Montage 的 Notify Patch 写入、保存、重载、回读和差异报告，以及技能定义的 `releaseTrigger` 解析和运行时 Notify 转发。它们只提供可用接口，不代表四个技能已经完成内容配置。
+
+四技能持久 Montage、Notify 和 `SkillDefinitions.json` 绑定配置已完成。四项写入、保存、重载、独立进程回读、差异校验及 Provider reload 均通过；最终测试候选值以[配置交付说明](../../../../../Config/Animation/SkillContentDelivery.md)为准：Fireball f11，AreaBurst f36，Mend f15，BurningBuff f16。配置产物位于各技能 `Config/Animation/<SkillId>/`，源动作映射位于对应 `Actions/<assetName>/source-to-montage.json`。未启动游戏或 PIE，游戏内动作和事件时序仍待用户验收。
 
 需求入口为：
 
@@ -20,6 +24,8 @@
 | Notify 配置与运行接入 | [ArchitectureHandoff.md](ArchitectureHandoff.md) | 多事件写回、回读、事件声明、身份/取消/迟到保护和运行接入 |
 | 具体内容与游戏内验收 | 两份交接第 7、8、10 节 | 依赖具体技能事件、动作和容差确认 |
 
-本入口只做导航和状态，不复制架构结论。后续实现拆为两块：A 为 C++ Editor/Runtime 的持久 `UAnimMontage` 读取、结构化 Patch、白名单 Notify 写回/保存/重载/回读/差异校验，以及现有 Notify 桥的身份、取消和迟到保护；B 为四个技能的持久 Montage 创建或绑定、`SkillDefinitions.json` 的 `castMontage`、按动作观察和业务语义填写 Patch，以及仅必要的 `GameplayEvent`/Lua 调整。A 完成并验证后，B 才能按具体技能配置和验收。
+本入口只做导航和状态，不复制架构结论。本批分为两块：A 是 C++ Editor/Runtime 的持久 `UAnimMontage` 读取、结构化 Patch、白名单 Notify 写回/保存/重载/回读/差异校验，以及 Notify 桥的身份、取消和迟到保护；A 的通用能力已有实现与工具验证。B 是四个技能的持久 Montage、`SkillDefinitions.json` 绑定和 Notify 内容配置，现已完成结构写入、资产回读及 Provider 验证。剩余工作是用户在游戏内验证动作与事件时序。
 
-正式 Notify 资产目标是已保存的 `UAnimMontage`。`castAnimation` 动态 Montage 只作为当前代码事实，不作为本批 Notify 写回权威；动作观察、UE 资产和运行时事实的单一来源与边界见 [ArchitectureHandoff.md](ArchitectureHandoff.md)。
+职责边界：A 是通用代码与编辑器工具能力，由程序实现职责维护；B 是技能内容配置，由配置 Agent 使用现有工具完成，可修改本任务授权的 Montage 资产、Patch JSON 和技能定义，不得扩展 C++、Schema、解析器或工具。Montage 写入/回读通过不等于技能在游戏中的实际时序验收。
+
+正式 Notify 资产目标是已保存的 `UAnimMontage`。`castAnimation` 动态 Montage 只作为历史/兼容运行路径，不作为本批 Notify 写回权威；每个动作与实际 Montage 的映射记录在对应 Actions 资产目录的 `source-to-montage.json`。动作观察、UE 资产和运行时事实的单一来源与边界见 [ArchitectureHandoff.md](ArchitectureHandoff.md)。

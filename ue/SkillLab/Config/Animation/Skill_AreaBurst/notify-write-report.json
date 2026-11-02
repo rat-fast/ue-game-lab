@@ -1,0 +1,41 @@
+{
+	"asset": "/Game/SkillLab/Animations/AM_Skill_AreaBurst.AM_Skill_AreaBurst",
+	"class": "/Script/Engine.AnimMontage",
+	"skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"sourceObservation": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/MM_ChargedAttack/source-to-montage.json",
+	"sourceGenerationId": "0001-38EC10FC4FE5AB1ADDBB75BA5C4DE42B",
+	"sourceInputPreviewFingerprintSha256": "04faf907ddf68a430603a495b6dd50dfa001eb7d486a018cee5f2195568d8741",
+	"duplicatePolicy": "replace",
+	"saved": true,
+	"reloaded": true,
+	"valid": true,
+	"assetUnchanged": false,
+	"diffValid": true,
+	"notifyDetails": [
+		"instant|Skill_AreaBurst.release.01|SkillLab.Event.Cast|1.200000|1.200000"
+	],
+	"retainedNotifyDetails": [],
+	"before.Asset": "/Game/SkillLab/Animations/AM_Skill_AreaBurst.AM_Skill_AreaBurst",
+	"before.Class": "/Script/Engine.AnimMontage",
+	"before.Skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"before.NotifyDetails": [
+		"instant|Skill_AreaBurst.release.01|SkillLab.Event.Cast|0.933333|0.933333"
+	],
+	"after.Asset": "/Game/SkillLab/Animations/AM_Skill_AreaBurst.AM_Skill_AreaBurst",
+	"after.Class": "/Script/Engine.AnimMontage",
+	"after.Skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+	"after.NotifyDetails": [
+		"instant|Skill_AreaBurst.release.01|SkillLab.Event.Cast|1.200000|1.200000"
+	],
+	"operations": [
+		{
+			"id": "Skill_AreaBurst.release.01",
+			"op": "upsert",
+			"status": "updated",
+			"before": "instant|Skill_AreaBurst.release.01|SkillLab.Event.Cast|0.933333|0.933333",
+			"after": "instant|Skill_AreaBurst.release.01|SkillLab.Event.Cast|1.200000|1.200000",
+			"issueCode": ""
+		}
+	],
+	"issues": []
+}

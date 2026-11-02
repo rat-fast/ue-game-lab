@@ -1,5 +1,7 @@
 # Batch03：Montage Notify 配置能力实现摘要
 
+> 本文主体记录截至 2026-10-28 的程序实现和当时状态，后续四技能内容配置以 [配置交付说明](../../../../../Config/Animation/SkillContentDelivery.md)、[批次入口](README.md) 和 [Notify 架构交接](ArchitectureHandoff.md) 为准。历史结论不代表四技能仍未配置。
+
 ## 实际修改
 
 - `Source/SkillLabSkills/Private/SkillLabSkillDefinitionProvider.cpp`
@@ -41,7 +43,7 @@ Timer 语义保持兼容：运行时 Timer 分支使用 `Phases.WindupSeconds`�
 
 现有 `SkillLabAnimationContent` Commandlet 已支持持久 `UAnimMontage` 的 Notify 写入、保存、通过 UE `ReloadPackage` 替换包后回读和结构校验，但其入口通过 `StaticLoadObject(UAnimMontage::StaticClass(), ...)` 固定读取 Montage，不能对当前四技能的 `castAnimation` 源 `UAnimSequence` 写入或回读 Notify。运行时 `castAnimation -> AnimSequence -> CreateSlotAnimationAsDynamicMontage` 仍使用动态 Montage；动态对象没有持久资产路径，且不能把源 Sequence 秒数直接当作任意 Montage 秒数。因此本轮没有修改四技能动作绑定、没有批量迁移动画，也没有伪造动态 Montage 持久化证据。
 
-当前状态：**解析基础设施已完成；实际 Notify 写回/回读、四技能 GameplayEvent 配置和游戏内时序尚未完成。** 可行后续是二选一：为一个明确技能创建并绑定持久 `UAnimMontage`，用现有 Commandlet 完成保存/重载/回读后再做运行验证；或扩展 Editor 入口支持明确目标 `UAnimSequence` 的 Notify 写入/回读，并验证其在动态 Montage 源路径中的实际触发。现有 `Config/Animation/FireballMontage.json` 指向的 `MM_Pistol_Fire_Montage` 不是当前 `Skill_Fireball` 的 `castAnimation`，不能作为当前四技能实际运行内容的证明。
+当时状态（截至 2026-10-28）：**解析基础设施已完成；实际 Notify 写回/回读、四技能 GameplayEvent 配置和游戏内时序尚未完成。** 当时讨论的后续路线已由当前持久 Montage 配置流程推进；现有 `Config/Animation/FireballMontage.json` 指向的 `MM_Pistol_Fire_Montage` 仍不是四技能实际绑定的资产。
 
 ## 验证
 

@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "kind": "sourceToMontageMapping",
+  "asset": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_ChargedAttack.MM_ChargedAttack",
+  "generationId": "0001-38EC10FC4FE5AB1ADDBB75BA5C4DE42B",
+  "inputPreviewFingerprintSha256": "04faf907ddf68a430603a495b6dd50dfa001eb7d486a018cee5f2195568d8741",
+  "status": "complete",
+  "skillId": "Skill_AreaBurst",
+  "overview": "overview.json",
+  "observation": "observation.md",
+  "pages": [
+    {
+      "image": "page-0000.png",
+      "sha256": "5fafb571dd7cf18c48c4fbedfed3c6306d84b6fb96794c482f3729263fd80d64"
+    },
+    {
+      "image": "page-0001.png",
+      "sha256": "c92eb14d1d4b7a5da1ea8cc137ff80e1040279cbdbac4fa20840a76af2ca709e"
+    },
+    {
+      "image": "page-0002.png",
+      "sha256": "26e8dba1a32eb7d2ff4d69603724ac935edf2adebf1f671d786960e4ab1e421b"
+    },
+    {
+      "image": "page-0003.png",
+      "sha256": "292b163ef423e12998b8ac626549f87b359493fa06bca2a0949105614b7e65db"
+    },
+    {
+      "image": "page-0004.png",
+      "sha256": "0c9f171bc458b98c2570623ed97ec8dbd6a9514e3c30e7a0463dbf781f6161cb"
+    }
+  ],
+  "playbackMapping": {
+    "targetAsset": "/Game/SkillLab/Animations/AM_Skill_AreaBurst.AM_Skill_AreaBurst",
+    "skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+    "sourceSkeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+    "sourceLengthSeconds": 1.8333333730697632,
+    "montageLengthSeconds": 1.8333333730697632,
+    "sourceRateScale": 1,
+    "montageRateScale": 1,
+    "slots": [
+      {
+        "slot": "DefaultSlot",
+        "segments": [
+          {
+            "source": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_ChargedAttack.MM_ChargedAttack",
+            "start_pos": 0.0,
+            "anim_start_time": 0.0,
+            "anim_end_time": 1.8333333730697632,
+            "anim_play_rate": 1.0,
+            "looping_count": 1,
+            "cached_play_length": 1.8333333730697632
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "name": "Default",
+        "startTime": 0,
+        "next": "None",
+        "endTime": 1.8333333730697632
+      }
+    ],
+    "runtimeConditions": {
+      "entry": "SkillDefinitions.json castMontage -> PlayCastMontage / PlaySkillAction",
+      "playRate": 1,
+      "startPosition": 0,
+      "sectionJumps": false,
+      "looping": false,
+      "blendInTime": 0.07999999821186066,
+      "blendOutTime": 0.11999999731779099,
+      "enableAutoBlendOut": true,
+      "stopCondition": "现有Completed/Cancelled停止动作；无需等待源动作末尾",
+      "meshCondition": "兼容SK_Mannequin的Mesh、有效AnimInstance和DefaultSlot求值；未启动游戏验证"
+    },
+    "formula": "单个正向完整Segment、一次循环：montageSeconds = start_pos + (sourceSeconds - anim_start_time) / (anim_play_rate * sourceRateScale)；本例为1:1。正常playRate=1、montageRateScale=1时从起播算的墙钟时间相同，中断/掉帧另行实测。",
+    "mappingStatus": "verified_single_full_segment",
+    "readback": "../../../../Config/Animation/Skill_AreaBurst/montage-structure.json"
+  },
+  "release": {
+    "id": "Skill_AreaBurst.release.01",
+    "eventTag": "SkillLab.Event.Cast",
+    "semantic": "请求一次范围爆发；范围目标与伤害仍由现有技能逻辑裁定",
+    "count": 1,
+    "sourceSeconds": 1.2,
+    "sourceFramePosition": 36.0,
+    "montageSeconds": 1.2,
+    "basis": "按用户本轮指定：取f36，冲步出拳已经充分展开，比f32冲步起点更接近打出去的动作节点。 已读取动作语义及分页图；真实完整单段Montage时间映射为1:1。",
+    "uncertainty": "这是用户指定的游戏内测试候选配置，尚未进行游戏或PIE验收；不从图像推断实际命中或效果成功。",
+    "sourceReferenceFrame": 36,
+    "selectionReason": "按用户本轮指定：取f36，冲步出拳已经充分展开，比f32冲步起点更接近打出去的动作节点。"
+  },
+  "verification": {
+    "creationSaved": true,
+    "structureReport": "../../../../Config/Animation/Skill_AreaBurst/montage-structure.json",
+    "patchReport": "../../../../Config/Animation/Skill_AreaBurst/notify-write-report.json",
+    "freshReadbackReport": "../../../../Config/Animation/Skill_AreaBurst/notify-readback-report.json",
+    "runtimeVerified": false,
+    "saved": true,
+    "reloaded": true,
+    "valid": true,
+    "diffValid": true,
+    "freshProcessReadbackValid": true,
+    "unrelatedNotifyCountBefore": 0,
+    "unrelatedNotifyCountAfter": 0,
+    "notifyCount": 1,
+    "topologyUnchangedByNotifyPatch": true
+  },
+  "manifest": "E:/agent/game/ue/SkillLab/Config/Animation/Skill_AreaBurst/action-overview-manifest.json",
+  "timingAuthority": {
+    "reason": "以用户本轮提供的四项明确配置值为准，覆盖此前选点建议。",
+    "frameRule": "源帧索引从0开始；30fps、播放倍率1，源到Montage映射1:1；秒数保留6位。",
+    "recoveryPolicy": "2/3/4后摇候选覆盖释放点到源末帧的剩余时间，实际仍从技能行为完成后开始计时，先按行为很快完成测试；1在投射物结果返回后再停顿0.20秒。",
+    "windup": 1.2,
+    "recovery": 0.633333
+  }
+}

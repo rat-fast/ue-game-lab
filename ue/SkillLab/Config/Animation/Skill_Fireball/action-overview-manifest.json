@@ -1,0 +1,69 @@
+{
+  "asset": "/Game/SkillLab/Animations/AS_FireballCast.AS_FireballCast",
+  "generationId": "0000-DEA3A83341284488507BBB96EBEAF920",
+  "inputPreviewFingerprintSha256": "f4316ff6c352894c9f6b100cde7f891734057aa770f4de3b5add8ec9a104d953",
+  "status": "complete",
+  "playbackMapping": {
+    "targetAsset": "/Game/SkillLab/Animations/AM_Skill_Fireball.AM_Skill_Fireball",
+    "skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+    "sourceSkeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+    "sourceLengthSeconds": 0.6666666865348816,
+    "montageLengthSeconds": 0.6666666865348816,
+    "sourceRateScale": 1,
+    "montageRateScale": 1,
+    "slots": [
+      {
+        "slot": "DefaultSlot",
+        "segments": [
+          {
+            "source": "/Game/SkillLab/Animations/AS_FireballCast.AS_FireballCast",
+            "start_pos": 0.0,
+            "anim_start_time": 0.0,
+            "anim_end_time": 0.6666666865348816,
+            "anim_play_rate": 1.0,
+            "looping_count": 1,
+            "cached_play_length": 0.6666666865348816
+          }
+        ]
+      }
+    ],
+    "sections": [
+      {
+        "name": "Default",
+        "startTime": 0,
+        "next": "None",
+        "endTime": 0.6666666865348816
+      }
+    ],
+    "runtimeConditions": {
+      "entry": "SkillDefinitions.json castMontage -> PlayCastMontage / PlaySkillAction",
+      "playRate": 1,
+      "startPosition": 0,
+      "sectionJumps": false,
+      "looping": false,
+      "blendInTime": 0.07999999821186066,
+      "blendOutTime": 0.11999999731779099,
+      "enableAutoBlendOut": true,
+      "stopCondition": "现有Completed/Cancelled停止动作；无需等待源动作末尾",
+      "meshCondition": "兼容SK_Mannequin的Mesh、有效AnimInstance和DefaultSlot求值；未启动游戏验证"
+    },
+    "formula": "单个正向完整Segment、一次循环：montageSeconds = start_pos + (sourceSeconds - anim_start_time) / (anim_play_rate * sourceRateScale)；本例为1:1。正常playRate=1、montageRateScale=1时从起播算的墙钟时间相同，中断/掉帧另行实测。",
+    "mappingStatus": "verified_single_full_segment",
+    "readback": "../../../../Config/Animation/Skill_Fireball/montage-structure.json"
+  },
+  "kind": "actionOverviewManifest",
+  "publishedOverview": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/AS_FireballCast/overview.json",
+  "publishedPages": [
+    {
+      "image": "page-0000.png",
+      "sha256": "8a32703a60435bc88ca2024bddbb85082ff649d189b7d79feabe369fdbc2398c"
+    },
+    {
+      "image": "page-0001.png",
+      "sha256": "a990a39d6f3cc87bc8eb0384bf5e7c7b9350ff8208ea274cc12ea73ac61d37fb"
+    }
+  ],
+  "originManifest": "E:/agent/game/ue/SkillLab/Saved/ActionOverviews/20261102T170753-A6779C0F4B30FA1845797C949C3B7728/0000-DEA3A83341284488507BBB96EBEAF920/manifest.json",
+  "originPlaybackMapping": "sourceOnly_notEstablished",
+  "mappingEnrichmentSource": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/AS_FireballCast/source-to-montage.json"
+}

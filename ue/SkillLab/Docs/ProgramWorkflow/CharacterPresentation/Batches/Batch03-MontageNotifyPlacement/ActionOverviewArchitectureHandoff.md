@@ -2,11 +2,11 @@
 
 ## 1. 定位、来源与审核状态
 
-本文件只交接通用 AnimSequence 动作观察能力及其向 Notify 配置流程提供的输出边界。状态为 **2026-10-27 静态架构核查完成，待用户审核，尚未实现或运行验证**。本轮只新增本文件；未启动 UE、生成图片、修改代码、Blueprint、配置、Lua、动画资产或内容配置，也不派发实现 Agent。
+本文件交接通用 AnimSequence 动作观察能力及其向 Notify 配置流程提供的输出边界。以下架构核查记录于 2026-10-27；工具随后已实现并生成资产级总览，当前实现、输出结构和验证证据以 [ActionOverviewImplementation.md](ActionOverviewImplementation.md) 与 [美术工作流入口](../../../../ArtWorkflow/README.md) 为准。实现记录了尚待独立视觉比对的限制；总览产物本身不等于动作语义或游戏内表现验收。
 
 权威需求为同批策划目录中的 [动作总览需求](../../../../Planning/CharacterPresentation/Batches/Batch03-MontageNotifyPlacement/AnimSequenceActionOverviewRequirements.md)，重点是第 3、5、6、7、9 节；[批次入口](../../../../Planning/CharacterPresentation/Batches/Batch03-MontageNotifyPlacement/README.md) 和 [Notify 需求](../../../../Planning/CharacterPresentation/Batches/Batch03-MontageNotifyPlacement/MontageNotifyPlacementRequirements.md) 用于界定下游消费关系。项目约束来自 `Docs/ProjectContext/ProgramArchitectureContract.md`、角色表现基线 README/02/03，以及批次入口要求的技能生命周期、反馈基线。
 
-已有 [ArchitectureHandoff.md](ArchitectureHandoff.md) 继续承担 Notify 内容配置与运行接入交接。本文不重建 Notify 架构，不定义事件协议或技能/Lua 行为。该旧文档及程序 README 仍有“本批唯一交接”、动作观察并入内容生产 A 的旧表述；总控维护导航时应将独立动作总览路由到本文，保留 Notify 原交接及其适用范围。本轮不改写这些文件，也不继承其中未获审核的下游设计为动作总览的前置要求。
+已有 [ArchitectureHandoff.md](ArchitectureHandoff.md) 继续承担 Notify 内容配置与运行接入交接。本文不重建 Notify 架构，不定义事件协议或技能/Lua 行为；批次入口分别链接动作总览与 Notify 交接。下文保留当时的架构分析，已落地事实以实现记录和美术工作流入口为准。
 
 以下分别标注策划要求、已核对事实、架构建议、实现期核验及待决定事项。建议的工具形式、语言、目录名和数据格式不是产品约束，也不因本交接而冻结。
 
@@ -200,7 +200,7 @@ AI 语义结果独立于生成器事实：保存观察生成 ID/输入版本、�
 
 - 元数据与旧工具复查：`D:/Epic/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe` 配合 `SkillLab.uproject -run=SkillLabAnimationContent -Spec=<spec> -Report=<report>`，**不带 `-Write`**。只能核对 Montage 现有报告，不能生成本需求总览。实际执行前仍需取得实现/运行授权。
 - `SkillAnimationSmoke` 的截图、RuntimeProbe、既有自动化和 NullRHI 历史日志不能验证源逐帧图像、分页或持久路径。本轮没有重新执行。
-- 后续总览执行命令/编辑器入口、设置入口和 manifest 读回方法应由实现交付提供，并能批量调用；本项目当前没有可宣称已可用的该入口。
+- 总览执行命令、Editor 入口、输出根路径设置和批量调用已在 [ActionOverviewImplementation.md](ActionOverviewImplementation.md) 记录；资产级正式输出结构见 [美术工作流入口](../../../../ArtWorkflow/README.md)。
 - 正式游戏入口 `Run_SkillLab_DX11.bat` 只留给下游最终时序验收，非本工具正常生成的必要路径。
 
 ### 8.2 实施后必须取得的证据
@@ -220,9 +220,9 @@ AI 语义结果独立于生成器事实：保存观察生成 ID/输入版本、�
 
 不必为此建立全项目测试框架。时间换算、索引覆盖、目录隔离和失败传播适合定向自动化；图像质量、姿态正确和足够支持动作判断必须有实际可读图片与对照证据。实现期核验若否定建议路径，先报告影响和最小替代，再调整技术选择；不能删减已明确的产品结果。
 
-## 9. 下游实现的最小阅读集合
+## 9. 实施期最小阅读集合（历史交接）
 
-实施仍须等待用户审核与后续授权。取得授权后，除 UE 入口/程序 Skill 和项目约定外，只需：
+以下是当时给动作总览实现任务准备的最小上下文路由；通用工具现已实现，当前操作与验证方法以 [ActionOverviewImplementation.md](ActionOverviewImplementation.md) 为准。该集合仍可帮助定位源代码职责，不构成新的实施授权要求。
 
 1. 本文与动作总览需求；批次入口和 Notify 需求第 3、4、5、8 节用于消费边界。无需阅读整个 Notify 运行协议或 Lua 行为源码。
 2. `Source/SkillLabAnimationEditor/SkillLabAnimationEditor.Build.cs`、`Public/SkillLabAnimationContentTypes.h`、`Public/SkillLabAnimationContentCommandlet.h`、`Private/SkillLabAnimationContentCommandlet.cpp`：确认现有 Editor 入口和可复用/不可复用的部分。
@@ -232,14 +232,18 @@ AI 语义结果独立于生成器事实：保存观察生成 ID/输入版本、�
 
 `SkillLabTestCommandsComponent.cpp`、`SkillLabPlayerController.cpp` 的截图/Probe 代码只是本轮排除错误复用的依据，不是新生成器必须依赖或修改的文件。资产内部、真实 Mesh 绑定和渲染结果留实施后核验。
 
-## 10. 待用户/总控决定与阶段结论
+## 10. 已确认的产物边界与剩余验证
 
-需要用户/总控审核的是本文件的动作总览职责和下游输出边界。另有需求已明确留待讨论的事项：
+后续工作流已采用以下资产级归档结构，细节以 [美术工作流入口](../../../../ArtWorkflow/README.md) 为准：
 
-1. 默认分页密度/图像可读性目标、默认视角及额外视角、辅助层默认开关。第 5、6 节只提供技术组织建议，不代替这些体验偏好。
-2. 动作语义结果由哪个内容职责生成、采用什么正式载体，以及它与 Notify 配置的编排/回查流程；生成器事实与 AI 判断保持可区分。
-3. 实际播放映射的产品范围：要求覆盖哪些实际目标类型和复杂播放条件、由总览入口还是下游读取目标后建立映射。第 7 节已给出共同的数据边界；这不改变“源帧不能盲当 Montage 点位”的要求。
+1. 一个源 AnimSequence 对应 `Actions/<assetName>/`；分页总览图与精简 `overview.json` 放在该目录，动作语义放在同级 `observation.md`。语义记录应明确列出身体/肢体动作峰值和视觉线索峰值，并附帧/帧段及分页证据。
+2. `Actions/Index.md` 提供文字检索入口，并链接到各资产目录的观察记录和全部分页图；不复制图片到集中总览目录。
+3. `source-to-montage.json` 只记录真实建立并核验的 Sequence 到持久 Montage 映射。动作观察与配置职责分开，观察记录不表示 Notify 已配置或技能业务事件已发生。
 
-Mesh 实际引用、兼容 API、帧率/末端计数、RHI 渲染、文件编码、持久配置具体落点等属于技术核验，不交回用户挑选语言/格式。当前没有证据证明明确需求不可实现，也没有理由将四技能、单图或手工截图冻结为范围。
+仍需区分的验证项：
 
-核查结论：项目已有 Editor 模块、对象路径/结构报告风格和可查的播放绑定；UE 5.8 源码提供所需底层接口候选。项目缺少完整的源帧渲染、稳定预览、分页/manifest、持久输出路径及版本发布流水线；真实预览 Mesh、最终兼容范围、GPU 成果与可靠播放映射仍需实施期证据。本文交付后停止，等待用户审核，不自动进入实现。
+1. 生成器已通过真实 RHI 渲染验证；同一时刻与 Animation Editor 结果的独立视觉比对仍按 [ActionOverviewImplementation.md](ActionOverviewImplementation.md) 记录的限制处理。
+2. 峰值记录给内容配置提供可复查的视觉时间锚点，但动作图不能确认亮点是否为特效，也不能确认释放、命中或技能效果的业务含义；点位选择仍由内容配置流程结合技能需求判断。
+3. Sequence 时间只有在播放映射已明确且读回后才能换算为 Montage 时间。生成器不猜测同一 Sequence 在其他 Montage、Slot、裁剪或速率下的播放位置。
+
+历史核查结论：当时项目缺少源帧渲染、稳定预览、分页/manifest、持久输出路径和发布流水线；这些通用能力已有实现记录和真实渲染验证。本文保留原架构分析，不再表示等待用户决定或等待启动实现。

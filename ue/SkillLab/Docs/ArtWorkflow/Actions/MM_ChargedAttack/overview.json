@@ -1,0 +1,48 @@
+{
+  "assetObjectPath": "/Game/Characters/Mannequins/Anims/Unarmed/Attack/MM_ChargedAttack.MM_ChargedAttack",
+  "objectName": "MM_ChargedAttack",
+  "generationId": "0001-38EC10FC4FE5AB1ADDBB75BA5C4DE42B",
+  "status": "complete",
+  "frameRateNumerator": 30,
+  "frameRateDenominator": 1,
+  "sampleCount": 56,
+  "durationSeconds": 1.8333333333333333,
+  "frameRule": "seconds=frameIndex*frameRateDenominator/frameRateNumerator; frameIndex=0..sampleCount-1; source endpoint included",
+  "pages": [
+    {
+      "page": 0,
+      "image": "page-0000.png",
+      "firstFrame": 0,
+      "lastFrame": 11
+    },
+    {
+      "page": 1,
+      "image": "page-0001.png",
+      "firstFrame": 12,
+      "lastFrame": 23
+    },
+    {
+      "page": 2,
+      "image": "page-0002.png",
+      "firstFrame": 24,
+      "lastFrame": 35
+    },
+    {
+      "page": 3,
+      "image": "page-0003.png",
+      "firstFrame": 36,
+      "lastFrame": 47
+    },
+    {
+      "page": 4,
+      "image": "page-0004.png",
+      "firstFrame": 48,
+      "lastFrame": 55
+    }
+  ],
+  "layout": {
+    "columns": 4,
+    "rows": 3,
+    "indexBase": 0
+  }
+}

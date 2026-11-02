@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "asset": "/Game/SkillLab/Animations/AM_Skill_AreaBurst.AM_Skill_AreaBurst",
+  "source": {
+    "observation": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/MM_ChargedAttack/source-to-montage.json",
+    "generationId": "0001-38EC10FC4FE5AB1ADDBB75BA5C4DE42B",
+    "inputPreviewFingerprintSha256": "04faf907ddf68a430603a495b6dd50dfa001eb7d486a018cee5f2195568d8741"
+  },
+  "duplicatePolicy": "replace",
+  "operations": [
+    {
+      "op": "upsert",
+      "id": "Skill_AreaBurst.release.01",
+      "kind": "instant",
+      "eventTag": "SkillLab.Event.Cast",
+      "time": 1.2,
+      "evidence": {
+        "sourceFrames": [
+          36
+        ],
+        "sourceSeconds": [
+          1.2
+        ],
+        "basis": "按用户本轮指定：取f36，冲步出拳已经充分展开，比f32冲步起点更接近打出去的动作节点。 已读取动作语义及分页图；真实完整单段Montage时间映射为1:1。",
+        "uncertainty": "这是用户指定的游戏内测试候选配置，尚未进行游戏或PIE验收；不从图像推断实际命中或效果成功。"
+      }
+    }
+  ]
+}

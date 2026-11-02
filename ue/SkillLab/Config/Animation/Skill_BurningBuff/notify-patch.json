@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "asset": "/Game/SkillLab/Animations/AM_Skill_BurningBuff.AM_Skill_BurningBuff",
+  "source": {
+    "observation": "E:/agent/game/ue/SkillLab/Docs/ArtWorkflow/Actions/MM_Attack_02/source-to-montage.json",
+    "generationId": "0003-F59B55AB409F6EE1672AA0899CBC3F58",
+    "inputPreviewFingerprintSha256": "99f890646c53fa9b705e860bc31ce57b9539679ebf278526720c9e818fb18178"
+  },
+  "duplicatePolicy": "replace",
+  "operations": [
+    {
+      "op": "upsert",
+      "id": "Skill_BurningBuff.release.01",
+      "kind": "instant",
+      "eventTag": "SkillLab.Event.Cast",
+      "time": 0.533333,
+      "evidence": {
+        "sourceFrames": [
+          16
+        ],
+        "sourceSeconds": [
+          0.533333
+        ],
+        "basis": "按用户本轮指定：取f16，向上挥臂接近最高姿态，让效果与上挥动作对齐。 已读取动作语义及分页图；真实完整单段Montage时间映射为1:1。",
+        "uncertainty": "这是用户指定的游戏内测试候选配置，尚未进行游戏或PIE验收；不从图像推断实际命中或效果成功。"
+      }
+    }
+  ]
+}
