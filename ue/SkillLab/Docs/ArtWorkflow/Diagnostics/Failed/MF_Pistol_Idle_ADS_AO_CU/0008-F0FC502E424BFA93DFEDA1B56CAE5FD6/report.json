@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "generator": "SkillLabActionOverview/1",
+  "engine": "5.8.0-55116800+++UE5+Release-5.8",
+  "generatedUtc": "2026-11-03T14:06:19.770Z",
+  "batchId": "20261103T140611-622D52F345CA3CB84318459C67A094F7",
+  "generationId": "0008-F0FC502E424BFA93DFEDA1B56CAE5FD6",
+  "asset": "/Game/Characters/Mannequins/Anims/Pistol/Aim/MF_Pistol_Idle_ADS_AO_CU.MF_Pistol_Idle_ADS_AO_CU",
+  "outputRoot": "E:/agent/game/ue/SkillLab/Saved/ActionOverviews",
+  "directory": "E:/agent/game/ue/SkillLab/Saved/ActionOverviews/20261103T140611-622D52F345CA3CB84318459C67A094F7/0008-F0FC502E424BFA93DFEDA1B56CAE5FD6",
+  "status": "failed",
+  "visualVerification": "pendingIndependentInspection",
+  "playbackMapping": "sourceOnly_notEstablished",
+  "optionalOverlays": "disabled_bonesSocketsWeaponsTrails",
+  "error": {
+    "stage": "compatibility",
+    "reason": "暂不支持 Additive：需要单独定义基准姿势",
+    "frame": -1
+  },
+  "frames": []
+}

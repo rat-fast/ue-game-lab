@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "generator": "SkillLabActionOverview/1",
+  "engine": "5.8.0-55116800+++UE5+Release-5.8",
+  "generatedUtc": "2026-11-03T14:07:04.523Z",
+  "batchId": "20261103T140611-622D52F345CA3CB84318459C67A094F7",
+  "generationId": "0042-3BD42A2F46D4D1E4FB8396BA88A7CBB3",
+  "asset": "/Game/Characters/Mannequins/Anims/Rifle/HitReact/MM_HitReact_Front_Med_01.MM_HitReact_Front_Med_01",
+  "outputRoot": "E:/agent/game/ue/SkillLab/Saved/ActionOverviews",
+  "directory": "E:/agent/game/ue/SkillLab/Saved/ActionOverviews/20261103T140611-622D52F345CA3CB84318459C67A094F7/0042-3BD42A2F46D4D1E4FB8396BA88A7CBB3",
+  "status": "failed",
+  "visualVerification": "pendingIndependentInspection",
+  "playbackMapping": "sourceOnly_notEstablished",
+  "optionalOverlays": "disabled_bonesSocketsWeaponsTrails",
+  "error": {
+    "stage": "compatibility",
+    "reason": "暂不支持 Additive：需要单独定义基准姿势",
+    "frame": -1
+  },
+  "frames": []
+}

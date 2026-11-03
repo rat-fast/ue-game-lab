@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "generator": "SkillLabActionOverview/1",
+  "engine": "5.8.0-55116800+++UE5+Release-5.8",
+  "generatedUtc": "2026-11-03T14:06:32.708Z",
+  "batchId": "20261103T140611-622D52F345CA3CB84318459C67A094F7",
+  "generationId": "0018-5DE984E1490FE48BA5EB4CB4DC915DF5",
+  "asset": "/Game/Characters/Mannequins/Anims/Pistol/Jump/MM_Pistol_Jump_RecoveryAdditive.MM_Pistol_Jump_RecoveryAdditive",
+  "outputRoot": "E:/agent/game/ue/SkillLab/Saved/ActionOverviews",
+  "directory": "E:/agent/game/ue/SkillLab/Saved/ActionOverviews/20261103T140611-622D52F345CA3CB84318459C67A094F7/0018-5DE984E1490FE48BA5EB4CB4DC915DF5",
+  "status": "failed",
+  "visualVerification": "pendingIndependentInspection",
+  "playbackMapping": "sourceOnly_notEstablished",
+  "optionalOverlays": "disabled_bonesSocketsWeaponsTrails",
+  "error": {
+    "stage": "compatibility",
+    "reason": "暂不支持 Additive：需要单独定义基准姿势",
+    "frame": -1
+  },
+  "frames": []
+}

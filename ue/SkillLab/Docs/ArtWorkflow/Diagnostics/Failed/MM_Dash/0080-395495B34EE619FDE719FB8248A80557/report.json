@@ -1,0 +1,848 @@
+{
+  "schemaVersion": 1,
+  "generator": "SkillLabActionOverview/1",
+  "engine": "5.8.0-55116800+++UE5+Release-5.8",
+  "generatedUtc": "2026-11-03T14:08:11.981Z",
+  "batchId": "20261103T140611-622D52F345CA3CB84318459C67A094F7",
+  "generationId": "0080-395495B34EE619FDE719FB8248A80557",
+  "asset": "/Game/Characters/Mannequins/Anims/Unarmed/Jump/MM_Dash.MM_Dash",
+  "outputRoot": "E:/agent/game/ue/SkillLab/Saved/ActionOverviews",
+  "directory": "E:/agent/game/ue/SkillLab/Saved/ActionOverviews/20261103T140611-622D52F345CA3CB84318459C67A094F7/0080-395495B34EE619FDE719FB8248A80557",
+  "status": "failed",
+  "visualVerification": "pendingIndependentInspection",
+  "playbackMapping": "sourceOnly_notEstablished",
+  "optionalOverlays": "disabled_bonesSocketsWeaponsTrails",
+  "timing": {
+    "numerator": 30,
+    "denominator": 1,
+    "intervalCount": 29,
+    "sampleCount": 30,
+    "durationSeconds": 0.9666666666666667,
+    "frameRule": "zeroBased_inclusiveSourceEndpoint_seconds=frame*denominator/numerator_noLoopWrap",
+    "poseEvaluation": "GetBonePose_forceRawData_PoseableMesh_noAnimInstance_noNotify_noPhysics_noPostProcess_noMorphCurves",
+    "targetRateNumerator": 30,
+    "targetRateDenominator": 1
+  },
+  "skeleton": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+  "meshSource": "skeletonSavedPreview",
+  "mesh": "/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple",
+  "inputs": [
+    {
+      "object": "/Game/Characters/Mannequins/Anims/Unarmed/Jump/MM_Dash.MM_Dash",
+      "class": "/Script/Engine.AnimSequence",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Anims/Unarmed/Jump/MM_Dash.uasset",
+      "md5": "1e263c5b21e06e47fbc8f0a8460c2f88",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Meshes/SK_Mannequin.SK_Mannequin",
+      "class": "/Script/Engine.Skeleton",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Meshes/SK_Mannequin.uasset",
+      "md5": "7066bf947a649904c7dcfd33221bcba2",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Meshes/SKM_Quinn_Simple.SKM_Quinn_Simple",
+      "class": "/Script/Engine.SkeletalMesh",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Meshes/SKM_Quinn_Simple.uasset",
+      "md5": "928540fc35d67a487b51c99a79013039",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Materials/Quinn/MI_Quinn_01.MI_Quinn_01",
+      "class": "/Script/Engine.MaterialInstanceConstant",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Materials/Quinn/MI_Quinn_01.uasset",
+      "md5": "88072adcd618fb626dcd37de36eea42f",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Materials/M_Mannequin.M_Mannequin",
+      "class": "/Script/Engine.Material",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Materials/M_Mannequin.uasset",
+      "md5": "2520f82ef0183bdc54eb85b0980b7ae1",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Textures/Quinn/T_Quinn_01_N.T_Quinn_01_N",
+      "class": "/Script/Engine.Texture2D",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Textures/Quinn/T_Quinn_01_N.uasset",
+      "md5": "af851d4d2876c67e96df45882012c1a5",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Textures/Quinn/T_Quinn_01_D.T_Quinn_01_D",
+      "class": "/Script/Engine.Texture2D",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Textures/Quinn/T_Quinn_01_D.uasset",
+      "md5": "867b838b27dce7394fa4c895ea5fa3e7",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Textures/Quinn/T_Quinn_01_MRA.T_Quinn_01_MRA",
+      "class": "/Script/Engine.Texture2D",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Textures/Quinn/T_Quinn_01_MRA.uasset",
+      "md5": "64f5ff83a9ca589bdda33f28be427435",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Materials/Quinn/MI_Quinn_02.MI_Quinn_02",
+      "class": "/Script/Engine.MaterialInstanceConstant",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Materials/Quinn/MI_Quinn_02.uasset",
+      "md5": "6c689098cd345daa498e9b1534948261",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Textures/Quinn/T_Quinn_02_N.T_Quinn_02_N",
+      "class": "/Script/Engine.Texture2D",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Textures/Quinn/T_Quinn_02_N.uasset",
+      "md5": "42ed43b7e33461c5bf2aecfd647e8b50",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Textures/Quinn/T_Quinn_02_D.T_Quinn_02_D",
+      "class": "/Script/Engine.Texture2D",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Textures/Quinn/T_Quinn_02_D.uasset",
+      "md5": "4c6c797769cdfb83515dd63168bc404d",
+      "sidecars": []
+    },
+    {
+      "object": "/Game/Characters/Mannequins/Textures/Quinn/T_Quinn_02_MRA.T_Quinn_02_MRA",
+      "class": "/Script/Engine.Texture2D",
+      "packageDirty": false,
+      "file": "E:/agent/game/ue/SkillLab/Content/Characters/Mannequins/Textures/Quinn/T_Quinn_02_MRA.uasset",
+      "md5": "843e15ae7faef0107401af146b7b1a19",
+      "sidecars": []
+    }
+  ],
+  "rootMotion": {
+    "enabled": true,
+    "forceRootLock": false,
+    "rootLockMode": 0,
+    "scope": "rawSourceRootLocal_perFrame; poseExtractionWithoutRootMotion; forceRootLockMayAffectVisiblePose; componentIdentity_noWorldMovement",
+    "extractedRangeDelta": {
+      "translationCm": [
+        0,
+        885.8078098297119,
+        0
+      ],
+      "rotationXYZW": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "frames": [
+    {
+      "frame": 0,
+      "seconds": 0,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          -10.807809829711914,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 1,
+      "seconds": 0.03333333333333333,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          6.1975531578063965,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 2,
+      "seconds": 0.06666666666666667,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          29.066970825195312,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 3,
+      "seconds": 0.1,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          63.3984489440918,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 4,
+      "seconds": 0.13333333333333333,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          100.37090301513672,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 5,
+      "seconds": 0.16666666666666666,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          147.44720458984375,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 6,
+      "seconds": 0.2,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          200.00869750976562,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 7,
+      "seconds": 0.23333333333333334,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          254.61749267578125,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 8,
+      "seconds": 0.26666666666666666,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          310.6947021484375,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 9,
+      "seconds": 0.3,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          374.659912109375,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 10,
+      "seconds": 0.3333333333333333,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          443.6304931640625,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 11,
+      "seconds": 0.36666666666666664,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          512.722412109375,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 12,
+      "seconds": 0.4,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          579.9852905273438,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 13,
+      "seconds": 0.43333333333333335,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          644.0184936523438,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 14,
+      "seconds": 0.4666666666666667,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          699.1998901367188,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 15,
+      "seconds": 0.5,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          743.4046020507812,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 16,
+      "seconds": 0.5333333333333333,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          780.006591796875,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 17,
+      "seconds": 0.5666666666666667,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          812.284423828125,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 18,
+      "seconds": 0.6,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          838.1533203125,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 19,
+      "seconds": 0.6333333333333333,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          855.2484130859375,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 20,
+      "seconds": 0.6666666666666666,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          865.9467163085938,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 21,
+      "seconds": 0.7,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          871.91162109375,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 22,
+      "seconds": 0.7333333333333333,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          874.486572265625,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 23,
+      "seconds": 0.7666666666666667,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          875,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 24,
+      "seconds": 0.8,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          875,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 25,
+      "seconds": 0.8333333333333334,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          875,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 26,
+      "seconds": 0.8666666666666667,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          875,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 27,
+      "seconds": 0.9,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          875,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 28,
+      "seconds": 0.9333333333333333,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          875,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    },
+    {
+      "frame": 29,
+      "seconds": 0.9666666666666667,
+      "sourceRootLocal": {
+        "translationCm": [
+          0,
+          875,
+          0
+        ],
+        "rotationXYZW": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "scale": [
+          1,
+          1,
+          1
+        ]
+      },
+      "status": "notRendered"
+    }
+  ],
+  "error": {
+    "stage": "framing",
+    "reason": "全段固定取景会使主体高度低于 64px；需另选预览条件",
+    "frame": 0
+  }
+}
