@@ -1,0 +1,48 @@
+{
+  "assetObjectPath": "/Game/Characters/Mannequins/Anims/Rifle/MM_Rifle_Equip.MM_Rifle_Equip",
+  "objectName": "MM_Rifle_Equip",
+  "generationId": "0060-B734F64D47D43072DB28B98531FD7678",
+  "status": "complete",
+  "frameRateNumerator": 30,
+  "frameRateDenominator": 1,
+  "sampleCount": 51,
+  "durationSeconds": 1.6666666666666667,
+  "frameRule": "seconds=frameIndex*frameRateDenominator/frameRateNumerator; frameIndex=0..sampleCount-1; source endpoint included",
+  "pages": [
+    {
+      "page": 0,
+      "image": "page-0000.png",
+      "firstFrame": 0,
+      "lastFrame": 11
+    },
+    {
+      "page": 1,
+      "image": "page-0001.png",
+      "firstFrame": 12,
+      "lastFrame": 23
+    },
+    {
+      "page": 2,
+      "image": "page-0002.png",
+      "firstFrame": 24,
+      "lastFrame": 35
+    },
+    {
+      "page": 3,
+      "image": "page-0003.png",
+      "firstFrame": 36,
+      "lastFrame": 47
+    },
+    {
+      "page": 4,
+      "image": "page-0004.png",
+      "firstFrame": 48,
+      "lastFrame": 50
+    }
+  ],
+  "layout": {
+    "columns": 4,
+    "rows": 3,
+    "indexBase": 0
+  }
+}

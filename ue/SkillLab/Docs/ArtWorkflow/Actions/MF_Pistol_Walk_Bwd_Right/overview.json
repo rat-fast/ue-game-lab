@@ -1,0 +1,48 @@
+{
+  "assetObjectPath": "/Game/Characters/Mannequins/Anims/Pistol/Walk/MF_Pistol_Walk_Bwd_Right.MF_Pistol_Walk_Bwd_Right",
+  "objectName": "MF_Pistol_Walk_Bwd_Right",
+  "generationId": "0027-BAE8D6F644927C66A863F2A50D7F84CD",
+  "status": "complete",
+  "frameRateNumerator": 30,
+  "frameRateDenominator": 1,
+  "sampleCount": 54,
+  "durationSeconds": 1.7666666666666666,
+  "frameRule": "seconds=frameIndex*frameRateDenominator/frameRateNumerator; frameIndex=0..sampleCount-1; source endpoint included",
+  "pages": [
+    {
+      "page": 0,
+      "image": "page-0000.png",
+      "firstFrame": 0,
+      "lastFrame": 11
+    },
+    {
+      "page": 1,
+      "image": "page-0001.png",
+      "firstFrame": 12,
+      "lastFrame": 23
+    },
+    {
+      "page": 2,
+      "image": "page-0002.png",
+      "firstFrame": 24,
+      "lastFrame": 35
+    },
+    {
+      "page": 3,
+      "image": "page-0003.png",
+      "firstFrame": 36,
+      "lastFrame": 47
+    },
+    {
+      "page": 4,
+      "image": "page-0004.png",
+      "firstFrame": 48,
+      "lastFrame": 53
+    }
+  ],
+  "layout": {
+    "columns": 4,
+    "rows": 3,
+    "indexBase": 0
+  }
+}

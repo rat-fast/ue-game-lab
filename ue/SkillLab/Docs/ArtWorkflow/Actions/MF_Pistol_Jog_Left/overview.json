@@ -1,0 +1,36 @@
+{
+  "assetObjectPath": "/Game/Characters/Mannequins/Anims/Pistol/Jog/MF_Pistol_Jog_Left.MF_Pistol_Jog_Left",
+  "objectName": "MF_Pistol_Jog_Left",
+  "generationId": "0015-72F1A312446C09E09F82C481DA3B5BD1",
+  "status": "complete",
+  "frameRateNumerator": 30,
+  "frameRateDenominator": 1,
+  "sampleCount": 32,
+  "durationSeconds": 1.0333333333333334,
+  "frameRule": "seconds=frameIndex*frameRateDenominator/frameRateNumerator; frameIndex=0..sampleCount-1; source endpoint included",
+  "pages": [
+    {
+      "page": 0,
+      "image": "page-0000.png",
+      "firstFrame": 0,
+      "lastFrame": 11
+    },
+    {
+      "page": 1,
+      "image": "page-0001.png",
+      "firstFrame": 12,
+      "lastFrame": 23
+    },
+    {
+      "page": 2,
+      "image": "page-0002.png",
+      "firstFrame": 24,
+      "lastFrame": 31
+    }
+  ],
+  "layout": {
+    "columns": 4,
+    "rows": 3,
+    "indexBase": 0
+  }
+}

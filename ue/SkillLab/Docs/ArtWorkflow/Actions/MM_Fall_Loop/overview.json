@@ -1,0 +1,66 @@
+{
+  "assetObjectPath": "/Game/Characters/Mannequins/Anims/Unarmed/Jump/MM_Fall_Loop.MM_Fall_Loop",
+  "objectName": "MM_Fall_Loop",
+  "generationId": "0081-0E4D502E4EA99B722569ED96BB886A3B",
+  "status": "complete",
+  "frameRateNumerator": 30,
+  "frameRateDenominator": 1,
+  "sampleCount": 91,
+  "durationSeconds": 3,
+  "frameRule": "seconds=frameIndex*frameRateDenominator/frameRateNumerator; frameIndex=0..sampleCount-1; source endpoint included",
+  "pages": [
+    {
+      "page": 0,
+      "image": "page-0000.png",
+      "firstFrame": 0,
+      "lastFrame": 11
+    },
+    {
+      "page": 1,
+      "image": "page-0001.png",
+      "firstFrame": 12,
+      "lastFrame": 23
+    },
+    {
+      "page": 2,
+      "image": "page-0002.png",
+      "firstFrame": 24,
+      "lastFrame": 35
+    },
+    {
+      "page": 3,
+      "image": "page-0003.png",
+      "firstFrame": 36,
+      "lastFrame": 47
+    },
+    {
+      "page": 4,
+      "image": "page-0004.png",
+      "firstFrame": 48,
+      "lastFrame": 59
+    },
+    {
+      "page": 5,
+      "image": "page-0005.png",
+      "firstFrame": 60,
+      "lastFrame": 71
+    },
+    {
+      "page": 6,
+      "image": "page-0006.png",
+      "firstFrame": 72,
+      "lastFrame": 83
+    },
+    {
+      "page": 7,
+      "image": "page-0007.png",
+      "firstFrame": 84,
+      "lastFrame": 90
+    }
+  ],
+  "layout": {
+    "columns": 4,
+    "rows": 3,
+    "indexBase": 0
+  }
+}

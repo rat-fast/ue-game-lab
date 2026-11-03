@@ -1,0 +1,36 @@
+{
+  "assetObjectPath": "/Game/Characters/Mannequins/Anims/Death/MM_Death_Left_01.MM_Death_Left_01",
+  "objectName": "MM_Death_Left_01",
+  "generationId": "0004-7E7CFDDA46364D33DD2075B48160A9E3",
+  "status": "complete",
+  "frameRateNumerator": 30,
+  "frameRateDenominator": 1,
+  "sampleCount": 30,
+  "durationSeconds": 0.9666666666666667,
+  "frameRule": "seconds=frameIndex*frameRateDenominator/frameRateNumerator; frameIndex=0..sampleCount-1; source endpoint included",
+  "pages": [
+    {
+      "page": 0,
+      "image": "page-0000.png",
+      "firstFrame": 0,
+      "lastFrame": 11
+    },
+    {
+      "page": 1,
+      "image": "page-0001.png",
+      "firstFrame": 12,
+      "lastFrame": 23
+    },
+    {
+      "page": 2,
+      "image": "page-0002.png",
+      "firstFrame": 24,
+      "lastFrame": 29
+    }
+  ],
+  "layout": {
+    "columns": 4,
+    "rows": 3,
+    "indexBase": 0
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "assetObjectPath": "/Game/Characters/Mannequins/Anims/Rifle/MF_Rifle_Idle_ADS.MF_Rifle_Idle_ADS",
+  "objectName": "MF_Rifle_Idle_ADS",
+  "generationId": "0058-CC8CE0204CC33AC71FCA45BD10F9AC7D",
+  "status": "complete",
+  "frameRateNumerator": 30,
+  "frameRateDenominator": 1,
+  "sampleCount": 241,
+  "durationSeconds": 8,
+  "frameRule": "seconds=frameIndex*frameRateDenominator/frameRateNumerator; frameIndex=0..sampleCount-1; source endpoint included",
+  "pages": [
+    {
+      "page": 0,
+      "image": "page-0000.png",
+      "firstFrame": 0,
+      "lastFrame": 11
+    },
+    {
+      "page": 1,
+      "image": "page-0001.png",
+      "firstFrame": 12,
+      "lastFrame": 23
+    },
+    {
+      "page": 2,
+      "image": "page-0002.png",
+      "firstFrame": 24,
+      "lastFrame": 35
+    },
+    {
+      "page": 3,
+      "image": "page-0003.png",
+      "firstFrame": 36,
+      "lastFrame": 47
+    },
+    {
+      "page": 4,
+      "image": "page-0004.png",
+      "firstFrame": 48,
+      "lastFrame": 59
+    },
+    {
+      "page": 5,
+      "image": "page-0005.png",
+      "firstFrame": 60,
+      "lastFrame": 71
+    },
+    {
+      "page": 6,
+      "image": "page-0006.png",
+      "firstFrame": 72,
+      "lastFrame": 83
+    },
+    {
+      "page": 7,
+      "image": "page-0007.png",
+      "firstFrame": 84,
+      "lastFrame": 95
+    },
+    {
+      "page": 8,
+      "image": "page-0008.png",
+      "firstFrame": 96,
+      "lastFrame": 107
+    },
+    {
+      "page": 9,
+      "image": "page-0009.png",
+      "firstFrame": 108,
+      "lastFrame": 119
+    },
+    {
+      "page": 10,
+      "image": "page-0010.png",
+      "firstFrame": 120,
+      "lastFrame": 131
+    },
+    {
+      "page": 11,
+      "image": "page-0011.png",
+      "firstFrame": 132,
+      "lastFrame": 143
+    },
+    {
+      "page": 12,
+      "image": "page-0012.png",
+      "firstFrame": 144,
+      "lastFrame": 155
+    },
+    {
+      "page": 13,
+      "image": "page-0013.png",
+      "firstFrame": 156,
+      "lastFrame": 167
+    },
+    {
+      "page": 14,
+      "image": "page-0014.png",
+      "firstFrame": 168,
+      "lastFrame": 179
+    },
+    {
+      "page": 15,
+      "image": "page-0015.png",
+      "firstFrame": 180,
+      "lastFrame": 191
+    },
+    {
+      "page": 16,
+      "image": "page-0016.png",
+      "firstFrame": 192,
+      "lastFrame": 203
+    },
+    {
+      "page": 17,
+      "image": "page-0017.png",
+      "firstFrame": 204,
+      "lastFrame": 215
+    },
+    {
+      "page": 18,
+      "image": "page-0018.png",
+      "firstFrame": 216,
+      "lastFrame": 227
+    },
+    {
+      "page": 19,
+      "image": "page-0019.png",
+      "firstFrame": 228,
+      "lastFrame": 239
+    },
+    {
+      "page": 20,
+      "image": "page-0020.png",
+      "firstFrame": 240,
+      "lastFrame": 240
+    }
+  ],
+  "layout": {
+    "columns": 4,
+    "rows": 3,
+    "indexBase": 0
+  }
+}
