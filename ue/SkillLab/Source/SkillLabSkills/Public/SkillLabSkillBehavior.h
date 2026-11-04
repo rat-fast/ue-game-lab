@@ -40,8 +40,6 @@ class SKILLLABSKILLS_API USkillLabLuaSkillBehavior : public USkillLabSkillBehavi
 public:
 	virtual void Execute() override;
 	virtual void Cleanup() override;
-	/** Validates a script before a cast is accepted; no skill state is mutated. */
-	static bool ValidateScript(const FSkillLabSkillDefinition& InDefinition, FName& OutReason);
 	bool RequestDeclaredEffect();
 	bool RequestDeclaredAction();
 	bool RequestFinish();

@@ -257,14 +257,6 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FS
 	{
 		return Reject(Request, TEXT("SkillUnknown"));
 	}
-	if (Definition.BehaviorClass == USkillLabLuaSkillBehavior::StaticClass())
-	{
-		FName ScriptReason;
-		if (!USkillLabLuaSkillBehavior::ValidateScript(Definition, ScriptReason))
-		{
-			return Reject(Request, ScriptReason.IsNone() ? TEXT("ScriptUnavailable") : ScriptReason);
-		}
-	}
 	ActiveDefinition = Definition;
 	if (!CheckGates(Reason))
 	{
@@ -356,13 +348,13 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FS
 		if (Definition.Phases.WindupSeconds > 0.0f)
 		{
 			FTimerDelegate ReleaseDelegate;
-			ReleaseDelegate.BindLambda([WeakThis = TWeakObjectPtr<USkillLabSkillRuntimeComponent>(this), WindupToken]()
+			ReleaseDelegate.BindLambda([WeakThis = TWeakObjectPtr<USkillLabSkillRuntimeComponent>(this), StartedCastId]()
 			{
-				if (WeakThis.IsValid()) WeakThis->ReleaseCast(WindupToken);
+				if (WeakThis.IsValid()) WeakThis->ReleaseCast(WeakThis->ActiveAbility.Get(), StartedCastId);
 			});
 			GetWorld()->GetTimerManager().SetTimer(PhaseTimer, ReleaseDelegate, Definition.Phases.WindupSeconds, false);
 		}
-		else ReleaseCast(WindupToken);
+		else ReleaseCast(ActiveAbility.Get(), StartedCastId);
 	}
 	else
 	{
@@ -377,21 +369,59 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FS
 	return Started;
 }
 
-void USkillLabSkillRuntimeComponent::ReceiveCastEvent(const int32 CastId, const FGameplayTag EventTag)
+bool USkillLabSkillRuntimeComponent::ForwardValidatedNotify(const int32 CastId, const FGameplayTag EventTag)
 {
-	if (bShuttingDown || bFinishing || CastId <= 0 || ActiveCastId != CastId || !EventTag.IsValid()) return;
+	if (bShuttingDown || bFinishing || CastId <= 0 || ActiveCastId != CastId || !EventTag.IsValid()
+		|| !ActiveAbility.IsValid() || !ASC.IsValid())
+	{
+		return false;
+	}
+	const bool bIsReleaseEvent = ActiveDefinition.ReleaseTrigger == ESkillLabReleaseTrigger::GameplayEvent
+		&& EventTag == ActiveDefinition.ReleaseEventTag;
+	const bool bIsBehaviorEvent = ActiveDefinition.BehaviorEventTags.HasTagExact(EventTag);
+	if (!bIsReleaseEvent && !bIsBehaviorEvent)
+	{
+		return false;
+	}
+	FGameplayEventData Payload;
+	Payload.EventTag = EventTag;
+	Payload.Instigator = GetOwner();
+	Payload.Target = ActiveRequest.Target;
+	USkillLabCastGameplayEventData* Identity = NewObject<USkillLabCastGameplayEventData>(this);
+	Identity->Runtime = this;
+	Identity->Ability = ActiveAbility;
+	Identity->CastId = CastId;
+	Payload.OptionalObject = Identity;
+	ASC->HandleGameplayEvent(EventTag, &Payload);
+	return true;
+}
+
+void USkillLabSkillRuntimeComponent::HandleAbilityGameplayEvent(USkillLabSkillGameplayAbility* Ability,
+	const int32 CastId, const FGameplayTag EventTag)
+{
+	if (bShuttingDown || bFinishing || !Ability || ActiveAbility.Get() != Ability || CastId <= 0
+		|| ActiveCastId != CastId || !EventTag.IsValid())
+	{
+		return;
+	}
 	if (Lifecycle.GetStage() == FSkillLabCastLifecycle::EStage::Windup
 		&& ActiveDefinition.ReleaseTrigger == ESkillLabReleaseTrigger::GameplayEvent
 		&& EventTag == ActiveDefinition.ReleaseEventTag)
-		ReleaseCast(Lifecycle.GetPhaseToken());
+	{
+		ReleaseCast(Ability, CastId);
+	}
 	else if (Lifecycle.GetStage() == FSkillLabCastLifecycle::EStage::Active && ActiveBehavior
-		&& ActiveDefinition.BehaviorEventTags.HasTag(EventTag))
+		&& ActiveDefinition.BehaviorEventTags.HasTagExact(EventTag))
+	{
 		ActiveBehavior->ReceiveEvent(EventTag);
+	}
 }
 
-void USkillLabSkillRuntimeComponent::ReleaseCast(const FSkillLabCastPhaseToken Token)
+void USkillLabSkillRuntimeComponent::ReleaseCast(USkillLabSkillGameplayAbility* Ability, const int32 CastId)
 {
+	const FSkillLabCastPhaseToken Token = Lifecycle.GetPhaseToken();
 	if (bShuttingDown || bFinishing || bCommitted || ActiveCastId == 0 || !Lifecycle.IsTokenCurrent(Token)
+		|| !Ability || ActiveAbility.Get() != Ability || ActiveCastId != CastId
 		|| Lifecycle.GetStage() != FSkillLabCastLifecycle::EStage::Windup)
 	{
 		return;
@@ -628,11 +658,18 @@ void USkillLabSkillRuntimeComponent::ForgetRequestId(const int32 RequestId)
 
 void USkillLabSkillRuntimeComponent::NotifyAbilityActivated(USkillLabSkillGameplayAbility* Ability)
 {
-	if (bShuttingDown || ActiveCastId == 0 || ActiveAbility.IsValid())
+	if (bShuttingDown || ActiveCastId == 0 || ActiveAbility.IsValid() || !Ability || !Loadout
+		|| Ability->GetCurrentAbilitySpecHandle() != Loadout->FindGrantedHandle(ActiveRequest.SkillId))
 	{
 		return;
 	}
 	ActiveAbility = Ability;
+	FGameplayTagContainer EventTags = ActiveDefinition.BehaviorEventTags;
+	if (ActiveDefinition.ReleaseTrigger == ESkillLabReleaseTrigger::GameplayEvent)
+	{
+		EventTags.AddTag(ActiveDefinition.ReleaseEventTag);
+	}
+	Ability->BindSkillCast(this, ActiveCastId, EventTags);
 }
 
 void USkillLabSkillRuntimeComponent::NotifyAbilityEnded(USkillLabSkillGameplayAbility* Ability)

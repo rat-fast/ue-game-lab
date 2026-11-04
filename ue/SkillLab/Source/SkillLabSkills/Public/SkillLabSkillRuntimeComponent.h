@@ -70,7 +70,8 @@ public:
 
 	void NotifyAbilityActivated(USkillLabSkillGameplayAbility* Ability);
 	void NotifyAbilityEnded(USkillLabSkillGameplayAbility* Ability);
-	void ReceiveCastEvent(int32 CastId, FGameplayTag EventTag);
+	bool ForwardValidatedNotify(int32 CastId, FGameplayTag EventTag);
+	void HandleAbilityGameplayEvent(USkillLabSkillGameplayAbility* Ability, int32 CastId, FGameplayTag EventTag);
 	virtual bool IsBehaviorCurrent(const USkillLabSkillBehavior* Behavior, int32 CastId) const override;
 	virtual USkillLabAbilitySystemComponent* GetSourceAbilitySystemComponent() const override { return ASC.Get(); }
 	virtual AActor* GetSourceActor() const override { return GetOwner(); }
@@ -122,7 +123,7 @@ private:
 	FSkillLabSkillResult Reject(const FSkillLabSkillRequest& Request, FName Reason);
 	FSkillLabSkillResult MakeResult() const;
 	void Emit(ESkillLabSkillEvent Event, const FSkillLabSkillResult& Result, FName Reason = NAME_None);
-	void ReleaseCast(FSkillLabCastPhaseToken Token);
+	void ReleaseCast(USkillLabSkillGameplayAbility* Ability, int32 CastId);
 	void BeginRecovery();
 	void FinishRecovery(FSkillLabCastPhaseToken Token);
 	void FinishCast(bool bCancelled, FName Reason);

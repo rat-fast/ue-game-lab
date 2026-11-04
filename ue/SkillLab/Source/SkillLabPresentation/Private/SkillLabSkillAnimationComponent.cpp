@@ -145,8 +145,7 @@ bool USkillLabSkillAnimationComponent::ForwardCastEvent(const int32 CastId, cons
 	{
 		return false;
 	}
-	SkillRuntime->ReceiveCastEvent(CastId, EventTag);
-	return true;
+	return SkillRuntime->ForwardValidatedNotify(CastId, EventTag);
 }
 
 bool USkillLabSkillAnimationComponent::ForwardAnimNotify(UAnimSequenceBase* Animation, const FGameplayTag EventTag,

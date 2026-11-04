@@ -109,9 +109,11 @@ struct SKILLLABSKILLS_API FSkillLabSkillDefinition
 	UPROPERTY(BlueprintReadOnly) float PowerCoefficient = 0.0f;
 	UPROPERTY(BlueprintReadOnly) FGameplayTagContainer BlockedByTags;
 	UPROPERTY(BlueprintReadOnly) TSubclassOf<UGameplayAbility> AbilityClass;
-	/** Optional restricted composition script. The path is relative to Config/. */
+	/** 受限组合脚本路径，相对于 Config/。 */
 	UPROPERTY(BlueprintReadOnly) FString LuaScript;
-	/** Skill-owned projectile tuning; intentionally plain C++ data rather than JSON/Blueprint content. */
+	/** 与规范化定义一起提交的已校验源文本；运行期不重读磁盘。 */
+	FString LuaSource;
+	/** 从 JSON 规范化得到的投射物调参。 */
 	FSkillLabProjectileParameters ProjectileParameters;
 };
 

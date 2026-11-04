@@ -1,6 +1,6 @@
 # SkillSystem 程序工作流
 
-> 占位入口。旧程序架构、实现交接和验证文档已删除；后续新对话必须先依据当前代码、共享功能基线和当前批次策划重新建立程序产物。
+旧程序架构、实现交接和验证文档已删除；各新任务依据当前代码、共享功能基线和当前策划重新建立程序产物。
 
 ## 输入关系
 
@@ -10,10 +10,14 @@
 - `LongTerm/`：长期程序框架；
 - `Batches/<BatchName>/`：某一批次的架构基线、实现交接和 Review 状态。
 
+## 当前批次
+
+- [SkillChainRefactor](Batches/SkillChainRefactor/README.md)：通用技能运行基建与当前符合范围定义迁移的架构交接。
+
 ## 读取规则
 
 不同 Agent 的读取清单由当前架构交接包明确给出。不得扫描整个 `Docs/`，不得恢复旧程序文档中的接口、类名、验证结论或样例假设。
 
 ## 当前状态
 
-尚未建立新的程序架构基线。下一次程序架构对话应从当前真实代码开始，先建立代码文档，再建立当前批次架构放行包。
+SkillChainRefactor 已有运行链交接和[加载期 Lua/JSON 技能定义能力架构交接](Batches/SkillChainRefactor/SkillDefinitionLoadingHandoff.md)；后续由 C++/GAS 通用基建线实现并独立 Review。配置迁移暂停，恢复条件见[本批程序入口](Batches/SkillChainRefactor/README.md#配置迁移恢复门槛)：须完成定义接口交接、基建补充实现及独立 Review，并由 PM 重新派发。

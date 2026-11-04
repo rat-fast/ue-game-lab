@@ -7,8 +7,10 @@
 ## 当前承诺
 
 - 技能请求、施法、目标、效果和运行结果是不同业务事实；请求或表现意图本身不代表技能已成功。
-- 稳定规则由 C++/GAS 执行权威，Lua 用于表达技能流程组合，JSON 承载可调整内容。该方向来自当前 SkillSystem Batch02 策划确认，不代表四技能迁移、运行等价或验收已完成；技术实现细节不属于本基线。
-- 当前 SkillSystem Batch02 业务样本为 `Skill_Fireball`、`Skill_AreaBurst`、`Skill_Mend`、`Skill_BurningBuff`。样本行为摘要见 `07-ContentBoundary.md`。Batch01 的六技能扩展不属于本批或当前样本范围。
+- 技能专属定义不硬编码在 C++；目标形态、目标关系、效果类型和执行组合由 Lua 表达。高频反复调试的纯数值由 JSON 承载；具体数值不因采用该载体而自动成为产品基线。
+- 稳定共用运行机制由 C++/GAS/Runtime 提供，GAS Ability 承担激活和施法生命周期。动画 Cast Notify 通过带 Tag 的 Gameplay Event 通知当前 Ability 到达释放点，由当前 Ability 推进正式释放与效果提交。Notify 只表达释放时点，不等同于命中或效果。
+- 实际目标验证、命中、伤害、治疗、持续效果及其移除等结果由权威技能运行机制产生；表现只消费这些真实事实，不伪造业务结果。
+- 当前迁移的四个代表性配置为 `Skill_Fireball`、`Skill_AreaBurst`、当前自疗 `Skill_Mend`、`Skill_BurningBuff`。样本业务摘要见 `03-TargetingAndExecution.md`；Batch01 六技能扩展不属于本轮内容迁移。通用职责方向适用于当前技能系统，不限于四项样本。
 - 表现层只消费技能运行层产生的真实事实，不裁定请求、命中、扣费、实际效果、持续状态或施法终态。
 
 ## 正文索引
@@ -24,7 +26,7 @@
 
 ## 实现与验证状态
 
-本基线核对到的程序侧文档版本为 2026-10-22：SkillSystem Batch02 的策划入口/需求和程序工作流交接/实现摘要当日更新，相关源码、配置及工作流文档在当前工作树中有未提交修改。因此这些材料用于识别实现方向和验证缺口，不作为稳定、已验收的代码事实。SkillSystem `ProjectContext` 目录入口及模块文档最后修改于 2026-10-11，入口明确仍为占位，不能作为当前实现证据。细节见 `07-ContentBoundary.md`。
+当前实现与证据范围见 `07-ContentBoundary.md`。简要状态：四项 Lua/JSON 内容已迁移，加载期定义能力与 Notify/Ability 释放链路已实现，基础设施和内容迁移的独立 Review 均通过；自动化及 NullRHI RuntimeProbe 只覆盖有限场景。用户另确认当前技能能在游戏中正常释放，这是基本流程观察，不构成全场景等价、全面 PIE 或所有边界验收。
 
 ## 关系
 

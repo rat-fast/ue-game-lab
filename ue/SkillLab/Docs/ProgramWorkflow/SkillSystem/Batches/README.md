@@ -1,6 +1,10 @@
 # SkillSystem 程序批次产物
 
-> 占位入口。每个批次建立独立目录 `Batches/<BatchName>/`，与策划侧批次名称对应。
+每个批次建立独立目录 `Batches/<BatchName>/`，与策划侧批次名称对应。
+
+## 当前批次
+
+- [SkillChainRefactor](SkillChainRefactor/README.md)：通用运行基建和当前已覆盖技能定义迁移。
 
 批次目录按需包含：
 

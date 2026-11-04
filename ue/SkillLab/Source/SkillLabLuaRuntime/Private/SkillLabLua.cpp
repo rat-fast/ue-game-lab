@@ -44,6 +44,9 @@ namespace SkillLabLua
 	void GetGlobal(FSkillLabLuaState* State, const char* Name) { lua_getglobal(Native(State), Name); }
 	void SetGlobal(FSkillLabLuaState* State, const char* Name) { lua_setglobal(Native(State), Name); }
 	bool IsFunction(FSkillLabLuaState* State, int32 Index) { return lua_isfunction(Native(State), Index); }
+	int32 GetTop(FSkillLabLuaState* State) { return lua_gettop(Native(State)); }
+	bool IsString(FSkillLabLuaState* State, int32 Index) { return lua_type(Native(State), Index) == LUA_TSTRING; }
+	void GetField(FSkillLabLuaState* State, int32 Index, const char* Key) { lua_getfield(Native(State), Index, Key); }
 	void Pop(FSkillLabLuaState* State, int32 Count) { lua_pop(Native(State), Count); }
 	void NewTable(FSkillLabLuaState* State) { lua_newtable(Native(State)); }
 	void SetField(FSkillLabLuaState* State, int32 Index, const char* Key) { lua_setfield(Native(State), Index, Key); }

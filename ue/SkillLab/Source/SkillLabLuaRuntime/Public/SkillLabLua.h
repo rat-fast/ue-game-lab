@@ -19,6 +19,9 @@ namespace SkillLabLua
 	SKILLLABLUARUNTIME_API void GetGlobal(FSkillLabLuaState* State, const char* Name);
 	SKILLLABLUARUNTIME_API void SetGlobal(FSkillLabLuaState* State, const char* Name);
 	SKILLLABLUARUNTIME_API bool IsFunction(FSkillLabLuaState* State, int32 Index);
+	SKILLLABLUARUNTIME_API int32 GetTop(FSkillLabLuaState* State);
+	SKILLLABLUARUNTIME_API bool IsString(FSkillLabLuaState* State, int32 Index);
+	SKILLLABLUARUNTIME_API void GetField(FSkillLabLuaState* State, int32 Index, const char* Key);
 	SKILLLABLUARUNTIME_API void Pop(FSkillLabLuaState* State, int32 Count);
 	SKILLLABLUARUNTIME_API void NewTable(FSkillLabLuaState* State);
 	SKILLLABLUARUNTIME_API void SetField(FSkillLabLuaState* State, int32 Index, const char* Key);

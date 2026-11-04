@@ -4,8 +4,6 @@
 #include "SkillLabTargetingService.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
-#include "Misc/FileHelper.h"
-#include "Misc/Paths.h"
 
 #include "SkillLabLua.h"
 
@@ -61,12 +59,12 @@ namespace
 		return 1;
 	}
 
-	bool LoadScriptText(const FSkillLabSkillDefinition& Definition, FString& OutPath, FString& OutScript)
+	int LuaDefinitionAlreadyLoaded(FSkillLabLuaState* State)
 	{
-		if (Definition.LuaScript.IsEmpty()) return false;
-		OutPath = FPaths::Combine(FPaths::ProjectConfigDir(), Definition.LuaScript);
-		return FFileHelper::LoadFileToString(OutScript, *OutPath);
+		SkillLabLua::PushBoolean(State, true);
+		return 1;
 	}
+
 }
 
 UWorld* USkillLabSkillBehavior::GetWorld() const { return Runtime ? Runtime->GetWorld() : nullptr; }
@@ -97,33 +95,6 @@ void USkillLabSkillBehavior::Fail(const FName Reason)
 void USkillLabLuaSkillBehavior::Execute()
 {
 	RunScript();
-}
-
-bool USkillLabLuaSkillBehavior::ValidateScript(const FSkillLabSkillDefinition& InDefinition, FName& OutReason)
-{
-	OutReason = NAME_None;
-	FString ScriptPath;
-	FString Script;
-	if (!LoadScriptText(InDefinition, ScriptPath, Script))
-	{
-		OutReason = TEXT("ScriptUnavailable");
-		return false;
-	}
-	FSkillLabLuaState* Lua = SkillLabLua::Create();
-	if (!Lua)
-	{
-		OutReason = TEXT("ScriptUnavailable");
-		return false;
-	}
-	SkillLabLua::SetInstructionBudget(Lua, 100000);
-	FTCHARToUTF8 Utf8(*Script);
-	const bool bLoaded = SkillLabLua::LoadBuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*ScriptPath));
-	const bool bExecuted = bLoaded && SkillLabLua::Call(Lua, 0, 0);
-	const bool bHasEntry = bExecuted && (SkillLabLua::GetGlobal(Lua, "OnSkillCast"), SkillLabLua::IsFunction(Lua, -1));
-	if (!bLoaded || !bExecuted) OutReason = TEXT("ScriptError");
-	else if (!bHasEntry) OutReason = TEXT("ScriptEntryMissing");
-	SkillLabLua::Close(Lua);
-	return OutReason.IsNone();
 }
 
 bool USkillLabLuaSkillBehavior::RequestDeclaredEffect()
@@ -243,9 +214,7 @@ void USkillLabLuaSkillBehavior::RunScript()
 		Fail(TEXT("ScriptUnavailable"));
 		return;
 	}
-	FString ScriptPath;
-	FString Script;
-	if (!LoadScriptText(Definition, ScriptPath, Script))
+	if (Definition.LuaSource.IsEmpty())
 	{
 		Fail(TEXT("ScriptUnavailable"));
 		return;
@@ -257,8 +226,11 @@ void USkillLabLuaSkillBehavior::RunScript()
 		return;
 	}
 	SkillLabLua::SetInstructionBudget(Lua, 100000);
-	FTCHARToUTF8 Utf8(*Script);
-	if (!SkillLabLua::LoadBuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*ScriptPath))
+	// 顶层声明已经在加载期形成快照，运行宿主仅允许原声明语句重放，不修改定义。
+	SkillLabLua::PushCallback(Lua, &LuaDefinitionAlreadyLoaded, this);
+	SkillLabLua::SetGlobal(Lua, "SkillLabSkill_Define");
+	FTCHARToUTF8 Utf8(*Definition.LuaSource);
+	if (!SkillLabLua::LoadBuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*Definition.LuaScript))
 		|| !SkillLabLua::Call(Lua, 0, 0))
 	{
 		SkillLabLua::Close(Lua);
