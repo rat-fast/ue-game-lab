@@ -26,6 +26,7 @@ struct SKILLLABGAS_API FSkillLabDamageRequest
 	UPROPERTY(BlueprintReadWrite) float PowerCoefficient = 0.0f;
 	UPROPERTY(BlueprintReadWrite) ESkillLabDamageType DamageType = ESkillLabDamageType::Physical;
 	UPROPERTY(BlueprintReadWrite) TObjectPtr<UObject> SourceObject = nullptr;
+	UPROPERTY(BlueprintReadWrite) FGameplayTag AttackCategory;
 };
 
 USTRUCT(BlueprintType)
@@ -41,6 +42,8 @@ struct SKILLLABGAS_API FSkillLabDamageResult
 	UPROPERTY(BlueprintReadOnly) FActiveGameplayEffectHandle ActiveEffectHandle;
 };
 
+DECLARE_MULTICAST_DELEGATE_TwoParams(FSkillLabDamageTaken, FGameplayTag, const FSkillLabDamageResult&);
+
 DECLARE_MULTICAST_DELEGATE_TwoParams(FSkillLabPeriodicDamageResolved, FActiveGameplayEffectHandle, const FSkillLabDamageResult&);
 
 UCLASS(ClassGroup = (SkillLab), meta = (BlueprintSpawnableComponent))
@@ -50,6 +53,7 @@ class SKILLLABGAS_API USkillLabAbilitySystemComponent : public UAbilitySystemCom
 
 public:
 	USkillLabAbilitySystemComponent();
+	FSkillLabDamageTaken OnSkillLabDamageTaken;
 	FSkillLabPeriodicDamageResolved OnPeriodicDamageResolved;
 	/** AttributeSet supplies the atomic result; GAS supplies the periodic effect identity. */
 	void RecordPeriodicDamage(const FGameplayEffectSpec& Spec, const FSkillLabDamageResult& Result);
@@ -63,7 +67,7 @@ public:
 
 	/** Applies a damage/healing meta effect to another ASC. The target's AttributeSet resolves mitigation and clamping. */
 	UFUNCTION(BlueprintCallable, Category = "SkillLab|GAS")
-	bool ApplyDamageToTarget(UAbilitySystemComponent* TargetASC, float Amount, UObject* SourceObject = nullptr);
+	bool ApplyDamageToTarget(UAbilitySystemComponent* TargetASC, float Amount, UObject* SourceObject = nullptr, FGameplayTag AttackCategory = FGameplayTag());
 	FSkillLabDamageResult ResolveDamage(const FSkillLabDamageRequest& Request);
 
 	UFUNCTION(BlueprintCallable, Category = "SkillLab|GAS")

@@ -19,6 +19,8 @@ Planning/SkillSystem/
 
 当前技能系统通用链路及内容生产边界改造需求见 [技能链路改造](Batches/SkillChainRefactor/README.md)。历史 Lua 技能组合试点见 [Batch02-LuaSkillCompositionPilot](Batches/Batch02-LuaSkillCompositionPilot/README.md)；其冲突条款在本次改造范围内由新需求取代。
 
+技能时序、操作规则和 Tag 语义见 [技能战斗规则框架](Batches/SkillCombatRules/README.md)；当前批次规则已由用户确认，程序实现与验收状态见[对应程序专题入口](../../ProgramWorkflow/SkillSystem/Batches/SkillCombatRules/README.md)。
+
 ## 阅读方式
 
 - 了解长期能力方向：读 [长期目标](LongTerm/README.md)。

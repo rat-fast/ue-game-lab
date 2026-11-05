@@ -31,6 +31,9 @@ enum class ESkillLabSkillEvent : uint8 { Rejected, Started, TargetSelected, Phas
 UENUM(BlueprintType)
 enum class ESkillLabCastStage : uint8 { Idle, Windup, Active, Recovery, Completed, Cancelled };
 
+UENUM(BlueprintType)
+enum class ESkillLabOperationCategory : uint8 { Skill, Dodge, Movement, UserCancel, NormalHit, HeavyHit, UnknownHit };
+
 USTRUCT(BlueprintType)
 struct SKILLLABSKILLS_API FSkillLabCastPhaseDurations
 {
@@ -50,6 +53,14 @@ struct SKILLLABSKILLS_API FSkillLabSkillRequest
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) FVector TargetLocation = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) bool bHasLocation = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 RequestId = 0;
+};
+
+USTRUCT(BlueprintType)
+struct SKILLLABSKILLS_API FSkillLabSkillInputIntent
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) FSkillLabSkillRequest Request;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) ESkillLabOperationCategory Category = ESkillLabOperationCategory::Skill;
 };
 
 USTRUCT(BlueprintType)

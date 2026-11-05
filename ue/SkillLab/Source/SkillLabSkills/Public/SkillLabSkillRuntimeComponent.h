@@ -13,6 +13,7 @@ class USkillLabSkillEffectEventAdapter;
 class USkillLabSkillEffectExecutor;
 class USkillLabSkillLoadout;
 class USkillLabSkillRuntimeComponent;
+struct FSkillLabDamageResult;
 
 /**
  * Stable, read-only context exposed to effect execution.
@@ -50,6 +51,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="SkillLab|Skill") void InitializeSkills();
 	UFUNCTION(BlueprintCallable, Category="SkillLab|Skill") FSkillLabSkillResult SubmitSkillRequest(const FSkillLabSkillRequest& Request);
+	UFUNCTION(BlueprintCallable, Category="SkillLab|Skill") FSkillLabSkillResult SubmitSkillOperationRequest(const FSkillLabSkillRequest& Request, ESkillLabOperationCategory Category);
+	void NotifyNonInterruptingOperation(ESkillLabOperationCategory Category);
+	void NotifyDamageTaken(FGameplayTag AttackCategory, const FSkillLabDamageResult& DamageResult);
 	UFUNCTION(BlueprintCallable, Category="SkillLab|Skill") FSkillLabSkillResult CastSkill(FName SkillId, AActor* Target, FVector TargetLocation);
 	UFUNCTION(BlueprintCallable, Category="SkillLab|Skill") void CancelActiveCast(FName Reason);
 	UFUNCTION(BlueprintCallable, Category="SkillLab|Skill") void ResetSkills();
@@ -84,6 +88,8 @@ public:
 	void CompleteBehavior(const USkillLabSkillBehavior* Behavior, int32 CastId, FName Reason = NAME_None);
 
 private:
+	friend class FSkillLabCastGameplayEventTest;
+	friend class FSkillLabBufferedIntentConsumeCommand;
 	UPROPERTY(VisibleAnywhere) int32 UnitId = 0;
 	UPROPERTY(VisibleAnywhere) bool bInitialized = false;
 	/** Borrowed from the owning Actor; Runtime never keeps the ASC alive. */
@@ -98,8 +104,10 @@ private:
 	UPROPERTY(Transient) FSkillLabSkillDefinition ActiveDefinition;
 	TMap<FName, double> CooldownEnd;
 	TMap<FGameplayTag, FDelegateHandle> InterruptHandles;
+	FDelegateHandle DamageTakenHandle;
 	FTimerHandle PhaseTimer;
 	FTimerHandle ActiveTimeoutTimer;
+	FTimerHandle PendingIntentTimer;
 	FSkillLabCastLifecycle Lifecycle;
 	int32 NextRequestId = 1;
 	int32 NextCastId = 1;
@@ -115,6 +123,7 @@ private:
 	FName ActiveEffectOperationId = NAME_None;
 	FSkillLabSkillResult ActiveEffectResult;
 	TArray<FSkillLabSkillResult> ActiveEffectResults;
+	TOptional<FSkillLabSkillInputIntent> PendingSkillIntent;
 	FName OutcomeReason;
 	TSet<int32> AcceptedRequestIds;
 	TArray<int32> AcceptedRequestOrder;
@@ -135,4 +144,8 @@ private:
 	void ForgetRequestId(int32 RequestId);
 	void ClearPendingCast();
 	void ForwardEffectEvent(const FSkillLabSkillResult& Result);
+	void ClearPendingSkillIntent(FName Reason);
+	void StorePendingSkillIntent(const FSkillLabSkillRequest& Request, ESkillLabOperationCategory Category);
+	void SchedulePendingSkillIntentConsumption();
+	void ConsumePendingSkillIntent();
 };

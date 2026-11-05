@@ -12,6 +12,7 @@
 
 ## 当前批次
 
+- [SkillCombatRules](Batches/SkillCombatRules/README.md)：已确认规则的 Runtime/GAS 实现、定向自动化与独立 Review 已完成；Review/验证结果和剩余内容入口事实见专题摘要。
 - [SkillChainRefactor](Batches/SkillChainRefactor/README.md)：通用技能运行基建与当前符合范围定义迁移的架构交接。
 
 ## 读取规则

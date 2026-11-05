@@ -38,6 +38,7 @@ bool FSkillLabCastLifecycle::Begin(const std::uint64_t NewCastId, const FConfig&
 	PhaseToken = {CastId, Generation};
 	StageStartedAt = NowSeconds;
 	bHasReleased = false;
+	CommittedSubmissionPoints.clear();
 	Stage = EStage::Windup;
 	return true;
 }
@@ -174,6 +175,16 @@ bool FSkillLabCastLifecycle::TryMarkRelease(const FSkillLabCastPhaseToken& Token
 	}
 	bHasReleased = true;
 	return true;
+}
+
+bool FSkillLabCastLifecycle::TryMarkSubmissionPoint(const FSkillLabCastPhaseToken& Token,
+	const std::uint64_t SubmissionPointId)
+{
+	if (!IsTokenCurrent(Token) || Stage != EStage::Active || SubmissionPointId == 0)
+	{
+		return false;
+	}
+	return CommittedSubmissionPoints.insert(SubmissionPointId).second;
 }
 
 FSkillLabCastLifecycle::FSnapshot FSkillLabCastLifecycle::GetSnapshot() const

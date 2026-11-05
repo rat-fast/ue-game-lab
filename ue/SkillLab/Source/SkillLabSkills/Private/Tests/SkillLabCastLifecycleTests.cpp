@@ -30,6 +30,9 @@ bool FSkillLabCastLifecycleTest::RunTest(const FString& Parameters)
 	TestFalse(TEXT("Active cannot skip configured Recovery"), Lifecycle.Finish(ActiveToken, 10.3));
 	TestTrue(TEXT("Release is one-shot"), Lifecycle.TryMarkRelease(ActiveToken));
 	TestFalse(TEXT("Second release is rejected"), Lifecycle.TryMarkRelease(ActiveToken));
+	TestTrue(TEXT("First submission point commits"), Lifecycle.TryMarkSubmissionPoint(ActiveToken, 11));
+	TestFalse(TEXT("Repeated submission point is idempotently rejected"), Lifecycle.TryMarkSubmissionPoint(ActiveToken, 11));
+	TestTrue(TEXT("Different submission point has independent identity"), Lifecycle.TryMarkSubmissionPoint(ActiveToken, 12));
 	TestEqual(TEXT("Explicit phase event enters Recovery"), Lifecycle.AdvancePhase(ActiveToken, 10.3), FSkillLabCastLifecycle::EAdvanceResult::EnteredRecovery);
 	const FSkillLabCastPhaseToken RecoveryToken = Lifecycle.GetPhaseToken();
 	TestFalse(TEXT("Active cast cannot Begin again"), Lifecycle.Begin(1001, Config, 20.0));
@@ -40,6 +43,7 @@ bool FSkillLabCastLifecycleTest::RunTest(const FString& Parameters)
 	const FSkillLabCastPhaseToken NewToken = Lifecycle.GetPhaseToken();
 	TestTrue(TEXT("New token can be cancelled"), Lifecycle.Cancel(NewToken, 20.1));
 	TestFalse(TEXT("Cancelled cast cannot release"), Lifecycle.TryMarkRelease(NewToken));
+	TestFalse(TEXT("Cancelled cast cannot commit a submission point"), Lifecycle.TryMarkSubmissionPoint(NewToken, 11));
 	TestFalse(TEXT("Cancelled cast cannot be completed"), Lifecycle.Finish(NewToken, 20.2));
 	TestFalse(TEXT("Cancellation is terminal"), Lifecycle.Cancel(NewToken, 20.2));
 
@@ -54,6 +58,7 @@ bool FSkillLabCastLifecycleTest::RunTest(const FString& Parameters)
 	TestTrue(TEXT("Event-driven zero-windup cast begins"), Lifecycle.Begin(1002, EventConfig, 30.0));
 	TestEqual(TEXT("Zero windup still emits Active entry"), Lifecycle.AdvanceIfElapsed(Lifecycle.GetPhaseToken(), 30.0), FSkillLabCastLifecycle::EAdvanceResult::EnteredActive);
 	const FSkillLabCastPhaseToken EventToken = Lifecycle.GetPhaseToken();
+	TestTrue(TEXT("A new Cast can reuse a submission identity"), Lifecycle.TryMarkSubmissionPoint(EventToken, 12));
 	TestEqual(TEXT("Active waits for behaviour event"), Lifecycle.AdvanceIfElapsed(EventToken, 40.0), FSkillLabCastLifecycle::EAdvanceResult::NoChange);
 	TestTrue(TEXT("Behaviour can release after waiting"), Lifecycle.TryMarkRelease(EventToken));
 	TestTrue(TEXT("Behaviour can finish Active without Recovery"), Lifecycle.Finish(EventToken, 40.0));

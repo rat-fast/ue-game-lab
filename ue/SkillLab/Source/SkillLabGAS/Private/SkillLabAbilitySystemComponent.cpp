@@ -74,9 +74,30 @@ USkillLabCombatAttributeSet* USkillLabAbilitySystemComponent::GetCombatAttribute
 	return CombatAttributeSet ? CombatAttributeSet.Get() : const_cast<USkillLabCombatAttributeSet*>(GetSet<USkillLabCombatAttributeSet>());
 }
 
-bool USkillLabAbilitySystemComponent::ApplyDamageToTarget(UAbilitySystemComponent* TargetASC, const float Amount, UObject* SourceObject)
+bool USkillLabAbilitySystemComponent::ApplyDamageToTarget(UAbilitySystemComponent* TargetASC, const float Amount, UObject* SourceObject, const FGameplayTag AttackCategory)
 {
-	return ApplyMetaEffect(TargetASC, USkillLabDamageGameplayEffect::StaticClass(), Amount, SourceObject);
+	const USkillLabCombatAttributeSet* BeforeAttributes = TargetASC ? TargetASC->GetSet<USkillLabCombatAttributeSet>() : nullptr;
+	const float HealthBefore = BeforeAttributes ? BeforeAttributes->GetHealth() : 0.0f;
+	const bool bApplied = ApplyMetaEffect(TargetASC, USkillLabDamageGameplayEffect::StaticClass(), Amount, SourceObject);
+	if (bApplied && TargetASC)
+	{
+		const USkillLabCombatAttributeSet* AfterAttributes = TargetASC->GetSet<USkillLabCombatAttributeSet>();
+		FSkillLabDamageResult Result;
+		Result.bApplied = true;
+		Result.HealthBefore = HealthBefore;
+		Result.HealthAfter = AfterAttributes ? AfterAttributes->GetHealth() : HealthBefore;
+		Result.AppliedDamage = FMath::Max(0.0f, Result.HealthBefore - Result.HealthAfter);
+		Result.MitigatedDamage = Result.AppliedDamage;
+		Result.RawDamage = Amount;
+		if (Result.AppliedDamage > 0.0f)
+		{
+			if (USkillLabAbilitySystemComponent* TargetSkillASC = Cast<USkillLabAbilitySystemComponent>(TargetASC))
+			{
+				TargetSkillASC->OnSkillLabDamageTaken.Broadcast(AttackCategory, Result);
+			}
+		}
+	}
+	return bApplied;
 }
 
 FSkillLabDamageResult USkillLabAbilitySystemComponent::ResolveDamage(const FSkillLabDamageRequest& Request)
@@ -93,7 +114,7 @@ FSkillLabDamageResult USkillLabAbilitySystemComponent::ResolveDamage(const FSkil
 	Result.RawDamage = FMath::Max(0.0f, Request.BaseDamage + (SourceAttributes ? SourceAttributes->GetPower() * Request.PowerCoefficient : 0.0f));
 	// The AttributeSet is the single authority for mitigation. Pass raw damage once;
 	// the result below reports the amount that survived armor and health clamping.
-	Result.bApplied = ApplyDamageToTarget(Target, Result.RawDamage, Request.SourceObject);
+	Result.bApplied = ApplyDamageToTarget(Target, Result.RawDamage, Request.SourceObject, Request.AttackCategory);
 	const USkillLabCombatAttributeSet* AfterAttributes = Target->GetSet<USkillLabCombatAttributeSet>();
 	Result.HealthAfter = AfterAttributes ? AfterAttributes->GetHealth() : Result.HealthBefore;
 	Result.AppliedDamage = FMath::Max(0.0f, Result.HealthBefore - Result.HealthAfter);

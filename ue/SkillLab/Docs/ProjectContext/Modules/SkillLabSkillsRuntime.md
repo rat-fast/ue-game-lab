@@ -19,7 +19,7 @@
 
 ## Runtime Flow
 
-`InitializeSkills` 获取拥有者的 `USkillLabAbilitySystemComponent`，初始化 actor info、loadout、效果执行器和表现路由。请求先检查初始化、施法者、技能授予、当前施法、生命/阻塞状态、冷却、能量和目标；通过后建立 `RequestId`/`CastId`，进入 `Windup`，按 Timer 或 GameplayEvent 释放，进入 `Active`，行为完成后进入 `Recovery` 或终态。Lua 定义在正式请求前进行脚本文件、编译和入口预检；脚本执行绑定当前 Runtime generation、CastId 和行为身份，并受指令预算限制。`USkillLabLuaSkillBehavior::RequestDeclaredAction` 按定义的 `Projectile`、`GroundArea` 或 `InstantTarget` 执行模板调用现有 Projectile、TargetingService 或 EffectExecutor；Lua 只请求动作和收尾，真实目标、实际效果、持续效果和终态仍由 C++/GAS 产生。过期阶段 token 不得推进新的 Cast；`EndPlay`、`ResetSkills` 和阻塞标签变化会清理活动状态。
+`InitializeSkills` 获取拥有者的 `USkillLabAbilitySystemComponent`，初始化 actor info、loadout、效果执行器和表现路由，并订阅本 ASC 的权威受击通知。请求先检查初始化、施法者、技能授予、当前施法、生命/阻塞状态、冷却、能量和目标；Stunned/Silenced 有效状态会阻止激活并中断已运行 Cast。通过后建立 `RequestId`/`CastId`，进入 `Windup`，按 Timer 或 GameplayEvent 释放，进入 `Active`，行为完成后进入 `Recovery` 或终态。普通/重击由 GAS 通知携带的攻击类别 Tag 决定；缺失/未知类别不打断。活动 Cast 期间单槽 latest-wins 保存技能请求意图；取消、Reset 和终止清理会丢弃，当前 Recovery 没有接招消费窗口。Lua 定义在正式请求前进行脚本文件、编译和入口预检；脚本执行绑定当前 Runtime generation、CastId 和行为身份，并受指令预算限制。`USkillLabLuaSkillBehavior::RequestDeclaredAction` 按定义的 `Projectile`、`GroundArea` 或 `InstantTarget` 执行模板调用现有 Projectile、TargetingService 或 EffectExecutor；Lua 只请求动作和收尾，真实目标、实际效果、持续效果和终态仍由 C++/GAS 产生。过期阶段 token 不得推进新的 Cast；`EndPlay`、`ResetSkills` 和状态变化会清理活动状态。
 
 ## Current Behavior
 

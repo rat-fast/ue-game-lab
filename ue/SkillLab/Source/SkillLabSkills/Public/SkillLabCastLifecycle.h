@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <unordered_set>
 
 // Standalone lifecycle tests do not receive UnrealBuildTool's module export
 // definition. In a UE build the generated SKILLLABSKILLS_API macro wins.
@@ -109,6 +110,8 @@ public:
 	 * projectile and area behaviours may resolve any number of hits afterwards.
 	 */
 	bool TryMarkRelease(const FSkillLabCastPhaseToken& Token);
+	/** Marks one named submission identity once for this Cast. */
+	bool TryMarkSubmissionPoint(const FSkillLabCastPhaseToken& Token, std::uint64_t SubmissionPointId);
 
 	bool IsTokenCurrent(const FSkillLabCastPhaseToken& Token) const;
 	EStage GetStage() const { return Stage; }
@@ -127,5 +130,6 @@ private:
 	std::uint64_t Generation = 0;
 	double StageStartedAt = 0.0;
 	bool bHasReleased = false;
+	std::unordered_set<std::uint64_t> CommittedSubmissionPoints;
 	FSkillLabCastPhaseToken PhaseToken;
 };

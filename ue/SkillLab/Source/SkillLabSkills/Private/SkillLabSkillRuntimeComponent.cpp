@@ -55,6 +55,7 @@ void USkillLabSkillRuntimeComponent::EndPlay(const EEndPlayReason::Type EndPlayR
 {
 	bShuttingDown = true;
 	bResetting = true;
+	ClearPendingSkillIntent(TEXT("EndPlay"));
 	++RuntimeGeneration;
 	if (EffectEventAdapter) EffectEventAdapter->Clear(true);
 	if (EffectExecutor) EffectExecutor->Shutdown();
@@ -67,6 +68,8 @@ void USkillLabSkillRuntimeComponent::EndPlay(const EEndPlayReason::Type EndPlayR
 		}
 	}
 	ClearInterruptListeners();
+	if (ASC.IsValid() && DamageTakenHandle.IsValid()) ASC->OnSkillLabDamageTaken.Remove(DamageTakenHandle);
+	DamageTakenHandle.Reset();
 	Super::EndPlay(EndPlayReason);
 }
 
@@ -83,6 +86,7 @@ void USkillLabSkillRuntimeComponent::InitializeSkills()
 		return;
 	}
 	ASC->InitializeSkillLabAbilityActorInfo(Owner, Owner);
+	DamageTakenHandle = ASC->OnSkillLabDamageTaken.AddUObject(this, &USkillLabSkillRuntimeComponent::NotifyDamageTaken);
 	EffectEventAdapter = NewObject<USkillLabSkillEffectEventAdapter>(this);
 	if (EffectEventAdapter)
 	{
@@ -222,6 +226,11 @@ bool USkillLabSkillRuntimeComponent::CheckGates(FName& OutReason) const
 	{
 		OutReason = TEXT("CasterDead");
 	}
+	else if (ASC->HasMatchingGameplayTag(SkillLabGASTags::State_Stunned)
+		|| ASC->HasMatchingGameplayTag(SkillLabGASTags::State_Silenced))
+	{
+		OutReason = TEXT("BlockedByControlState");
+	}
 	else if (ASC->HasAnySkillLabBlockTag(ActiveDefinition.BlockedByTags))
 	{
 		OutReason = TEXT("BlockedByState");
@@ -230,6 +239,12 @@ bool USkillLabSkillRuntimeComponent::CheckGates(FName& OutReason) const
 }
 
 FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FSkillLabSkillRequest& InRequest)
+{
+	return SubmitSkillOperationRequest(InRequest, ESkillLabOperationCategory::Skill);
+}
+
+FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillOperationRequest(const FSkillLabSkillRequest& InRequest,
+	const ESkillLabOperationCategory Category)
 {
 	FSkillLabSkillRequest Request = InRequest;
 	if (Request.RequestId > 0)
@@ -249,9 +264,20 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::SubmitSkillRequest(const FS
 	{
 		return Reject(Request, bResetting ? TEXT("Resetting") : TEXT("NotInitialized"));
 	}
-	if (bFinishing || ActiveCastId != 0)
+	if (Category != ESkillLabOperationCategory::Skill && Category != ESkillLabOperationCategory::Dodge)
 	{
-		return Reject(Request, TEXT("SkillBusy"));
+		return Reject(Request, TEXT("OperationHasNoSkillRequest"));
+	}
+	if (Category == ESkillLabOperationCategory::Dodge && ActiveCastId != 0
+		&& Lifecycle.GetStage() != FSkillLabCastLifecycle::EStage::Recovery)
+	{
+		ClearPendingSkillIntent(TEXT("DodgeReplacedInput"));
+		CancelActiveCast(TEXT("DodgeRequest"));
+	}
+	if (bFinishing || ActiveCastId != 0 || PendingSkillIntent.IsSet())
+	{
+		StorePendingSkillIntent(Request, Category);
+		return Reject(Request, TEXT("InputBufferedLatestWins"));
 	}
 	if (!FSkillLabSkillDefinitionProvider::Resolve(Request.SkillId, Definition))
 	{
@@ -449,6 +475,7 @@ void USkillLabSkillRuntimeComponent::ReleaseCast(USkillLabSkillGameplayAbility* 
 		CancelActiveCast(TEXT("ReleaseGateFailed"));
 		return;
 	}
+	if (!Lifecycle.TryMarkSubmissionPoint(ActiveToken, 1)) return;
 	bCommitted = true;
 	CooldownEnd.Add(ActiveDefinition.SkillId, Now + ActiveDefinition.Cooldown);
 	const float Cost = ActiveDefinition.Cost;
@@ -609,6 +636,14 @@ void USkillLabSkillRuntimeComponent::FinishCast(const bool bCancelled, const FNa
 	StageEndTime = 0.0;
 	bCommitted = false;
 	bFinishing = false;
+	if (bCancelled)
+	{
+		ClearPendingSkillIntent(TEXT("CastCancelled"));
+	}
+	else
+	{
+		SchedulePendingSkillIntentConsumption();
+	}
 }
 
 void USkillLabSkillRuntimeComponent::ClearPendingCast()
@@ -717,8 +752,15 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::ApplyBehaviorEffect(const U
 			return Result;
 		}
 	}
-	bEffectSubmitted = true;
 	ActiveEffectOperationId = FName(*FString::Printf(TEXT("SkillEffect_%d_%d"), CastId, ActiveEffectResults.Num() + 1));
+	const uint64 TargetIdentity = IsValid(Target) ? static_cast<uint64>(Target->GetUniqueID()) : 0;
+	const uint64 SubmissionPointId = (TargetIdentity << 1) + 2;
+	if (!Lifecycle.TryMarkSubmissionPoint(Lifecycle.GetPhaseToken(), SubmissionPointId))
+	{
+		Result.Reason = TEXT("SubmissionPointAlreadyCommitted");
+		return Result;
+	}
+	bEffectSubmitted = true;
 	Result.EffectOperationId = ActiveEffectOperationId;
 	if (EffectExecutor)
 	{
@@ -776,10 +818,16 @@ void USkillLabSkillRuntimeComponent::ListenForInterrupts()
 		return;
 	}
 	TSet<FGameplayTag> RegisteredTags;
-	RegisteredTags.Add(SkillLabGASTags::State_Dead);
-	FDelegateHandle DeathHandle = ASC->RegisterGameplayTagEvent(SkillLabGASTags::State_Dead, EGameplayTagEventType::AnyCountChange)
-		.AddUObject(this, &USkillLabSkillRuntimeComponent::OnBlockingTagChanged);
-	InterruptHandles.Add(SkillLabGASTags::State_Dead, DeathHandle);
+	const auto RegisterInterruptTag = [this, &RegisteredTags](const FGameplayTag& Tag)
+	{
+		RegisteredTags.Add(Tag);
+		const FDelegateHandle Handle = ASC->RegisterGameplayTagEvent(Tag, EGameplayTagEventType::AnyCountChange)
+			.AddUObject(this, &USkillLabSkillRuntimeComponent::OnBlockingTagChanged);
+		InterruptHandles.Add(Tag, Handle);
+	};
+	RegisterInterruptTag(SkillLabGASTags::State_Dead);
+	RegisterInterruptTag(SkillLabGASTags::State_Stunned);
+	RegisterInterruptTag(SkillLabGASTags::State_Silenced);
 	for (const FGameplayTag Tag : ActiveDefinition.BlockedByTags)
 	{
 		if (!Tag.IsValid() || RegisteredTags.Contains(Tag)) continue;
@@ -804,10 +852,101 @@ void USkillLabSkillRuntimeComponent::ClearInterruptListeners()
 
 void USkillLabSkillRuntimeComponent::OnBlockingTagChanged(const FGameplayTag Tag, const int32 Count)
 {
-	if (Count > 0 && ActiveCastId != 0 && (Tag == SkillLabGASTags::State_Dead || ActiveDefinition.BlockedByTags.HasTag(Tag)))
+	if (Count > 0 && ActiveCastId != 0 && (Tag == SkillLabGASTags::State_Dead
+		|| Tag == SkillLabGASTags::State_Stunned || Tag == SkillLabGASTags::State_Silenced
+		|| ActiveDefinition.BlockedByTags.HasTag(Tag)))
 	{
-		CancelActiveCast(Tag == SkillLabGASTags::State_Dead ? TEXT("CasterDead") : TEXT("BlockedByState"));
+		CancelActiveCast(Tag == SkillLabGASTags::State_Dead ? TEXT("CasterDead")
+			: (Tag == SkillLabGASTags::State_Stunned || Tag == SkillLabGASTags::State_Silenced)
+				? TEXT("BlockedByControlState") : TEXT("BlockedByState"));
 	}
+}
+
+void USkillLabSkillRuntimeComponent::NotifyNonInterruptingOperation(const ESkillLabOperationCategory Category)
+{
+	if (Category == ESkillLabOperationCategory::Movement || Category == ESkillLabOperationCategory::UserCancel)
+	{
+		UE_LOG(LogTemp, Verbose, TEXT("[SkillLabCombatRules] Operation=%d Cast=%d Decision=Continue"), static_cast<int32>(Category), ActiveCastId);
+	}
+}
+
+void USkillLabSkillRuntimeComponent::NotifyDamageTaken(const FGameplayTag AttackCategory, const FSkillLabDamageResult& DamageResult)
+{
+	(void)DamageResult;
+	if (ActiveCastId == 0) return;
+	if (AttackCategory == SkillLabGASTags::Event_Attack_Heavy)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[SkillLabCombatRules] DamageCategory=%s Cast=%d Decision=Interrupt"), *AttackCategory.ToString(), ActiveCastId);
+		CancelActiveCast(TEXT("HeavyHit"));
+	}
+	else if (AttackCategory == SkillLabGASTags::Event_Attack_Normal)
+	{
+		UE_LOG(LogTemp, Log, TEXT("[SkillLabCombatRules] DamageCategory=%s Cast=%d Decision=Continue"), *AttackCategory.ToString(), ActiveCastId);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("[SkillLabCombatRules] DamageCategory=%s Cast=%d Decision=Continue Reason=UnknownCategory"), *AttackCategory.ToString(), ActiveCastId);
+	}
+}
+
+void USkillLabSkillRuntimeComponent::ClearPendingSkillIntent(const FName Reason)
+{
+	if (!PendingSkillIntent.IsSet()) return;
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(PendingIntentTimer);
+	}
+	const FSkillLabSkillRequest Request = PendingSkillIntent->Request;
+	PendingSkillIntent.Reset();
+	Reject(Request, Reason);
+}
+
+void USkillLabSkillRuntimeComponent::StorePendingSkillIntent(const FSkillLabSkillRequest& Request,
+	const ESkillLabOperationCategory Category)
+{
+	if (PendingSkillIntent.IsSet())
+	{
+		Reject(PendingSkillIntent->Request, TEXT("BufferedIntentReplaced"));
+	}
+	FSkillLabSkillInputIntent Intent;
+	Intent.Request = Request;
+	Intent.Category = Category;
+	PendingSkillIntent = MoveTemp(Intent);
+}
+
+void USkillLabSkillRuntimeComponent::SchedulePendingSkillIntentConsumption()
+{
+	if (!PendingSkillIntent.IsSet() || ActiveCastId != 0 || bFinishing || bResetting || bShuttingDown || !GetWorld())
+	{
+		return;
+	}
+	FTimerDelegate ConsumeDelegate;
+	ConsumeDelegate.BindWeakLambda(this, [this]()
+	{
+		PendingIntentTimer.Invalidate();
+		ConsumePendingSkillIntent();
+	});
+	PendingIntentTimer = GetWorld()->GetTimerManager().SetTimerForNextTick(ConsumeDelegate);
+}
+
+void USkillLabSkillRuntimeComponent::ConsumePendingSkillIntent()
+{
+	if (!PendingSkillIntent.IsSet() || ActiveCastId != 0 || bFinishing || bResetting || bShuttingDown || !bInitialized)
+	{
+		return;
+	}
+	if (!IsAlive() || (ASC.IsValid() && ASC->HasMatchingGameplayTag(SkillLabGASTags::State_Dead)))
+	{
+		ClearPendingSkillIntent(TEXT("CasterDead"));
+		return;
+	}
+
+	FSkillLabSkillInputIntent Intent = MoveTemp(PendingSkillIntent.GetValue());
+	PendingSkillIntent.Reset();
+	Intent.Request.RequestId = 0;
+	UE_LOG(LogTemp, Log, TEXT("[SkillLabCombatRules] ConsumeBufferedIntent OldCastCleared=true ActiveCast=%d AbilityValid=%s Skill=%s"),
+		ActiveCastId, ActiveAbility.IsValid() ? TEXT("true") : TEXT("false"), *Intent.Request.SkillId.ToString());
+	SubmitSkillOperationRequest(Intent.Request, Intent.Category);
 }
 
 void USkillLabSkillRuntimeComponent::ResetSkills()
@@ -815,6 +954,7 @@ void USkillLabSkillRuntimeComponent::ResetSkills()
 	if (bShuttingDown) return;
 	bResetting = true;
 	++RuntimeGeneration;
+	ClearPendingSkillIntent(TEXT("Reset"));
 	CancelActiveCast(TEXT("Reset"));
 	if (EffectEventAdapter) EffectEventAdapter->Clear(true);
 	bEffectSubmitted = false;

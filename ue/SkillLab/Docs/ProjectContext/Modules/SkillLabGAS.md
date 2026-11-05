@@ -14,7 +14,7 @@
 
 ## Runtime Flow
 
-即时伤害将原始伤害写入 meta effect，AttributeSet 按 `max(raw - armor, 0)` 计算并把生命限制在 `[0, MaxHealth]`。治疗限制在生命上限。持续伤害创建带周期、时长和按目标聚合的 GameplayEffect；ASC 记录周期结果并广播 `OnPeriodicDamageResolved`。
+即时伤害将原始伤害写入 meta effect，AttributeSet 按 `max(raw - armor, 0)` 计算并把生命限制在 `[0, MaxHealth]`。治疗限制在生命上限。`USkillLabAbilitySystemComponent::ApplyDamageToTarget` 可由权威调用者附带攻击类别 Gameplay Tag；目标生命实际下降时 ASC 广播 `OnSkillLabDamageTaken`，目标技能 Runtime 据 Tag 决定是否中断 Cast。空/未知类别仍会通知，但 Runtime 不打断。现有技能效果未声明普通/重击类别，项目没有生产战斗攻击分类调用者。持续伤害创建带周期、时长和按目标聚合的 GameplayEffect；ASC 记录周期结果并广播 `OnPeriodicDamageResolved`。
 
 ## Current Responsibilities And Evolution Boundaries
 

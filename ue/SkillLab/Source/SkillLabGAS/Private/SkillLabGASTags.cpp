@@ -9,4 +9,6 @@ namespace SkillLabGASTags
 	UE_DEFINE_GAMEPLAY_TAG(State_Stunned, "State.SkillLab.Stunned");
 	UE_DEFINE_GAMEPLAY_TAG(State_Silenced, "State.SkillLab.Silenced");
 	UE_DEFINE_GAMEPLAY_TAG(Event_Cast, "SkillLab.Event.Cast");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Attack_Normal, "SkillLab.Event.Attack.Normal");
+	UE_DEFINE_GAMEPLAY_TAG(Event_Attack_Heavy, "SkillLab.Event.Attack.Heavy");
 }

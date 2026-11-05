@@ -35,6 +35,8 @@ public:
 
 private:
 	friend class USkillLabSkillRuntimeComponent;
+	friend class FSkillLabCastGameplayEventTest;
+	friend class FSkillLabBufferedIntentConsumeCommand;
 	UFUNCTION()
 	void HandleSkillGameplayEvent(FGameplayEventData Payload);
 
