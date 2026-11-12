@@ -9,6 +9,7 @@
 - 角色/控制器：`ASkillLabCharacter`、`ASkillLabPlayerController`、`USkillLabCameraRigComponent`。
 - 输入：`USkillLabPlayerInputComponent`、`USkillLabSkillInputComponent`、`USkillLabSkillShortcutComponent`。
 - HUD：`USkillLabHUDManagerComponent`、`USkillLabHUDWidget`、`USkillLabHUDSkillSlotWidget`、`FSkillLabHUDSnapshot`。
+- 上述输入/HUD 组件头文件位于 `Source/SkillLab/Public/`，实现位于 `Source/SkillLab/Private/`；角色、控制器和 CameraRig 实现在 `Source/SkillLab/`。
 - 输入资产在 `Content/SkillLab/Input/`；控制器和角色 Blueprint 在 `Content/SkillLab/`。
 
 ## Runtime Entry
@@ -17,19 +18,23 @@
 
 ## Runtime Flow
 
-数字键由 Shortcut 过滤后调用 `BeginSkill`。单位技能通过 `ResolveCursorUnitTarget` 解析目标；地面技能进入预览，左键 `ConfirmSkill`，`Escape` 取消。运行时事件通过 HUD manager 构建生命/能量、快捷键、消耗和冷却快照，HUD widget 在 Slate/UMG 树中生成技能卡。普通右键释放在非地面选点时执行导航移动；拖动和滚轮控制镜头。
+数字键由 Shortcut 过滤后调用 `BeginSkill`。默认 `1/2/3/4` 分别对应 Fireball、AreaBurst、Mend、BurningBuff。单位技能通过 `ResolveCursorUnitTarget` 解析目标；地面技能经 `ResolveGroundLocation` 投射成功后进入预览，左键 `ConfirmSkill` 再次解析地面并提交，`Escape` 取消。投射失败不会启动预览或提交。普通右键释放在非地面选点时执行导航移动；拖动和滚轮控制镜头。
+
+HUD manager 在 `InitializeForPlayer` 中创建 Widget 并 `AddToViewport`；`BuildSnapshot` 要求 Runtime 已初始化，按共同快捷键列表逐项解析定义，缺失项不生成技能槽。HUD widget 在 `NativeTick` 刷新生命/能量、消耗和冷却；HUD 与技能卡都在 `RebuildWidget` 调用 `Super` 前构建 WidgetTree，避免 `NativeConstruct` 才建树而错过 Slate 根节点读取。Widget 创建日志或快照只说明生命周期/数据事实，可见性需结合画面证据。
 
 ## Current Responsibilities And Evolution Boundaries
 
-修改按键、槽位和确认/取消行为优先看 `SkillLabSkillShortcutComponent` 与 `SkillLabSkillInputComponent`；修改移动/镜头看 PlayerInput/CameraRig；修改界面结构看 HUD widget。当前快捷键默认值在 C++ 构造函数中，Blueprint 可覆盖属性；这不等于已有运行时配装系统。正式动画、音频和特效资源绑定尚未形成代码契约。
+修改按键、槽位和确认/取消行为优先看 `SkillLabSkillShortcutComponent` 与 `SkillLabSkillInputComponent`；修改移动/镜头看 PlayerInput/CameraRig；修改界面结构看 HUD widget。当前快捷键默认值在 C++ 构造函数中，Blueprint 可覆盖属性；这不等于已有运行时配装系统。技能动作资源由定义和表现链消费，定位见 [表现模块](CharacterPresentation.md)。
 
 ## Verification
 
-`SkillLab.UI.WidgetTreeBeforeSlate` 覆盖 HUD 和技能卡在 Slate 构造前后的 WidgetTree、文本和冷却进度。历史 smoke 日志证明技能事件能进入反馈；本轮未重新执行交互验证。
+`SkillLab.UI.WidgetTreeBeforeSlate` 是 HUD/技能卡树、文本和冷却进度的自动化入口；历史全量运行曾有 Slate 包装类型断言失败，本轮未复测，不能据入口存在声称通过。
+
+2026-11-12 实际工程 DX11 `-game` 的 `Saved/Logs/HUDInputDeliveryGame.log` 记录四技能加载、四快捷键绑定及 `Snapshot HP=100/100 Energy=100/100 Skills=4`；[实际窗口截图](../../../Saved/Logs/HUDInputDeliveryWindow.png) 可见 HP、Energy 和四技能槽。真实按键 3 进入 Mend 并完成提交；按键 2 和左键也到达入口，但当次地面投射失败，不能记为 AreaBurst 成功。用户随后人工确认“技能能放出来”。构建/加载证据与限定结论见 [测试模块](TestAndVerification.md)；本轮只核对已有材料，没有交互操作。
 
 ## Current Limitations
 
-没有证据支持手柄、触摸、网络输入、输入缓冲、失焦恢复或完整玩家体验验收。地面投射、碰撞和最终 HUD 布局仍需编辑器/游戏进程确认。
+已有实际窗口的基础 HUD 显示和用户释放确认；完整键鼠组合、地面预览/确认/取消、碰撞、不同分辨率布局及 PIE 尚未全面验收。没有证据支持手柄、触摸、网络输入或失焦恢复；Runtime 的单槽缓存意图见 [Skills 模块](SkillLabSkillsRuntime.md)，不据此宣称全部输入体验通过。
 
 ## Extension Directions
 

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "SkillLabSkillTypes.h"
 #include "Components/ActorComponent.h"
 #include "SkillLabSkillAnimationComponent.generated.h"
 
@@ -11,6 +12,17 @@ class UAnimSequenceBase;
 class USkillLabSkillRuntimeComponent;
 struct FSkillLabSkillResult;
 struct FAnimNotifyEventReference;
+
+USTRUCT()
+struct FSkillLabCastAnimationPlayback
+{
+ GENERATED_BODY()
+ UPROPERTY() FSkillLabCastExecutionToken Token;
+ UPROPERTY() TObjectPtr<UAnimMontage> Montage;
+ UPROPERTY() TObjectPtr<UAnimSequenceBase> NotifyAnimation;
+ UPROPERTY() TWeakObjectPtr<UAnimInstance> AnimInstance;
+ int32 InstanceId = INDEX_NONE;
+};
 
 /**
  * Adapts skill lifecycle events to the actor's animation layer.
@@ -35,25 +47,24 @@ public:
 
 	/** Bridge used by SkillLabAnimNotify. Animation must be the active cast montage. */
 	bool ForwardAnimNotify(UAnimSequenceBase* Animation, FGameplayTag EventTag,
-		const FAnimNotifyEventReference& EventReference, bool bStateEnd = false);
+		const FAnimNotifyEventReference& EventReference, bool bStateEnd = false, USkeletalMeshComponent* NotifyMesh = nullptr);
 
 	UFUNCTION(BlueprintPure, Category="SkillLab|Animation")
-	int32 GetAnimationCastId() const { return ActiveCastId; }
+	int32 GetAnimationCastId() const { return Playbacks.Num() == 1 ? Playbacks[0].Token.CastId : 0; }
 
 	/** Narrow presentation command used by the Lua policy adapter. */
 	bool PlayCastAction(int32 CastId, FName SkillId);
 	void StopCastAction(int32 CastId);
+	bool PlayCastAction(const FSkillLabCastExecutionToken& Token, FName SkillId);
+	void StopCastAction(const FSkillLabCastExecutionToken& Token);
+	void StopAllCastActions();
 
 private:
+	friend class FSkillLabPresentationSubmissionIdentityTest;
 	bool PlayCastMontage(const FSkillLabSkillResult& Result);
-	void StopCastMontage(int32 CastId);
+	void StopCastMontage(const FSkillLabCastExecutionToken& Token);
 	USkeletalMeshComponent* FindMesh() const;
 
 	UPROPERTY(Transient) TObjectPtr<USkillLabSkillRuntimeComponent> SkillRuntime;
-	UPROPERTY(Transient) TObjectPtr<UAnimMontage> ActiveMontage;
-	/** Animation asset reported by notify callbacks. Dynamic montages report their source sequence. */
-	UPROPERTY(Transient) TObjectPtr<UAnimSequenceBase> ActiveNotifyAnimation;
-	UPROPERTY(Transient) TObjectPtr<UAnimInstance> ActiveAnimInstance;
-	int32 ActiveCastId = 0;
-	int32 ActiveMontageInstanceId = INDEX_NONE;
+	UPROPERTY(Transient) TArray<FSkillLabCastAnimationPlayback> Playbacks;
 };

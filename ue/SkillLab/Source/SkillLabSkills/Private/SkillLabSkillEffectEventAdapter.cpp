@@ -100,7 +100,8 @@ void USkillLabSkillEffectEventAdapter::Clear(const bool bRemoveEffects)
 	Effects.Reset();
 	for (const auto& Pair : Previous)
 	{
-		if (bRemoveEffects && Pair.Value.TargetASC.IsValid()) Pair.Value.TargetASC->RemoveActiveGameplayEffect(Pair.Key);
+		if (!bRemoveEffects) continue;
+		if (Pair.Value.TargetASC.IsValid()) Pair.Value.TargetASC->RemoveActiveGameplayEffect(Pair.Key);
 		FSkillLabSkillResult Result = Pair.Value.Origin;
 		Result.Event = ESkillLabSkillEvent::BuffRemoved;
 		Result.bSuccess = true;

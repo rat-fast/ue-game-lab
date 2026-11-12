@@ -122,11 +122,11 @@ bool FSkillLabTargetingService::ResolveCursorUnitTarget(APlayerController& Contr
 	return true;
 }
 
-void FSkillLabTargetingService::FindAreaTargets(const USkillLabSkillRuntimeComponent& Source, const FVector& Center,
+bool FSkillLabTargetingService::FindAreaTargets(const USkillLabSkillRuntimeComponent& Source, const FVector& Center,
 	const FSkillLabSkillDefinition& Definition, TArray<AActor*>& OutTargets)
 {
 	OutTargets.Reset();
-	if (!Source.GetWorld() || Center.ContainsNaN() || !FMath::IsFinite(Definition.Radius) || Definition.Radius <= 0.0f) return;
+	if (!Source.GetWorld() || Center.ContainsNaN() || !FMath::IsFinite(Definition.Radius) || Definition.Radius <= 0.0f) return false;
 	TSet<int32> Seen;
 	for (TActorIterator<AActor> It(Source.GetWorld()); It; ++It)
 	{
@@ -140,4 +140,5 @@ void FSkillLabTargetingService::FindAreaTargets(const USkillLabSkillRuntimeCompo
 		Seen.Add(Component->GetUnitId());
 		OutTargets.Add(Candidate);
 	}
+	return true;
 }

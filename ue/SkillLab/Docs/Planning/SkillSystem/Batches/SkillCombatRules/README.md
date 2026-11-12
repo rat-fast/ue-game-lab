@@ -9,10 +9,10 @@
 ## 阅读和交接
 
 1. [SkillSystem 共享基线](../../../../Baseline/SkillSystem/README.md)：已确认语义与证据边界。
-2. [战斗规则框架策划案](SkillCombatRulesRequirements.md)：需求、候选体验、内容边界和验收。
+2. [战斗规则框架策划案](SkillCombatRulesRequirements.md)：第 2 节说明可复用时序与阶段，第 3–6 节说明规则组合、Tag/效果语义、GAS/C++/Lua 职责及清理；第 7 节为能力验收（含职责与内容生产验收补充），第 8 节为已确认默认操作策略，第 8.1 节为提交异常定案，第 8.2 节为多 Cast 共同仲裁确认规则及验收。
 3. [技能链路改造入口](../SkillChainRefactor/README.md)：已有技能内容与释放契约的关联，不继承其本轮范围排除为本案排除。
 
-程序实现与验证摘要见[程序专题入口](../../../ProgramWorkflow/SkillSystem/Batches/SkillCombatRules/README.md)；独立 Review 仍待执行。本文仍是需求权威来源，不代表所有生产内容来源和可见场景已具备。
+程序实现与验证摘要见[程序专题入口](../../../../ProgramWorkflow/SkillSystem/Batches/SkillCombatRules/README.md)。需求正文是本案规则和验收的权威来源；程序侧文档记录实现与验证状态，需求更新不代表所有通用配置能力、生产内容来源和可见场景已具备。
 
 ## 状态
 

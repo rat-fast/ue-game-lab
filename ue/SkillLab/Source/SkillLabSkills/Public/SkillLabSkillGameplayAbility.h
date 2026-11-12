@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
+#include "SkillLabSkillTypes.h"
 #include "SkillLabSkillGameplayAbility.generated.h"
 
 class UAbilityTask_WaitGameplayEvent;
@@ -17,6 +18,7 @@ public:
 	TWeakObjectPtr<USkillLabSkillRuntimeComponent> Runtime;
 	TWeakObjectPtr<USkillLabSkillGameplayAbility> Ability;
 	int32 CastId = 0;
+	FSkillLabCastExecutionToken CastToken;
 };
 
 UCLASS()
@@ -30,7 +32,7 @@ public:
 	virtual void EndAbility(FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo,
 		FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled) override;
 	void FinishSkillAbility(bool bWasCancelled);
-	void BindSkillCast(USkillLabSkillRuntimeComponent* Runtime, int32 CastId, const FGameplayTagContainer& EventTags);
+	void BindSkillCast(USkillLabSkillRuntimeComponent* Runtime, const FSkillLabCastExecutionToken& Token, const FGameplayTagContainer& EventTags);
 	bool IsSkillAbilityActive() const { return bSkillActive; }
 
 private:
@@ -46,6 +48,6 @@ private:
 	TWeakObjectPtr<USkillLabSkillRuntimeComponent> SkillRuntime;
 	UPROPERTY()
 	TArray<TObjectPtr<UAbilityTask_WaitGameplayEvent>> EventTasks;
-	int32 BoundCastId = 0;
+	FSkillLabCastExecutionToken BoundCastToken;
 	bool bSkillActive = false;
 };

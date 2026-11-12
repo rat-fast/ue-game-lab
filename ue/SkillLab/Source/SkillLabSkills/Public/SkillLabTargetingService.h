@@ -22,6 +22,6 @@ public:
 	/** Resolves a unit-targeting skill from the player's cursor. Self-target skills bypass the cursor. */
 	static bool ResolveCursorUnitTarget(APlayerController& Controller, const USkillLabSkillRuntimeComponent& Source,
 		const FSkillLabSkillDefinition& Definition, AActor*& OutTarget, FVector& OutLocation, FName& OutReason);
-	static void FindAreaTargets(const USkillLabSkillRuntimeComponent& Source, const FVector& Center,
+	static bool FindAreaTargets(const USkillLabSkillRuntimeComponent& Source, const FVector& Center,
 		const FSkillLabSkillDefinition& Definition, TArray<AActor*>& OutTargets);
 };

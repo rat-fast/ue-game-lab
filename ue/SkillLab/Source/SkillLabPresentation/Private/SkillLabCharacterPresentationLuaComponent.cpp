@@ -44,6 +44,8 @@ namespace
 		case ESkillLabSkillEvent::BuffRemoved: return TEXT("BuffRemoved");
 		case ESkillLabSkillEvent::Cancelled: return TEXT("Cancelled");
 		case ESkillLabSkillEvent::Completed: return TEXT("Completed");
+		case ESkillLabSkillEvent::SubmissionCommitted: return TEXT("SubmissionCommitted");
+		case ESkillLabSkillEvent::SubmissionResolved: return TEXT("SubmissionResolved");
 		default: return TEXT("Unknown");
 		}
 	}
@@ -107,7 +109,7 @@ void USkillLabCharacterPresentationLuaComponent::EndPlay(const EEndPlayReason::T
 	}
 	if (SkillAnimation)
 	{
-		SkillAnimation->StopCastAction(SkillAnimation->GetAnimationCastId());
+		SkillAnimation->StopAllCastActions();
 	}
 	if (Lua)
 	{
@@ -167,7 +169,7 @@ int32 USkillLabCharacterPresentationLuaComponent::LuaPlaySkillAction(FSkillLabLu
 	auto* Self = static_cast<USkillLabCharacterPresentationLuaComponent*>(SkillLabLua::GetCallbackContext(State));
 	const int32 CastId = static_cast<int32>(SkillLabLua::CheckInteger(State, 1));
 	const FName SkillId(UTF8_TO_TCHAR(SkillLabLua::CheckString(State, 2)));
-	const bool bPlayed = Self && Self->SkillAnimation && Self->SkillAnimation->PlayCastAction(CastId, SkillId);
+	const bool bPlayed = Self && Self->SkillAnimation && (Self->CallbackCastToken.CastId == CastId && Self->SkillAnimation->PlayCastAction(Self->CallbackCastToken, SkillId));
 	SkillLabLua::PushBoolean(State, bPlayed);
 	return 1;
 }
@@ -178,7 +180,7 @@ int32 USkillLabCharacterPresentationLuaComponent::LuaStopSkillAction(FSkillLabLu
 	const int32 CastId = static_cast<int32>(SkillLabLua::CheckInteger(State, 1));
 	if (Self && Self->SkillAnimation)
 	{
-		Self->SkillAnimation->StopCastAction(CastId);
+		if (Self->CallbackCastToken.CastId == CastId) Self->SkillAnimation->StopCastAction(Self->CallbackCastToken);
 	}
 	return 0;
 }
@@ -214,17 +216,18 @@ int32 USkillLabCharacterPresentationLuaComponent::LuaLog(FSkillLabLuaState* Stat
 
 void USkillLabCharacterPresentationLuaComponent::HandleSkillEvent(const FSkillLabSkillResult& Result)
 {
+	TGuardValue<FSkillLabCastExecutionToken> CallbackIdentity(CallbackCastToken, Result.CastToken);
 	const bool bHandled = CallSkillCallback(Result);
 	if (!bHandled || !Lua)
 	{
 		// Preserve reliable basic behavior when a script callback is missing or fails.
 		if (Result.Event == ESkillLabSkillEvent::Started && SkillAnimation)
 		{
-			SkillAnimation->PlayCastAction(Result.CastId, Result.SkillId);
+			SkillAnimation->PlayCastAction(Result.CastToken, Result.SkillId);
 		}
 		else if ((Result.Event == ESkillLabSkillEvent::Cancelled || Result.Event == ESkillLabSkillEvent::Completed) && SkillAnimation)
 		{
-			SkillAnimation->StopCastAction(Result.CastId);
+			SkillAnimation->StopCastAction(Result.CastToken);
 		}
 	}
 }
@@ -261,6 +264,8 @@ bool USkillLabCharacterPresentationLuaComponent::CallSkillCallback(const FSkillL
 	};
 	SkillLabLua::PushInteger(Lua, Result.CastId); SkillLabLua::SetField(Lua, -2, "castId");
 	SkillLabLua::PushInteger(Lua, Result.RequestId); SkillLabLua::SetField(Lua, -2, "requestId");
+	if (Result.SubmissionKey.IsSet())
+		SetString("submissionId", *Result.SubmissionKey.Id.ToString(EGuidFormats::DigitsWithHyphens));
 	SetString("skillId", *Result.SkillId.ToString());
 	SetString("event", ToString(Result.Event));
 	SetString("stage", ToString(Result.Stage));

@@ -2,50 +2,55 @@
 
 ## Module Responsibility
 
-记录当前版本中 `SkillLabPresentation` 独立模块内的角色动画状态、Lua 表现编排、技能动作播放、AnimBP 和相关验证入口的真实代码事实。
+`SkillLabPresentation` 采集角色动画状态、编排 Lua 表现意图、适配 AnimBP、播放技能动作并提供通用占位反馈。它消费技能事实，不拥有技能规则、效果结算或资源状态。
 
 ## Code And Assets
 
-源码集中在 `Source/SkillLabPresentation/Public/`、`Private/` 和 `ThirdParty/`，通过 `SkillLabPresentation.Build.cs` 与 `SkillLab.uproject` 注册为独立 Runtime 模块。`SkillLab` 依赖它组装角色和地面选点反馈；它依赖 `SkillLabSkills` 读取事件与动作绑定，技能模块不反向依赖表现模块。
+源码位于 `Source/SkillLabPresentation/Public/`、`Private/`，通过 Build.cs 和 `SkillLab.uproject` 注册为 Runtime 模块。`SkillLab` 依赖它组装角色/地面选点反馈；它依赖 `SkillLabSkills` 读取事件与定义，Skills 不反向依赖表现模块。Lua facade 来自私有依赖 `SkillLabLuaRuntime`，第三方 Lua 源码不归属表现模块。
 
-- `USkillLabCharacterAnimationStateComponent` 采集 `Idle`、`Move`、`Jump`、`Fall`、`Land` 状态事实并广播迁移。
-- `USkillLabCharacterPresentationLuaComponent` 加载 `Config/CharacterPresentation.lua`，将状态和技能结构化事件交给 Lua 编排，并通过类型化回调请求表现动作。
-- `SkillLabPresentation` 通过 Private dependency 使用 `SkillLabLuaRuntime` 的 opaque facade；Lua 5.4.8 唯一源码由 `Source/SkillLabLuaRuntime/ThirdParty/lua-5.4.8/` 提供。Lua 负责表现意图，不负责技能规则或动画求值。
-- `USkillLabCharacterAnimInstance` 是角色表现链的桥接 AnimInstance：缓存 Lua locomotion 意图，并将状态快照字段写入 `ABP_Unarmed` 既有输入；`USkillLabAnimInstance` 是单独的 MovementComponent 直接采样路径。
-- `USkillLabSkillAnimationComponent` 按 `CastId` 播放/停止技能动作；重复 Started 幂等，旧于活动 Cast 的 Started 被忽略。此身份保护由先前程序 Review 确认，迁移后代码位于 `Source/SkillLabPresentation/Private/SkillLabSkillAnimationComponent.cpp`。
-- `USkillLabSkillPresentationRouter` 与 `ASkillLabSkillFeedbackActor` 提供屏幕文字、范围环、目标框和数值占位反馈；FeedbackActor 也用于游戏模块的地面选点预览。`DefaultEngine.ini` 的 `[CoreRedirects]` 保留迁移前反射类、快照结构和状态枚举路径的兼容映射。
-- `Config/SkillDefinitions.json` 和 `Config/AnimationDefinitions.json` 仍是技能内容与基础动画调参入口；Lua 不复制技能数值或动作资源路径。
+- `USkillLabCharacterAnimationStateComponent` 采集 Idle、Move、Jump、Fall、Land 快照与迁移。
+- `USkillLabCharacterPresentationLuaComponent` 加载 `Config/CharacterPresentation.lua`，持有并绑定 `USkillLabSkillPresentationRouter`，将状态/技能事件交给 Lua，通过类型化回调执行表现命令。
+- `USkillLabCharacterAnimInstance` 缓存 Lua locomotion 意图，并将状态字段写入 `ABP_Unarmed` 既有输入；`USkillLabAnimInstance` 是直接采样 MovementComponent 的独立路径。
+- `USkillLabSkillAnimationComponent` 用 `FSkillLabCastAnimationPlayback` 列表记录完整 token、Montage、NotifyAnimation、弱 AnimInstance 与实例 id；按完整身份播放、停止和转发 Notify。
+- Router 与 `ASkillLabSkillFeedbackActor` 提供屏幕文字、范围环、目标框、数值占位反馈；FeedbackActor 也用于地面选点预览。`DefaultEngine.ini` 的 CoreRedirects 保留迁移前反射路径兼容。
+- `Config/SkillDefinitions.json` 当前四技能以 `castMontage` 绑定 `/Game/SkillLab/Animations/AM_Skill_*`；Provider 还支持兼容 `castAnimation`。Lua 不复制数值或动作资源路径。`AnimationDefinitions.json` 是独立原生 AnimInstance 的基础调参入口。
 
 ## Runtime Entry
 
-`ASkillLabCharacter` 组装状态采集与 Lua 表现组件；玩家控制器仍经既有技能运行时提交请求。正式可见运行入口为 `Run_SkillLab_DX11.bat`，结构化技能命令入口见 `TestAndVerification.md`。
+`ASkillLabCharacter` 创建状态、Lua 表现与技能动画组件；Lua 表现组件 BeginPlay 创建 Router 并订阅 Runtime `OnNativeSkillEvent`，EndPlay 解绑。动画组件不自行订阅技能事件。`Run_SkillLab_DX11.bat` 启动 `-game` 游戏窗口，编辑器 Play 才是 PIE；命令见 [测试模块](TestAndVerification.md)。
 
 ## Runtime Flow
 
-`ASkillLabCharacter` 创建状态、Lua 表现和技能动画组件。状态组件从 `UCharacterMovementComponent` 采集运动事实，按速度/加速度/方向、`IsFalling` 和落地窗口产生 Idle、Move、Jump、Fall、Land 快照并广播变化；Lua 将状态及移动/下落标志映射为 locomotion intent。`USkillLabCharacterAnimInstance` 缓存该意图，并同步快照的速度/方向等字段到 `ABP_Unarmed` 变量，AnimBP 负责姿势求值与融合。
+状态组件观察 CharacterMovement 的真实速度、方向、加速度和 Falling/落地窗口，产生五态快照；Lua 映射为 locomotion intent，`USkillLabCharacterAnimInstance` 同步意图与快照到 `ABP_Unarmed`，UE 执行姿势求值与融合。
 
-Lua 表现组件在 BeginPlay 创建 Router 并将其绑定到技能运行时 `OnNativeSkillEvent`，在 EndPlay 解绑；技能运行时不再持有 Router。Router 发出表现事件后，Lua 在 `Started` 请求 `USkillLabSkillAnimationComponent` 解析技能绑定并播放 UE Montage，在 `Cancelled`/`Completed` 请求停止对应 `CastId`；动画组件不直接订阅事件。当前 Lua 对 Hit、Rejected、PhaseChanged、TargetSelected、EffectApplied、BuffApplied、DamageTick、BuffRemoved 只写日志，没有技能差异化动画或 VFX 组合。C++ Router 的屏幕文字/范围环/目标框/数值标记是当前占位反馈，不归 Lua 所有。持续效果事件与施法动作终态分开处理。
+技能事件经 Router 进入 Lua：Started 请求动作，Cancelled/Completed 停止对应动作；结果类事件和持续效果当前主要记录日志，通用占位反馈仍由 C++ Router 执行。持续效果结果与 Cast 动作终态各自路由，不混为一个生命周期。
+
+播放先以事件的完整 token 调用 Runtime `FindExecution` 校验，并从该执行的定义快照读取软路径。`Montage_Play` 使用不停止全部 Montage 的参数；播放记录按 token 保存，停止只定位匹配记录和保存的 Montage 实例，不以数字新旧顺序清理其他 Cast。
+
+Notify 转发同时核对完整 token、实际 AnimInstance、MontageInstanceID、Montage/Sequence、播放状态及 NotifyMesh，再调用 Runtime 的 validated 入口。旧实例、其他 Runtime 或 generation 的同数字 CastId 不能操作当前执行。
 
 ## Current Behavior
 
-`Saved/Logs/SkillLab-backup-2026.10.21-16.51.16.log`（NullRHI RuntimeProbe）观察到 Lua runtime ready、Jump/Land 状态意图、四技能动作组件播放、火球/区域爆发/修复/燃烧运行事件及燃烧周期事件；同一日志记录 `ABP_Unarmed_C_0 consumes CharacterAnimationState`，但 Probe 对 `USkillLabAnimInstance` 的诊断样本为 null。该样本为空不否定上述 AnimBP 消费记录，也不能证明 Lua intent 最终造成可见姿势变化。该次 Probe 有 Jump→Land 状态变化，没有 Fall 状态。`Saved/Logs/SkillLab.log`（2026-10-21 玩家 PIE）记录移动输入、四技能 Montage 播放及角色入场 Fall→Land，但不是跳跃触发的 Fall 验收或用户视觉观察记录；没有本轮可见 PIE 视口验收材料。
+Lua 回调仍可接收数字 castId，但 C++ 以 `CallbackCastToken` 和 `TGuardValue` 将 play/stop 绑定到当前事件的完整身份，不能借相同数字切换 Runtime；原生回退也使用完整 token。`submissionId` 透传已接受的完整提交 Id，不重新从当前 Cast 推断来源。
+
+Lua 脚本或回调不可用时，C++ 提供基础 locomotion 与 Started/终态动作回退；资源、Mesh、AnimInstance 或 Montage 失败则记警告、跳过动作，保留技能运行。当前 Lua 对 Hit、Rejected、PhaseChanged、TargetSelected、EffectApplied、BuffApplied、DamageTick、BuffRemoved 等主要记日志，没有正式差异化 VFX 编排。
+
+多 Cast 的身份隔离不保证资源可同时播放：当前四个生产 Montage 都在 `DefaultGroup/DefaultSlot`，仍受 UE 同组播放互斥约束。尚无兼容双 group 资源与可见双 Montage 验收证据。
 
 ## Current Responsibilities And Evolution Boundaries
 
-- 当前职责：C++ 拥有运动/技能事实、对象安全与动画执行；Lua 拥有表现事件组合；UE AnimBP 拥有姿势求值与融合。
-- 默认修改入口：基础意图查 `Config/CharacterPresentation.lua`；基础状态事实查 `USkillLabCharacterAnimationStateComponent`；技能事实沿用结构化运行事件；技能动画资源绑定查 `Config/SkillDefinitions.json` 与 UE 动画资产。
-- 可接受的架构调整：当脚本接口无法承载新增表现语义时，按对应任务重新核对 C++/Lua/AnimBP 边界。
-- 重构触发条件：Lua 状态与 AnimBP 输入不同步、施法终态误清新动作，或内容来源重复时复核当前分工。
-- 当前阶段限制：本试点不扩展受击表现或正式 VFX；这是本批范围控制。
+C++ 拥有状态事实、来源身份、对象安全与动画执行；Lua 组合表现意图；AnimBP 拥有姿势求值。基础策略优先查 `CharacterPresentation.lua`，状态事实查状态组件，动作绑定查技能 JSON/动画资产，token 与实例校验查动画组件。新增表现语义可重新调整桥接；发现旧终态影响新动作、身份在 Lua/C++ 间丢失或输入重复维护时，应复核分工。
 
 ## Verification
 
-程序工作流交接记录 UE 5.8 `SkillLabEditor Win64 Development` 构建通过；`Saved/Logs/SkillLab-backup-2026.10.21-16.53.57.log`、`...16.54.14.log`、`...16.54.31.log` 分别记录 CastLifecycle、DefinitionValidation、DamageCalculation 为 `Result={Success}`。NullRHI RuntimeProbe 证明脚本和结构化事件可运行，并记录 AnimBP 消费状态接口的初始化信息；它不证明 Lua intent 最终造成可见姿势变化、可见动作质量或完整五态。历史 `SkillLab.log` 有玩家输入和技能播放日志，但没有本轮可见 PIE 视口验收材料。
+`SkillLab.Presentation.SubmissionIdentity`、`SkillLab.Presentation.CastAnimationResources`、`SkillLab.Animation.DefinitionProvider` 为当前自动化入口。分版本运行、历史 Probe 与资源检查的范围统一见 [TestAndVerification](TestAndVerification.md)。本次仅同步文档，没有运行 smoke、Probe、测试或可见验收。
+
+既有实际工程 DX11 会话记录 Mend 的 `AM_Skill_Mend` 播放、真实提交与完成，用户随后人工确认技能可释放；HUD 可见截图由 [玩家交互模块](PlayerInteraction.md) 定位。这些证据不构成完整姿势、Notify 视觉时序或双 Montage 并播验收。
 
 ## Current Limitations
 
-未验证跳跃到 Fall 到 Land 的完整可见链、Fall 视觉、取消/完成后姿势恢复、缺动作资源/AnimInstance 的运行降级表现，以及旧 Started 与新 Cast 交错的运行竞态。代码身份检查和程序 Review 不是竞态复现证据。Lua 目前对技能结果只记日志；三项技能没有 Lua 差异化视觉反馈，C++ Router 仍提供通用占位标记。
+NullRHI 与身份测试不能证明可见姿势或同组动作并行。仍缺完整 Jump→Fall→Land 可见链、取消/完成后姿势恢复、缺资源/AnimInstance 降级的玩家可读性，以及生产多 Cast 视觉体验的验收材料。旧日志中的入场 Fall→Land 不能替代跳跃链，AnimBP 消费状态接口的日志也不能证明 Lua intent 最终造成可见姿势变化。CoreRedirects 不等于旧资产本轮已打开核对。
 
 ## Extension Directions
 
-正式视觉验收应以可见运行证据为准；扩展受击或正式 VFX 前先确认对应体验范围与资源。
+正式动作、双 Montage 或 VFX 的扩展应先确认资源与体验范围，再用可见运行核对，保持技能来源与播放实例可追溯。

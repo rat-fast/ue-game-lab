@@ -1,0 +1,67 @@
+[
+  {
+    "Manifest": "CastExecutionAccepted23SourceHashes.json",
+    "SHA256": "7513BB0175B64B45871367485827881866DF0CEA9FB9DF72243F02225A4D4721",
+    "Count": 408,
+    "AddedSincePrevious": [],
+    "ChangedSincePrevious": [],
+    "RemovedSincePrevious": []
+  },
+  {
+    "Manifest": "CastCE1AfterSourceHashes.json",
+    "SHA256": "5B9403B86EF7BDBF9C72DCC0E1136B71DAEFAAB4ADDB74B1988CB9B31FBA4E9C",
+    "Count": 409,
+    "AddedSincePrevious": [
+      "Source/SkillLabSkills/Private/Tests/SkillLabCastRequestReentryTests.cpp"
+    ],
+    "ChangedSincePrevious": [
+      "Source/SkillLabSkills/Private/SkillLabSkillRuntimeRequests.cpp"
+    ],
+    "RemovedSincePrevious": []
+  },
+  {
+    "Manifest": "ResetResourceFinal3Hashes.json",
+    "SHA256": "1049706A67CAA6CBE2E46D2F7D3588ABD82A5849E33DF8748E2B96CF7EAF8A70",
+    "Count": 416,
+    "AddedSincePrevious": [
+      "Source/SkillLabGAS/Private/Tests/SkillLabResourceExecutionBoundaryTests.cpp",
+      "Source/SkillLabGAS/Private/Tests/SkillLabResourceExecutionFixture.cpp",
+      "Source/SkillLabSkills/Private/Tests/SkillLabResetResourceCompletionTests.cpp",
+      "Source/SkillLabGAS/Private/SkillLabAbilitySystemEnergyReservations.cpp",
+      "Source/SkillLabGAS/Private/SkillLabResourceEffects.cpp",
+      "Source/SkillLabGAS/Private/Tests/SkillLabResourceExecutionFixture.h",
+      "Source/SkillLabGAS/Private/Tests/SkillLabResourceWriteIntegrationTests.cpp"
+    ],
+    "ChangedSincePrevious": [
+      "Source/SkillLabSkills/Public/SkillLabSkillRuntimeComponent.h",
+      "Source/SkillLabGAS/Private/SkillLabAbilitySystemComponent.cpp",
+      "Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp",
+      "Source/SkillLabGAS/Public/SkillLabCombatAttributeSet.h",
+      "Source/SkillLabGAS/Private/SkillLabCombatAttributeSet.cpp",
+      "Source/SkillLabGAS/Private/SkillLabEnergySettlement.cpp",
+      "Source/SkillLabGAS/Public/SkillLabAbilitySystemComponent.h",
+      "Source/SkillLabGAS/Private/SkillLabAbilitySystemResource.cpp"
+    ],
+    "RemovedSincePrevious": []
+  },
+  {
+    "Manifest": "ResetEvidenceFinalHashes.json",
+    "SHA256": "0B11F9F4BCBFF25B88486899C95178803A6AEDBF717A5A48B0A271EF9C0C2DBA",
+    "Count": 416,
+    "AddedSincePrevious": [],
+    "ChangedSincePrevious": [
+      "Source/SkillLabSkills/Private/Tests/SkillLabResetResourceCompletionTests.cpp"
+    ],
+    "RemovedSincePrevious": []
+  },
+  {
+    "Manifest": "ResetImmediateRejectedHashes.json",
+    "SHA256": "7A0A64A063F094D9D37FDBD5288EB90DE749493A261793BAF405E054C220ACA1",
+    "Count": 416,
+    "AddedSincePrevious": [],
+    "ChangedSincePrevious": [
+      "Source/SkillLabSkills/Private/Tests/SkillLabResetResourceCompletionTests.cpp"
+    ],
+    "RemovedSincePrevious": []
+  }
+]

@@ -1,0 +1,356 @@
+SOURCE: C:\Users\Administrator\AppData\Local\Temp\SkillLabCastExecutionValidation\Saved\Logs\CastExecutionFinalValidation2.log SHA256: 4D3AD82FBF2C66E6262072F616AF968D6CEA34462A604A80604EB05E858284FC
+1620: [2026.11.11-18.09.17:637][  0]LogAutomationTest: Error: Condition failed
+1621: [2026.11.11-18.09.17:637][  0]LogAutomationTest: Error: Condition failed
+1622: [2026.11.11-18.09.17:637][  0]LogAutomationTest: Error: Condition failed
+1623: [2026.11.11-18.09.17:637][  0]LogAutomationTest: Error: Condition failed
+1624: [2026.11.11-18.09.17:637][  0]LogAutomationTest: Error: Condition failed
+1625: [2026.11.11-18.09.17:637][  0]LogAutomationTest: Error: Condition failed
+1626: [2026.11.11-18.09.17:637][  0]LogAutomationTest: Error: Condition failed
+1627: [2026.11.11-18.09.17:637][  0]LogAutomationTest: Error: Condition failed
+1628: [2026.11.11-18.09.17:637][  0]LogAutomationTest: Error: Condition failed
+1629: [2026.11.11-18.09.17:637][  0]LogAutomationTest: Error: Condition failed
+1630: [2026.11.11-18.09.17:638][  0]LogAutomationTest: Error: Condition failed
+1631: [2026.11.11-18.09.17:638][  0]LogAutomationTest: Error: Condition failed
+1632: [2026.11.11-18.09.17:638][  0]LogAutomationTest: Error: Condition failed
+2119: [2026.11.11-18.09.26:243][301]LogAutomationController: Display: Test Completed. Result={Success} Name={DamageCalculation} Path={SkillLab.GAS.DamageCalculation}
+2135: [2026.11.11-18.09.26:284][303]LogAutomationController: Display: Test Completed. Result={Success} Name={EnergyLedger} Path={SkillLab.GAS.EnergyLedger}
+2153: [2026.11.11-18.09.26:319][305]LogAutomationController: Display: Test Completed. Result={Success} Name={EnergySettlementHistory} Path={SkillLab.GAS.EnergySettlementHistory}
+2160: [2026.11.11-18.09.26:395][307]LogAutomationController: Display: Test Completed. Result={Success} Name={CastAnimationResources} Path={SkillLab.Presentation.CastAnimationResources}
+2163: [2026.11.11-18.09.26:395][307]LogAutomationController: Fireball Group=DefaultGroup Slots=DefaultSlot  Length=0.666667 (read only)
+2165: [2026.11.11-18.09.26:395][307]LogAutomationController: AreaBurst Group=DefaultGroup Slots=DefaultSlot  Length=1.833333 (read only)
+2167: [2026.11.11-18.09.26:395][307]LogAutomationController: Mend Group=DefaultGroup Slots=DefaultSlot  Length=1.000000 (read only)
+2169: [2026.11.11-18.09.26:395][307]LogAutomationController: BurningBuff Group=DefaultGroup Slots=DefaultSlot  Length=1.000000 (read only)
+2174: [2026.11.11-18.09.26:425][309]LogAutomationController: Display: Test Completed. Result={Success} Name={SubmissionIdentity} Path={SkillLab.Presentation.SubmissionIdentity}
+2255: [2026.11.11-18.09.26:479][311]LogAutomationController: Display: Test Completed. Result={Success} Name={AreaSubmissionSettlement} Path={SkillLab.Skills.AreaSubmissionSettlement}
+2379: [2026.11.11-18.09.26:506][313]LogAutomationController: Display: Test Completed. Result={Success} Name={CastControlAndRules} Path={SkillLab.Skills.CastControlAndRules}
+2431: [2026.11.11-18.09.26:536][329]LogAutomationController: Display: Test Completed. Result={Success} Name={CastExecutionOwnership} Path={SkillLab.Skills.CastExecutionOwnership}
+2497: [2026.11.11-18.09.26:554][330]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66956 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2510: [2026.11.11-18.09.26:555][330]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66968 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2523: [2026.11.11-18.09.26:555][330]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66979 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2562: [2026.11.11-18.09.26:557][330]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=67012 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2575: [2026.11.11-18.09.26:558][330]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=67023 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2576: [2026.11.11-18.09.26:558][330]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=67023 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2589: [2026.11.11-18.09.26:559][330]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=67034 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2602: [2026.11.11-18.09.26:559][330]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=67045 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2603: [2026.11.11-18.09.26:559][330]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=67045 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2616: [2026.11.11-18.09.26:560][330]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=67056 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2786: [2026.11.11-18.09.26:610][333]LogAutomationController: Display: Test Completed. Result={Success} Name={CastGameplayEvent} Path={SkillLab.Skills.CastGameplayEvent}
+2870: [2026.11.11-18.09.26:642][349]LogAutomationController: Display: Test Completed. Result={Success} Name={CastIntentLifecycle} Path={SkillLab.Skills.CastIntentLifecycle}
+2877: [2026.11.11-18.09.26:687][352]LogAutomationController: Display: Test Completed. Result={Success} Name={CastLifecycle} Path={SkillLab.Skills.CastLifecycle}
+2934: [2026.11.11-18.09.26:728][429]LogAutomationController: Display: Test Completed. Result={Success} Name={CastSubmissionIsolation} Path={SkillLab.Skills.CastSubmissionIsolation}
+2942: [2026.11.11-18.09.26:772][432]LogAutomationController: Display: Test Completed. Result={Success} Name={DefinitionValidation} Path={SkillLab.Skills.DefinitionValidation}
+3000: [2026.11.11-18.09.26:810][434]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=67628 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+3036: [2026.11.11-18.09.27:956][503]LogAutomationController: Display: Test Completed. Result={Success} Name={LateSubmission} Path={SkillLab.Skills.LateSubmission}
+3079: [2026.11.11-18.09.27:994][510]LogAutomationController: Display: Test Completed. Result={Success} Name={MultipleSubmissions} Path={SkillLab.Skills.MultipleSubmissions}
+3194: [2026.11.11-18.09.28:038][513]LogAutomationController: Display: Test Completed. Result={Success} Name={ProductionRecords} Path={SkillLab.Skills.ProductionRecords}
+3296: [2026.11.11-18.09.28:092][540]LogAutomationController: Display: Test Completed. Result={Success} Name={SharedCastArbitration} Path={SkillLab.Skills.SharedCastArbitration}
+3303: [2026.11.11-18.09.28:139][543]LogAutomationController: Display: Test Completed. Result={Success} Name={SubmissionDefinition} Path={SkillLab.Skills.SubmissionDefinition}
+3364: [2026.11.11-18.09.28:372][557]LogAutomationController: Display: Test Completed. Result={Success} Name={SubmissionFeedbackIdentity} Path={SkillLab.Skills.SubmissionFeedbackIdentity}
+3591: [2026.11.11-18.09.28:499][559]LogAutomationController: Display: Test Completed. Result={Success} Name={SubmissionFeedbackRouting} Path={SkillLab.Skills.SubmissionFeedbackRouting}
+3730: [2026.11.11-18.09.28:531][561]LogAutomationController: Display: Test Completed. Result={Success} Name={SubmissionReconciliation} Path={SkillLab.Skills.SubmissionReconciliation}
+3882: [2026.11.11-18.09.28:621][969]LogAutomationController: Display: Test Completed. Result={Success} Name={SubmittedActionLifetime} Path={SkillLab.Skills.SubmittedActionLifetime}
+3926: [2026.11.11-18.09.28:662][971]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=69711 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+3988: [2026.11.11-18.09.29:774][ 38]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=69751 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+4003: [2026.11.11-18.09.29:774][ 38]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=69699 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+4022: [2026.11.11-18.09.29:791][ 39]LogAutomationController: Display: Test Completed. Result={Success} Name={UnconfirmedSubmission} Path={SkillLab.Skills.UnconfirmedSubmission}
+4047: [2026.11.11-18.09.29:792][ 39]LogAutomationCommandLine: Display: ...Automation Test Queue Empty 23 tests performed.
+4050: [2026.11.11-18.09.29:793][ 40]LogWindows: FPlatformMisc::RequestExitWithStatus(1, 0, FEngineLoop::Tick.GScopedTestExit)
+SOURCE: C:\Users\Administrator\AppData\Local\Temp\SkillLabCastExecutionValidation\Saved\Logs\CastCE1FinalValidation.log SHA256: BE15ADC4A6A38C9FF97B7CBF07B7484DC40F6E698B7F53F052E9FA1115A5554C
+1620: [2026.11.11-18.27.30:988][  0]LogAutomationTest: Error: Condition failed
+1621: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1622: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1623: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1624: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1625: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1626: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1627: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1628: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1629: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1630: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1631: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+1632: [2026.11.11-18.27.30:989][  0]LogAutomationTest: Error: Condition failed
+2111: [2026.11.11-18.27.39:871][301]LogAutomationController: Display: Test Completed. Result={Success} Name={SubmissionIdentity} Path={SkillLab.Presentation.SubmissionIdentity}
+2195: [2026.11.11-18.27.39:939][303]LogAutomationController: Display: Test Completed. Result={Success} Name={AreaSubmissionSettlement} Path={SkillLab.Skills.AreaSubmissionSettlement}
+2254: [2026.11.11-18.27.39:967][319]LogAutomationController: Display: Test Completed. Result={Success} Name={CastExecutionOwnership} Path={SkillLab.Skills.CastExecutionOwnership}
+2320: [2026.11.11-18.27.39:987][320]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66604 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2333: [2026.11.11-18.27.39:988][320]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66616 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2346: [2026.11.11-18.27.39:988][320]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66627 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2385: [2026.11.11-18.27.39:991][320]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66660 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2398: [2026.11.11-18.27.39:991][320]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66671 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2399: [2026.11.11-18.27.39:991][320]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66671 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2412: [2026.11.11-18.27.39:992][320]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66682 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2425: [2026.11.11-18.27.39:992][320]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66693 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2426: [2026.11.11-18.27.39:992][320]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66693 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2439: [2026.11.11-18.27.39:994][320]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66704 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2609: [2026.11.11-18.27.40:053][324]LogAutomationController: Display: Test Completed. Result={Success} Name={CastGameplayEvent} Path={SkillLab.Skills.CastGameplayEvent}
+2693: [2026.11.11-18.27.40:092][340]LogAutomationController: Display: Test Completed. Result={Success} Name={CastIntentLifecycle} Path={SkillLab.Skills.CastIntentLifecycle}
+2825: [2026.11.11-18.27.40:127][366]LogAutomationController: Display: Test Completed. Result={Success} Name={CastRequestReentry} Path={SkillLab.Skills.CastRequestReentry}
+2883: [2026.11.11-18.27.40:161][443]LogAutomationController: Display: Test Completed. Result={Success} Name={CastSubmissionIsolation} Path={SkillLab.Skills.CastSubmissionIsolation}
+2943: [2026.11.11-18.27.40:195][445]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=67445 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2979: [2026.11.11-18.27.41:339][514]LogAutomationController: Display: Test Completed. Result={Success} Name={LateSubmission} Path={SkillLab.Skills.LateSubmission}
+3022: [2026.11.11-18.27.41:376][521]LogAutomationController: Display: Test Completed. Result={Success} Name={MultipleSubmissions} Path={SkillLab.Skills.MultipleSubmissions}
+3137: [2026.11.11-18.27.41:432][524]LogAutomationController: Display: Test Completed. Result={Success} Name={ProductionRecords} Path={SkillLab.Skills.ProductionRecords}
+3239: [2026.11.11-18.27.41:465][550]LogAutomationController: Display: Test Completed. Result={Success} Name={SharedCastArbitration} Path={SkillLab.Skills.SharedCastArbitration}
+3301: [2026.11.11-18.27.41:693][564]LogAutomationController: Display: Test Completed. Result={Success} Name={SubmissionFeedbackIdentity} Path={SkillLab.Skills.SubmissionFeedbackIdentity}
+3528: [2026.11.11-18.27.41:787][567]LogAutomationController: Display: Test Completed. Result={Success} Name={SubmissionFeedbackRouting} Path={SkillLab.Skills.SubmissionFeedbackRouting}
+3667: [2026.11.11-18.27.41:826][569]LogAutomationController: Display: Test Completed. Result={Success} Name={SubmissionReconciliation} Path={SkillLab.Skills.SubmissionReconciliation}
+3724: [2026.11.11-18.27.41:859][571]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=69304 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+3786: [2026.11.11-18.27.42:970][638]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=69344 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+3801: [2026.11.11-18.27.42:971][638]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=69292 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+3820: [2026.11.11-18.27.43:003][640]LogAutomationController: Display: Test Completed. Result={Success} Name={UnconfirmedSubmission} Path={SkillLab.Skills.UnconfirmedSubmission}
+3845: [2026.11.11-18.27.43:005][641]LogAutomationCommandLine: Display: ...Automation Test Queue Empty 15 tests performed.
+3848: [2026.11.11-18.27.43:005][641]LogWindows: FPlatformMisc::RequestExitWithStatus(1, 0, FEngineLoop::Tick.GScopedTestExit)
+SOURCE: C:\Users\Administrator\AppData\Local\Temp\SkillLabCastExecutionValidation\Saved\Logs\ResetResourceFinal3Validation.log SHA256: BB47738F74E609C113FA8461FB09AE7109679F3AC47C1CCA5DBE0AE681E865B9
+1620: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1621: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1622: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1623: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1624: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1625: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1626: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1627: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1628: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1629: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1630: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1631: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+1632: [2026.11.12-12.38.16:837][  0]LogAutomationTest: Error: Condition failed
+2116: [2026.11.12-12.38.26:184][237]LogAutomationController: Display: Test Completed. Result={Success} Name={EnergyLedger} Path={SkillLab.GAS.EnergyLedger}
+2134: [2026.11.12-12.38.26:258][240]LogAutomationController: Display: Test Completed. Result={Success} Name={EnergySettlementHistory} Path={SkillLab.GAS.EnergySettlementHistory}
+2155: [2026.11.12-12.38.26:525][253]LogAutomationController: Display: Test Completed. Result={Success} Name={ResourceExecutionBoundary} Path={SkillLab.GAS.ResourceExecutionBoundary}
+2189: [2026.11.12-12.38.26:577][255]LogAutomationController: Display: Test Completed. Result={Success} Name={ResourceWriteIntegration} Path={SkillLab.GAS.ResourceWriteIntegration}
+2330: [2026.11.12-12.38.26:619][281]LogAutomationController: Display: Test Completed. Result={Success} Name={CastRequestReentry} Path={SkillLab.Skills.CastRequestReentry}
+2389: [2026.11.12-12.38.26:657][283]LogTemp: [SkillLabReset] attempt=1 generation=2 result=ResetBlockedByUnconfirmedSubmission
+2390: [2026.11.12-12.38.26:657][283]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66598 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2426: [2026.11.12-12.38.27:804][338]LogAutomationController: Display: Test Completed. Result={Success} Name={LateSubmission} Path={SkillLab.Skills.LateSubmission}
+2495: [2026.11.12-12.38.27:844][340]LogAutomationController: Display: Test Completed. Result={Success} Name={ResetResourceCompletion} Path={SkillLab.Skills.ResetResourceCompletion}
+2542: [2026.11.12-12.38.27:887][342]LogTemp: [SkillLabReset] attempt=1 generation=2 result=ResetBlockedByUnconfirmedSubmission
+2543: [2026.11.12-12.38.27:887][342]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66907 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2605: [2026.11.12-12.38.29:017][396]LogTemp: [SkillLabReset] attempt=1 generation=2 result=ResetBlockedByUnconfirmedSubmission
+2606: [2026.11.12-12.38.29:017][396]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66947 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2621: [2026.11.12-12.38.29:018][396]LogTemp: [SkillLabReset] attempt=1 generation=2 result=ResetBlockedByUnconfirmedSubmission
+2622: [2026.11.12-12.38.29:018][396]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66895 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2641: [2026.11.12-12.38.29:032][397]LogAutomationController: Display: Test Completed. Result={Success} Name={UnconfirmedSubmission} Path={SkillLab.Skills.UnconfirmedSubmission}
+2666: [2026.11.12-12.38.29:034][398]LogAutomationCommandLine: Display: ...Automation Test Queue Empty 8 tests performed.
+2670: [2026.11.12-12.38.29:049][399]LogWindows: FPlatformMisc::RequestExitWithStatus(1, 0, FEngineLoop::Tick.GScopedTestExit)
+SOURCE: C:\Users\Administrator\AppData\Local\Temp\SkillLabCastExecutionValidation\Saved\Logs\ResetEvidenceFinalValidation.log SHA256: 4835E46FC422DFA17A4EC78060D3096502B4A0C994B106C7A3F92521A059A48D
+1620: [2026.11.12-12.46.14:214][  0]LogAutomationTest: Error: Condition failed
+1621: [2026.11.12-12.46.14:214][  0]LogAutomationTest: Error: Condition failed
+1622: [2026.11.12-12.46.14:214][  0]LogAutomationTest: Error: Condition failed
+1623: [2026.11.12-12.46.14:214][  0]LogAutomationTest: Error: Condition failed
+1624: [2026.11.12-12.46.14:214][  0]LogAutomationTest: Error: Condition failed
+1625: [2026.11.12-12.46.14:214][  0]LogAutomationTest: Error: Condition failed
+1626: [2026.11.12-12.46.14:214][  0]LogAutomationTest: Error: Condition failed
+1627: [2026.11.12-12.46.14:214][  0]LogAutomationTest: Error: Condition failed
+1628: [2026.11.12-12.46.14:214][  0]LogAutomationTest: Error: Condition failed
+1629: [2026.11.12-12.46.14:214][  0]LogAutomationTest: Error: Condition failed
+1630: [2026.11.12-12.46.14:215][  0]LogAutomationTest: Error: Condition failed
+1631: [2026.11.12-12.46.14:215][  0]LogAutomationTest: Error: Condition failed
+1632: [2026.11.12-12.46.14:215][  0]LogAutomationTest: Error: Condition failed
+2170: [2026.11.12-12.46.23:497][234]LogAutomationController: Display: Test Completed. Result={Success} Name={ResetResourceCompletion} Path={SkillLab.Skills.ResetResourceCompletion}
+2195: [2026.11.12-12.46.23:511][235]LogTemp: [SkillLabReset] attempt=1 generation=2 result=ResetBlockedByUnconfirmedSubmission
+2196: [2026.11.12-12.46.23:511][235]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66285 Target=0 Success=false Reason=ResetBlockedByUnconfirmedSubmission Amount=0.00
+2202: [2026.11.12-12.46.23:544][236]LogAutomationController: Display: Test Completed. Result={Success} Name={ResetSubmissionDuringCompletion} Path={SkillLab.Skills.ResetSubmissionDuringCompletion}
+2208: [2026.11.12-12.46.23:546][236]LogAutomationCommandLine: Display: ...Automation Test Queue Empty 2 tests performed.
+2211: [2026.11.12-12.46.23:546][237]LogWindows: FPlatformMisc::RequestExitWithStatus(1, 0, FEngineLoop::Tick.GScopedTestExit)
+SOURCE: C:\Users\Administrator\AppData\Local\Temp\SkillLabCastExecutionValidation\Saved\Logs\ResetImmediateRejectedValidation.log SHA256: 6368BC28DC034F29071D2C7ACE911AC91BCA4D51FEE21E45B08CFB4257CCBCD9
+1620: [2026.11.12-12.51.39:838][  0]LogAutomationTest: Error: Condition failed
+1621: [2026.11.12-12.51.39:838][  0]LogAutomationTest: Error: Condition failed
+1622: [2026.11.12-12.51.39:838][  0]LogAutomationTest: Error: Condition failed
+1623: [2026.11.12-12.51.39:838][  0]LogAutomationTest: Error: Condition failed
+1624: [2026.11.12-12.51.39:838][  0]LogAutomationTest: Error: Condition failed
+1625: [2026.11.12-12.51.39:838][  0]LogAutomationTest: Error: Condition failed
+1626: [2026.11.12-12.51.39:838][  0]LogAutomationTest: Error: Condition failed
+1627: [2026.11.12-12.51.39:838][  0]LogAutomationTest: Error: Condition failed
+1628: [2026.11.12-12.51.39:839][  0]LogAutomationTest: Error: Condition failed
+1629: [2026.11.12-12.51.39:839][  0]LogAutomationTest: Error: Condition failed
+1630: [2026.11.12-12.51.39:839][  0]LogAutomationTest: Error: Condition failed
+1631: [2026.11.12-12.51.39:839][  0]LogAutomationTest: Error: Condition failed
+1632: [2026.11.12-12.51.39:839][  0]LogAutomationTest: Error: Condition failed
+2132: [2026.11.12-12.51.49:109][234]LogTemp: [SkillLabReset] attempt=1 generation=2 result=ResetResourceChangeRejected
+2133: [2026.11.12-12.51.49:109][234]LogTemp: [SkillLabSkills] Event=0 Skill=None Request=0 Cast=0 Source=66124 Target=0 Success=false Reason=ResetResourceChangeRejected Amount=0.00
+2183: [2026.11.12-12.51.49:145][236]LogAutomationController: Display: Test Completed. Result={Success} Name={ResetResourceCompletion} Path={SkillLab.Skills.ResetResourceCompletion}
+2194: [2026.11.12-12.51.49:147][237]LogAutomationCommandLine: Display: ...Automation Test Queue Empty 1 tests performed.
+2197: [2026.11.12-12.51.49:147][237]LogWindows: FPlatformMisc::RequestExitWithStatus(1, 0, FEngineLoop::Tick.GScopedTestExit)
+SOURCE: C:\Users\Administrator\AppData\Local\Temp\SkillLabCastExecutionValidation\Saved\Logs\FinalProductionRuntimeProbe.log SHA256: E7710BE5158CD351E945A470D819CB6C636A096F969A88AF8CE7D539E4B6EF96
+33: LogCsvProfiler: Display: Metadata set : commandline="" C:/Users/Administrator/AppData/Local/Temp/SkillLabCastExecutionValidation/SkillLab.uproject -game -nullrhi -unattended -nosplash -nosound -nop4 -SkillLabRuntimeProbe -abslog=C:/Users/Administrator/AppData/Local/Temp/SkillLabCastExecutionValidation/Saved/Logs/FinalProductionRuntimeProbe.log""
+478: LogInit: Command Line: -nullrhi -unattended -nosplash -nosound -nop4 -SkillLabRuntimeProbe -abslog=C:/Users/Administrator/AppData/Local/Temp/SkillLabCastExecutionValidation/Saved/Logs/FinalProductionRuntimeProbe.log -game
+1512: [2026.11.12-12.57.22:187][  0]LogTemp: [SkillLabRuntimeProbe] START target=SkillLabCharacter_0
+1513: [2026.11.12-12.57.22:187][  0]LogTemp: Warning: [SkillLabRuntimeProbe] SAMPLE label=Idle anim=null
+1514: [2026.11.12-12.57.22:188][  0]LogTemp: [SkillLabRuntimeProbe] EVENT skill=None event=10 success=true reason=Initialized cast=0 requested=0.0 actual=0.0 health=0.0->0.0 energy=100.0 cooldown=0.00 stage=0
+1577: [2026.11.12-12.57.23:372][985]LogTemp: Warning: [SkillLabRuntimeProbe] SAMPLE label=MovingForward anim=null
+1578: [2026.11.12-12.57.24:565][843]LogTemp: Warning: [SkillLabRuntimeProbe] SAMPLE label=MovingRight anim=null
+1579: [2026.11.12-12.57.25:364][960]LogTemp: Warning: [SkillLabRuntimeProbe] SAMPLE label=Stopped anim=null
+1583: [2026.11.12-12.57.26:139][415]LogTemp: Warning: [SkillLabRuntimeProbe] SAMPLE label=StoppedRecovered anim=null
+1584: [2026.11.12-12.57.26:531][137]LogTemp: Warning: [SkillLabRuntimeProbe] SAMPLE label=JumpRequested anim=null
+1588: [2026.11.12-12.57.27:027][872]LogTemp: Warning: [SkillLabRuntimeProbe] SAMPLE label=Airborne anim=null
+1595: [2026.11.12-12.57.28:323][777]LogTemp: Warning: [SkillLabRuntimeProbe] SAMPLE label=Landed anim=null
+1597: [2026.11.12-12.57.28:839][488]LogTemp: [SkillLabAnimation] Cast=1 Generation=1 Montage=AM_Skill_Fireball Instance=0 Group=DefaultGroup
+1598: [2026.11.12-12.57.28:839][488]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Fireball event=1 success=true reason=None cast=1 requested=0.0 actual=0.0 health=0.0->0.0 energy=100.0 cooldown=0.00 stage=1
+1600: [2026.11.12-12.57.28:839][488]LogTemp: [SkillLabRuntimeProbe] REQUEST skill=Skill_Fireball success=true reason=None request=1 cast=1 energy=100.0 cooldown=0.00 stage=1
+1602: [2026.11.12-12.57.29:190][991]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Fireball event=3 success=true reason=None cast=1 requested=0.0 actual=0.0 health=0.0->0.0 energy=100.0 cooldown=0.00 stage=2
+1605: [2026.11.12-12.57.29:190][991]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Fireball event=2 success=true reason=None cast=1 requested=0.0 actual=0.0 health=0.0->0.0 energy=100.0 cooldown=0.00 stage=2
+1609: [2026.11.12-12.57.29:190][991]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Fireball event=11 success=true reason=SubmissionCommitted cast=1 requested=0.0 actual=0.0 health=0.0->0.0 energy=90.0 cooldown=1.00 stage=2
+1612: [2026.11.12-12.57.29:279][100]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Fireball event=4 success=true reason=None cast=1 requested=30.0 actual=40.0 health=100.0->60.0 energy=90.0 cooldown=0.91 stage=2
+1615: [2026.11.12-12.57.29:279][100]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Fireball event=6 success=true reason=None cast=1 requested=30.0 actual=40.0 health=100.0->60.0 energy=90.0 cooldown=0.91 stage=2
+1618: [2026.11.12-12.57.29:279][100]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Fireball event=3 success=true reason=None cast=1 requested=0.0 actual=0.0 health=0.0->0.0 energy=90.0 cooldown=0.91 stage=3
+1620: [2026.11.12-12.57.29:480][394]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Fireball event=10 success=true reason=EffectApplied cast=1 requested=0.0 actual=0.0 health=0.0->0.0 energy=90.0 cooldown=0.71 stage=0
+1623: [2026.11.12-12.57.30:824][531]LogTemp: [SkillLabAnimation] Cast=2 Generation=1 Montage=AM_Skill_AreaBurst Instance=1 Group=DefaultGroup
+1624: [2026.11.12-12.57.30:824][531]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_AreaBurst event=1 success=true reason=None cast=2 requested=0.0 actual=0.0 health=0.0->0.0 energy=90.0 cooldown=0.00 stage=1
+1626: [2026.11.12-12.57.30:824][531]LogTemp: [SkillLabRuntimeProbe] REQUEST skill=Skill_AreaBurst success=true reason=None request=2 cast=2 energy=90.0 cooldown=0.00 stage=1
+1634: [2026.11.12-12.57.32:005][484]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_AreaBurst event=3 success=true reason=None cast=2 requested=0.0 actual=0.0 health=0.0->0.0 energy=90.0 cooldown=0.00 stage=2
+1637: [2026.11.12-12.57.32:007][484]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_AreaBurst event=2 success=true reason=None cast=2 requested=0.0 actual=0.0 health=0.0->0.0 energy=90.0 cooldown=0.00 stage=2
+1642: [2026.11.12-12.57.32:008][484]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_AreaBurst event=4 success=true reason=None cast=2 requested=20.0 actual=25.0 health=60.0->35.0 energy=90.0 cooldown=0.00 stage=2
+1645: [2026.11.12-12.57.32:008][484]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_AreaBurst event=6 success=true reason=DamageApplied cast=2 requested=20.0 actual=25.0 health=60.0->35.0 energy=90.0 cooldown=0.00 stage=2
+1647: [2026.11.12-12.57.32:008][484]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_AreaBurst event=11 success=true reason=SubmissionCommitted cast=2 requested=0.0 actual=0.0 health=0.0->0.0 energy=70.0 cooldown=3.00 stage=2
+1650: [2026.11.12-12.57.32:008][484]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_AreaBurst event=3 success=true reason=None cast=2 requested=0.0 actual=0.0 health=0.0->0.0 energy=70.0 cooldown=3.00 stage=3
+1658: [2026.11.12-12.57.32:636][518]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_AreaBurst event=10 success=true reason=EffectApplied cast=2 requested=0.0 actual=0.0 health=0.0->0.0 energy=70.0 cooldown=2.37 stage=0
+1661: [2026.11.12-12.57.32:816][800]LogTemp: [SkillLabAnimation] Cast=3 Generation=1 Montage=AM_Skill_Mend Instance=2 Group=DefaultGroup
+1662: [2026.11.12-12.57.32:816][800]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Mend event=1 success=true reason=None cast=3 requested=0.0 actual=0.0 health=0.0->0.0 energy=70.0 cooldown=0.00 stage=1
+1664: [2026.11.12-12.57.32:816][800]LogTemp: [SkillLabRuntimeProbe] REQUEST skill=Skill_Mend success=true reason=None request=3 cast=3 energy=70.0 cooldown=0.00 stage=1
+1672: [2026.11.12-12.57.33:299][601]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Mend event=3 success=true reason=None cast=3 requested=0.0 actual=0.0 health=0.0->0.0 energy=70.0 cooldown=0.00 stage=2
+1675: [2026.11.12-12.57.33:299][601]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Mend event=2 success=true reason=None cast=3 requested=0.0 actual=0.0 health=0.0->0.0 energy=70.0 cooldown=0.00 stage=2
+1679: [2026.11.12-12.57.33:299][601]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Mend event=4 success=true reason=None cast=3 requested=40.0 actual=0.0 health=100.0->100.0 energy=70.0 cooldown=0.00 stage=2
+1682: [2026.11.12-12.57.33:299][601]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Mend event=6 success=true reason=HealingApplied cast=3 requested=40.0 actual=0.0 health=100.0->100.0 energy=70.0 cooldown=0.00 stage=2
+1684: [2026.11.12-12.57.33:299][601]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Mend event=11 success=true reason=SubmissionCommitted cast=3 requested=0.0 actual=0.0 health=0.0->0.0 energy=55.0 cooldown=2.00 stage=2
+1687: [2026.11.12-12.57.33:299][601]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Mend event=3 success=true reason=None cast=3 requested=0.0 actual=0.0 health=0.0->0.0 energy=55.0 cooldown=2.00 stage=3
+1695: [2026.11.12-12.57.33:796][420]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Mend event=10 success=true reason=HealingApplied cast=3 requested=0.0 actual=0.0 health=0.0->0.0 energy=55.0 cooldown=1.50 stage=0
+1698: [2026.11.12-12.57.34:802][ 95]LogTemp: [SkillLabAnimation] Cast=4 Generation=1 Montage=AM_Skill_BurningBuff Instance=3 Group=DefaultGroup
+1699: [2026.11.12-12.57.34:802][ 95]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=1 success=true reason=None cast=4 requested=0.0 actual=0.0 health=0.0->0.0 energy=55.0 cooldown=0.00 stage=1
+1701: [2026.11.12-12.57.34:802][ 95]LogTemp: [SkillLabRuntimeProbe] REQUEST skill=Skill_BurningBuff success=true reason=None request=4 cast=4 energy=55.0 cooldown=0.00 stage=1
+1712: [2026.11.12-12.57.35:318][909]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=3 success=true reason=None cast=4 requested=0.0 actual=0.0 health=0.0->0.0 energy=55.0 cooldown=0.00 stage=2
+1715: [2026.11.12-12.57.35:318][909]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=2 success=true reason=None cast=4 requested=0.0 actual=0.0 health=0.0->0.0 energy=55.0 cooldown=0.00 stage=2
+1719: [2026.11.12-12.57.35:320][909]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=4 success=true reason=None cast=4 requested=6.0 actual=0.0 health=35.0->35.0 energy=55.0 cooldown=0.00 stage=2
+1722: [2026.11.12-12.57.35:320][909]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=6 success=true reason=DamageOverTimeApplied cast=4 requested=6.0 actual=0.0 health=35.0->35.0 energy=55.0 cooldown=0.00 stage=2
+1725: [2026.11.12-12.57.35:320][909]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=7 success=true reason=BurningStarted cast=4 requested=6.0 actual=0.0 health=35.0->35.0 energy=55.0 cooldown=0.00 stage=2
+1727: [2026.11.12-12.57.35:320][909]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=11 success=true reason=SubmissionCommitted cast=4 requested=0.0 actual=0.0 health=0.0->0.0 energy=45.0 cooldown=2.00 stage=2
+1730: [2026.11.12-12.57.35:321][909]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=3 success=true reason=None cast=4 requested=0.0 actual=0.0 health=0.0->0.0 energy=45.0 cooldown=2.00 stage=3
+1733: [2026.11.12-12.57.35:322][909]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=5 success=true reason=PeriodicDamageApplied cast=4 requested=8.0 actual=8.0 health=35.0->27.0 energy=45.0 cooldown=2.00 stage=3
+1738: [2026.11.12-12.57.35:783][627]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=10 success=true reason=BurningStarted cast=4 requested=0.0 actual=0.0 health=0.0->0.0 energy=45.0 cooldown=1.53 stage=0
+1740: [2026.11.12-12.57.36:278][416]LogTemp: [SkillLabAnimation] Cast=5 Generation=1 Montage=AM_Skill_Fireball Instance=4 Group=DefaultGroup
+1741: [2026.11.12-12.57.36:278][416]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Fireball event=1 success=true reason=None cast=5 requested=0.0 actual=0.0 health=0.0->0.0 energy=45.0 cooldown=0.00 stage=1
+1743: [2026.11.12-12.57.36:278][416]LogTemp: [SkillLabRuntimeProbe] REQUEST skill=Skill_Fireball success=true reason=None request=5 cast=5 energy=45.0 cooldown=0.00 stage=1
+1744: [2026.11.12-12.57.36:278][416]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_Fireball event=9 success=false reason=RuntimeProbeCancel cast=5 requested=0.0 actual=0.0 health=0.0->0.0 energy=45.0 cooldown=0.00 stage=0
+1747: [2026.11.12-12.57.36:313][468]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=5 success=true reason=PeriodicDamageApplied cast=4 requested=8.0 actual=8.0 health=27.0->19.0 energy=45.0 cooldown=1.00 stage=0
+1750: [2026.11.12-12.57.37:312][893]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=5 success=true reason=PeriodicDamageApplied cast=4 requested=8.0 actual=8.0 health=19.0->11.0 energy=45.0 cooldown=0.00 stage=0
+1753: [2026.11.12-12.57.37:774][626]LogTemp: [SkillLabRuntimeProbe] EVENT skill=Skill_BurningBuff event=8 success=true reason=EffectTrackingCleared cast=4 requested=6.0 actual=0.0 health=35.0->35.0 energy=45.0 cooldown=0.00 stage=0
+1757: [2026.11.12-12.57.37:774][626]LogTemp: [SkillLabRuntimeProbe] RESET energy=100.0 stage=0 fireballCooldown=0.00
+1758: [2026.11.12-12.57.39:259][138]LogTemp: [SkillLabRuntimeProbe] COMPLETE
+1760: [2026.11.12-12.57.39:259][138]LogWindows: FPlatformMisc::RequestExitWithStatus(0, 0, <NoCallSiteInfo>)
+SOURCE: C:\Users\Administrator\AppData\Local\Temp\SkillLabCastExecutionValidation\Saved\Logs\CastCE1BeforeValidation2.log SHA256: 5608A84A6F3E83829C3C66E8801AC8FD73B271CC6FDC8BA798304CA598C53212
+1620: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1621: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1622: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1623: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1624: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1625: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1626: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1627: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1628: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1629: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1630: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1631: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+1632: [2026.11.11-18.23.56:630][  0]LogAutomationTest: Error: Condition failed
+2203: [2026.11.11-18.24.05:469][319]LogAutomationController: Error: Test Completed. Result={Fail} Name={CastRequestReentry} Path={SkillLab.Skills.CastRequestReentry}
+2232: [2026.11.11-18.24.05:470][319]LogAutomationCommandLine: Display: ...Automation Test Queue Empty 1 tests performed.
+2235: [2026.11.11-18.24.05:470][320]LogWindows: FPlatformMisc::RequestExitWithStatus(1, 0, FEngineLoop::Tick.GScopedTestExit)
+SOURCE: C:\Users\Administrator\AppData\Local\Temp\SkillLabCastExecutionValidation\Saved\Logs\ResetImmediateRejectedBuild.log SHA256: 89A88F5FBFE9BB637D619D1E8522ECAD81B5B2878EBA73F966D8D85AFE4FCE9A
+108: Result: Succeeded
+SOURCE: C:\Users\Administrator\AppData\Local\Temp\SkillLabCastExecutionValidation\Saved\Logs\CastCE1FinalBuild.log SHA256: 6316F579CD9F03118A051BF5C1B6B091721433A4A9B87006D8FFFCA09D149362
+28: Result: Succeeded
+SOURCE: E:/agent/game/ue/SkillLab/Saved/Logs/HUDInputRegression_UserSession_20261112.log SHA256: 2ED9B87285E81A3E5B886CA031C2719E436A905C6688F848130C7B7CE7ED40A7
+1641: [2026.11.12-13.30.07:537][  0]LogSemanticSearch: Loaded saved index from E:/agent/game/ue/SkillLab/Saved/SemanticSearch/SearchIndex.bin (vector: 0, BM25: 0, hashes: 0)
+1732: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1733: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1734: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1735: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1736: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1737: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1738: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1739: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1740: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1741: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1742: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1743: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1744: [2026.11.12-13.30.08:115][  0]LogAutomationTest: Error: Condition failed
+1830: [2026.11.12-13.30.09:201][  0]LogSourceControl: Display: Uncontrolled Changelist persistency file loaded E:/agent/game/ue/SkillLab/Saved/SourceControl/UncontrolledChangelists.json
+2165: 		NumShaderSlotsPerGeometrySegment changed: current: 1 - new: 2
+2347: [2026.11.12-13.30.18:756][175]LogTemp: Error: [SkillLabSkills] Definition load rejected: unknown catalog field 'combatRules'; previous definitions retained
+2377: 		NumShaderSlotsPerGeometrySegment changed: current: 1 - new: 2
+2389: [2026.11.12-13.30.23:482][447]LogTemp: [SkillLabInput] KeyPressed key=One slots=4 skillInput=SkillInput
+2390: [2026.11.12-13.30.23:482][447]LogTemp: [SkillLabInput] ActivateSlot index=0 slots=4 skillInput=SkillInput
+2391: [2026.11.12-13.30.23:482][447]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Fireball from slot=0
+2394: [2026.11.12-13.30.24:148][487]LogTemp: [SkillLabInput] KeyPressed key=One slots=4 skillInput=SkillInput
+2395: [2026.11.12-13.30.24:148][487]LogTemp: [SkillLabInput] ActivateSlot index=0 slots=4 skillInput=SkillInput
+2396: [2026.11.12-13.30.24:148][487]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Fireball from slot=0
+2399: [2026.11.12-13.30.24:364][500]LogTemp: [SkillLabInput] KeyPressed key=One slots=4 skillInput=SkillInput
+2400: [2026.11.12-13.30.24:364][500]LogTemp: [SkillLabInput] ActivateSlot index=0 slots=4 skillInput=SkillInput
+2401: [2026.11.12-13.30.24:364][500]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Fireball from slot=0
+2404: [2026.11.12-13.30.24:681][519]LogTemp: [SkillLabInput] KeyPressed key=Two slots=4 skillInput=SkillInput
+2405: [2026.11.12-13.30.24:681][519]LogTemp: [SkillLabInput] ActivateSlot index=1 slots=4 skillInput=SkillInput
+2406: [2026.11.12-13.30.24:681][519]LogTemp: [SkillLabInput] BeginSkill skill=Skill_AreaBurst from slot=1
+2415: [2026.11.12-13.30.26:181][609]LogTemp: [SkillLabInput] KeyPressed key=Two slots=4 skillInput=SkillInput
+2416: [2026.11.12-13.30.26:181][609]LogTemp: [SkillLabInput] ActivateSlot index=1 slots=4 skillInput=SkillInput
+2417: [2026.11.12-13.30.26:181][609]LogTemp: [SkillLabInput] BeginSkill skill=Skill_AreaBurst from slot=1
+2420: [2026.11.12-13.30.26:432][624]LogTemp: [SkillLabInput] KeyPressed key=Two slots=4 skillInput=SkillInput
+2421: [2026.11.12-13.30.26:432][624]LogTemp: [SkillLabInput] ActivateSlot index=1 slots=4 skillInput=SkillInput
+2422: [2026.11.12-13.30.26:432][624]LogTemp: [SkillLabInput] BeginSkill skill=Skill_AreaBurst from slot=1
+2425: [2026.11.12-13.30.26:931][654]LogTemp: [SkillLabInput] KeyPressed key=One slots=4 skillInput=SkillInput
+2426: [2026.11.12-13.30.26:931][654]LogTemp: [SkillLabInput] ActivateSlot index=0 slots=4 skillInput=SkillInput
+2427: [2026.11.12-13.30.26:931][654]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Fireball from slot=0
+2433: [2026.11.12-13.30.27:115][665]LogTemp: [SkillLabInput] KeyPressed key=One slots=4 skillInput=SkillInput
+2434: [2026.11.12-13.30.27:115][665]LogTemp: [SkillLabInput] ActivateSlot index=0 slots=4 skillInput=SkillInput
+2435: [2026.11.12-13.30.27:115][665]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Fireball from slot=0
+2438: [2026.11.12-13.30.27:365][680]LogTemp: [SkillLabInput] KeyPressed key=One slots=4 skillInput=SkillInput
+2439: [2026.11.12-13.30.27:365][680]LogTemp: [SkillLabInput] ActivateSlot index=0 slots=4 skillInput=SkillInput
+2440: [2026.11.12-13.30.27:365][680]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Fireball from slot=0
+2443: [2026.11.12-13.30.27:665][698]LogTemp: [SkillLabInput] KeyPressed key=Three slots=4 skillInput=SkillInput
+2444: [2026.11.12-13.30.27:665][698]LogTemp: [SkillLabInput] ActivateSlot index=2 slots=4 skillInput=SkillInput
+2445: [2026.11.12-13.30.27:665][698]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Mend from slot=2
+2448: [2026.11.12-13.30.27:864][710]LogTemp: [SkillLabInput] KeyPressed key=Three slots=4 skillInput=SkillInput
+2449: [2026.11.12-13.30.27:864][710]LogTemp: [SkillLabInput] ActivateSlot index=2 slots=4 skillInput=SkillInput
+2450: [2026.11.12-13.30.27:864][710]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Mend from slot=2
+2459: [2026.11.12-13.30.28:131][726]LogTemp: [SkillLabInput] KeyPressed key=Four slots=4 skillInput=SkillInput
+2460: [2026.11.12-13.30.28:131][726]LogTemp: [SkillLabInput] ActivateSlot index=3 slots=4 skillInput=SkillInput
+2461: [2026.11.12-13.30.28:131][726]LogTemp: [SkillLabInput] BeginSkill skill=Skill_BurningBuff from slot=3
+2464: [2026.11.12-13.30.28:364][740]LogTemp: [SkillLabInput] KeyPressed key=Four slots=4 skillInput=SkillInput
+2465: [2026.11.12-13.30.28:364][740]LogTemp: [SkillLabInput] ActivateSlot index=3 slots=4 skillInput=SkillInput
+2466: [2026.11.12-13.30.28:364][740]LogTemp: [SkillLabInput] BeginSkill skill=Skill_BurningBuff from slot=3
+2475: [2026.11.12-13.30.29:464][806]LogTemp: [SkillLabInput] KeyPressed key=One slots=4 skillInput=SkillInput
+2476: [2026.11.12-13.30.29:465][806]LogTemp: [SkillLabInput] ActivateSlot index=0 slots=4 skillInput=SkillInput
+2477: [2026.11.12-13.30.29:465][806]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Fireball from slot=0
+2480: [2026.11.12-13.30.29:698][820]LogTemp: [SkillLabInput] KeyPressed key=One slots=4 skillInput=SkillInput
+2481: [2026.11.12-13.30.29:698][820]LogTemp: [SkillLabInput] ActivateSlot index=0 slots=4 skillInput=SkillInput
+2482: [2026.11.12-13.30.29:698][820]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Fireball from slot=0
+2485: [2026.11.12-13.30.29:764][824]LogTemp: [SkillLabInput] KeyPressed key=Two slots=4 skillInput=SkillInput
+2486: [2026.11.12-13.30.29:764][824]LogTemp: [SkillLabInput] ActivateSlot index=1 slots=4 skillInput=SkillInput
+2487: [2026.11.12-13.30.29:764][824]LogTemp: [SkillLabInput] BeginSkill skill=Skill_AreaBurst from slot=1
+2490: [2026.11.12-13.30.29:798][826]LogTemp: [SkillLabInput] KeyPressed key=Three slots=4 skillInput=SkillInput
+2491: [2026.11.12-13.30.29:798][826]LogTemp: [SkillLabInput] ActivateSlot index=2 slots=4 skillInput=SkillInput
+2492: [2026.11.12-13.30.29:798][826]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Mend from slot=2
+2501: [2026.11.12-13.30.30:031][840]LogTemp: [SkillLabInput] KeyPressed key=Two slots=4 skillInput=SkillInput
+2502: [2026.11.12-13.30.30:031][840]LogTemp: [SkillLabInput] ActivateSlot index=1 slots=4 skillInput=SkillInput
+2503: [2026.11.12-13.30.30:031][840]LogTemp: [SkillLabInput] BeginSkill skill=Skill_AreaBurst from slot=1
+2506: [2026.11.12-13.30.30:082][843]LogTemp: [SkillLabInput] KeyPressed key=Four slots=4 skillInput=SkillInput
+2507: [2026.11.12-13.30.30:082][843]LogTemp: [SkillLabInput] ActivateSlot index=3 slots=4 skillInput=SkillInput
+2508: [2026.11.12-13.30.30:082][843]LogTemp: [SkillLabInput] BeginSkill skill=Skill_BurningBuff from slot=3
+2517: [2026.11.12-13.30.30:349][859]LogTemp: [SkillLabInput] KeyPressed key=Two slots=4 skillInput=SkillInput
+2518: [2026.11.12-13.30.30:349][859]LogTemp: [SkillLabInput] ActivateSlot index=1 slots=4 skillInput=SkillInput
+2519: [2026.11.12-13.30.30:349][859]LogTemp: [SkillLabInput] BeginSkill skill=Skill_AreaBurst from slot=1
+2522: [2026.11.12-13.30.30:349][859]LogTemp: [SkillLabInput] KeyPressed key=One slots=4 skillInput=SkillInput
+2523: [2026.11.12-13.30.30:349][859]LogTemp: [SkillLabInput] ActivateSlot index=0 slots=4 skillInput=SkillInput
+2524: [2026.11.12-13.30.30:349][859]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Fireball from slot=0
+2533: [2026.11.12-13.30.30:548][871]LogTemp: [SkillLabInput] KeyPressed key=Four slots=4 skillInput=SkillInput
+2534: [2026.11.12-13.30.30:548][871]LogTemp: [SkillLabInput] ActivateSlot index=3 slots=4 skillInput=SkillInput
+2535: [2026.11.12-13.30.30:548][871]LogTemp: [SkillLabInput] BeginSkill skill=Skill_BurningBuff from slot=3
+SOURCE: E:/agent/game/ue/SkillLab/Saved/Logs/HUDInputDeliveryBuild.log SHA256: 11013F1A8D031982D5AF6213CBA98E2556C9747070E501103736EBE2BCF55F5F
+256: Result: Succeeded
+SOURCE: E:/agent/game/ue/SkillLab/Saved/Logs/HUDInputDeliveryGame.log SHA256: 91D123190A4D372FC0037D83C96D00C9D7B5D00474967B0D906A542708731C01
+1708: [2026.11.12-14.09.41:963][  0]LogTemp: [SkillLabHUD] Snapshot HP=100/100 Energy=100/100 Skills=4
+1772: [2026.11.12-14.13.37:309][435]LogTemp: [SkillLabInput] KeyPressed key=Three slots=4 skillInput=SkillInput
+1773: [2026.11.12-14.13.37:309][435]LogTemp: [SkillLabInput] ActivateSlot index=2 slots=4 skillInput=SkillInput
+1774: [2026.11.12-14.13.37:309][435]LogTemp: [SkillLabInput] BeginSkill skill=Skill_Mend from slot=2
+1777: [2026.11.12-14.13.37:321][435]LogTemp: [SkillLabAnimation] Cast=1 Generation=1 Montage=AM_Skill_Mend Instance=0 Group=DefaultGroup
+1798: [2026.11.12-14.14.22:462][124]LogTemp: [SkillLabInput] KeyPressed key=Two slots=4 skillInput=SkillInput
+1799: [2026.11.12-14.14.22:462][124]LogTemp: [SkillLabInput] ActivateSlot index=1 slots=4 skillInput=SkillInput
+1800: [2026.11.12-14.14.22:462][124]LogTemp: [SkillLabInput] BeginSkill skill=Skill_AreaBurst from slot=1
+1829: [2026.11.12-14.14.51:799][273]LogWindows: FPlatformMisc::RequestExitWithStatus(0, 0, UGameEngine::Tick.ViewportClosed)

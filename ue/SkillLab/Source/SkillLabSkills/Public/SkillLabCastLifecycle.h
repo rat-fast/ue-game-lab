@@ -32,6 +32,18 @@ struct SKILLLABSKILLS_API FSkillLabCastPhaseToken
 	}
 };
 
+/** Stable for the lifetime of a cast, unlike a phase callback token. */
+struct SKILLLABSKILLS_API FSkillLabCastToken
+{
+	std::uint64_t CastId = 0;
+	std::uint64_t Generation = 0;
+	bool IsValid() const { return CastId != 0 && Generation != 0; }
+	friend bool operator==(const FSkillLabCastToken& A, const FSkillLabCastToken& B)
+	{
+		return A.CastId == B.CastId && A.Generation == B.Generation;
+	}
+};
+
 /**
  * Small, UObject-free cast state machine shared by skill behaviours.
  *
@@ -112,6 +124,15 @@ public:
 	bool TryMarkRelease(const FSkillLabCastPhaseToken& Token);
 	/** Marks one named submission identity once for this Cast. */
 	bool TryMarkSubmissionPoint(const FSkillLabCastPhaseToken& Token, std::uint64_t SubmissionPointId);
+	bool BeginSubmission(const FSkillLabCastToken& Token, std::uint64_t SubmissionPointId);
+	bool ResolveSubmission(const FSkillLabCastToken& Token, std::uint64_t SubmissionPointId, bool bSucceeded);
+
+	/** Window identifiers are defined by content; zero is reserved. */
+	bool OpenWindow(const FSkillLabCastToken& Token, std::uint64_t WindowId);
+	bool CloseWindow(const FSkillLabCastToken& Token, std::uint64_t WindowId);
+	bool IsWindowOpen(const FSkillLabCastToken& Token, std::uint64_t WindowId) const;
+	bool IsCastTokenCurrent(const FSkillLabCastToken& Token) const;
+	const FSkillLabCastToken& GetCastToken() const { return CastToken; }
 
 	bool IsTokenCurrent(const FSkillLabCastPhaseToken& Token) const;
 	EStage GetStage() const { return Stage; }
@@ -131,5 +152,8 @@ private:
 	double StageStartedAt = 0.0;
 	bool bHasReleased = false;
 	std::unordered_set<std::uint64_t> CommittedSubmissionPoints;
+	std::unordered_set<std::uint64_t> PendingSubmissionPoints;
+	std::unordered_set<std::uint64_t> OpenWindows;
+	FSkillLabCastToken CastToken;
 	FSkillLabCastPhaseToken PhaseToken;
 };

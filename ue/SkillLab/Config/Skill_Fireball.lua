@@ -1,4 +1,4 @@
-SkillLabSkill_Define("targetShape", "Unit", "relation", "Enemy", "effect", "Damage", "execution", "Projectile")
+SkillLabSkill_Define("targetShape", "Unit", "relation", "Enemy", "effect", "Damage", "execution", "Projectile", "combatRules", "Standard", "recoveryRules", "StandardRecovery")
 
 function OnSkillCast(context)
     local result = SkillLabSkill_RequestAction()

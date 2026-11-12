@@ -1,0 +1,50 @@
+{
+  "Time": "2026-11-13T00:03:51.4388738+08:00",
+  "HEAD": "803d1c7699c2639ba4bc72d36cb84874e73f89f7",
+  "StagedPaths": [],
+  "CurrentTrackedModified": 49,
+  "RecheckedRelevantFiles": 113,
+  "ChangesSinceStart": [],
+  "Documents": [
+    {
+      "Bytes": 31945,
+      "SHA256": "123A63F5CD607096A697E57014DC3AE9D29701B7E45017339F968AF1640CB9D4",
+      "Path": "E:/agent/game/docs/Investigations/SkillLab/2026-11-12/CodeInvestigation.md"
+    },
+    {
+      "Bytes": 23577,
+      "SHA256": "6269D09DAC685E48DF559E650E0F669274B377C0CBFD37A277FF41625396FC56",
+      "Path": "E:/agent/game/docs/Investigations/SkillLab/2026-11-12/CodeInvestigationFollowup.md"
+    },
+    {
+      "Bytes": 20938,
+      "SHA256": "5EB99DEA6043B8B773EBC337285604DE6B52A564C74D317513EE158EDDB3D069",
+      "Path": "E:/agent/game/docs/Investigations/SkillLab/2026-11-12/CodeQualityGateAudit.md"
+    },
+    {
+      "Bytes": 47973,
+      "SHA256": "6048BB31CCC503FD0E4EBFE189CF983303E150DB18FFFA59BCF76B29EF5CEE24",
+      "Path": "E:/agent/game/docs/Investigations/SkillLab/2026-11-12/CodeQualityGateAuditEvidence.txt"
+    }
+  ],
+  "QualityGateInputs": [
+    {
+      "Path": "E:/agent/game/ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/Batches/SkillCombatRulesCompletion/TimingRulesHandoff.md",
+      "SHA256": "C9F7C0F9A1C09EE10452ED431FC42DFA0A16BD113CD182BAC9CC819FE1A893D5"
+    },
+    {
+      "Path": "E:/agent/game/ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/Batches/SkillCombatRulesCompletion/SubmissionEffectsHandoff.md",
+      "SHA256": "C9D83A38EF1EF266130FF9D4CBDDFDB41C44CB36E1F2A24BF8FC64496C22AD78"
+    },
+    {
+      "Path": "E:/agent/game/ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/Batches/SkillCombatRulesCompletion/VerificationHandoff.md",
+      "SHA256": "F3BDC5320B217F3015D963A934B78015A51AF3273A91B72EAB9C6BB252FF795D"
+    },
+    {
+      "Path": "E:/agent/game/ue/SkillLab/Docs/ProgramWorkflow/SkillSystem/Batches/SkillCombatRulesCompletion/CastExecutionReview.md",
+      "SHA256": "9F9B2DAFDFC1B8C98FFA303EC3EE5CDD5E23844E670B6BCA2CAE8E5A2A4A6556"
+    }
+  ],
+  "NoBuildOrTestRun": true,
+  "NoExistingFileEdits": true
+}

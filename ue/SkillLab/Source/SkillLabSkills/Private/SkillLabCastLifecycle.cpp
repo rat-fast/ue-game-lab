@@ -36,9 +36,12 @@ bool FSkillLabCastLifecycle::Begin(const std::uint64_t NewCastId, const FConfig&
 		++Generation;
 	}
 	PhaseToken = {CastId, Generation};
+	CastToken = {CastId, Generation};
 	StageStartedAt = NowSeconds;
 	bHasReleased = false;
 	CommittedSubmissionPoints.clear();
+	PendingSubmissionPoints.clear();
+	OpenWindows.clear();
 	Stage = EStage::Windup;
 	return true;
 }
@@ -55,6 +58,7 @@ bool FSkillLabCastLifecycle::AdvanceTo(const EStage NewStage, const double NowSe
 		return false;
 	}
 	Stage = NewStage;
+	if (IsTerminal()) { OpenWindows.clear(); PendingSubmissionPoints.clear(); }
 	StageStartedAt = NowSeconds;
 	++Generation;
 	if (Generation == 0)
@@ -180,11 +184,45 @@ bool FSkillLabCastLifecycle::TryMarkRelease(const FSkillLabCastPhaseToken& Token
 bool FSkillLabCastLifecycle::TryMarkSubmissionPoint(const FSkillLabCastPhaseToken& Token,
 	const std::uint64_t SubmissionPointId)
 {
-	if (!IsTokenCurrent(Token) || Stage != EStage::Active || SubmissionPointId == 0)
+	if (!IsTokenCurrent(Token) || Stage != EStage::Active || SubmissionPointId == 0 || PendingSubmissionPoints.count(SubmissionPointId) != 0)
 	{
 		return false;
 	}
 	return CommittedSubmissionPoints.insert(SubmissionPointId).second;
+}
+
+bool FSkillLabCastLifecycle::IsCastTokenCurrent(const FSkillLabCastToken& Token) const
+{
+	return Token.IsValid() && Token == CastToken && !IsTerminal() && Stage != EStage::Idle;
+}
+
+bool FSkillLabCastLifecycle::BeginSubmission(const FSkillLabCastToken& Token, const std::uint64_t SubmissionPointId)
+{
+	return IsCastTokenCurrent(Token) && Stage == EStage::Active && SubmissionPointId != 0
+		&& CommittedSubmissionPoints.count(SubmissionPointId) == 0
+		&& PendingSubmissionPoints.insert(SubmissionPointId).second;
+}
+
+bool FSkillLabCastLifecycle::ResolveSubmission(const FSkillLabCastToken& Token, const std::uint64_t SubmissionPointId, const bool bSucceeded)
+{
+	if (!IsCastTokenCurrent(Token) || PendingSubmissionPoints.erase(SubmissionPointId) == 0) return false;
+	if (bSucceeded) CommittedSubmissionPoints.insert(SubmissionPointId);
+	return true;
+}
+
+bool FSkillLabCastLifecycle::OpenWindow(const FSkillLabCastToken& Token, const std::uint64_t WindowId)
+{
+	return IsCastTokenCurrent(Token) && WindowId != 0 && OpenWindows.insert(WindowId).second;
+}
+
+bool FSkillLabCastLifecycle::CloseWindow(const FSkillLabCastToken& Token, const std::uint64_t WindowId)
+{
+	return IsCastTokenCurrent(Token) && WindowId != 0 && OpenWindows.erase(WindowId) != 0;
+}
+
+bool FSkillLabCastLifecycle::IsWindowOpen(const FSkillLabCastToken& Token, const std::uint64_t WindowId) const
+{
+	return IsCastTokenCurrent(Token) && WindowId != 0 && OpenWindows.count(WindowId) != 0;
 }
 
 FSkillLabCastLifecycle::FSnapshot FSkillLabCastLifecycle::GetSnapshot() const

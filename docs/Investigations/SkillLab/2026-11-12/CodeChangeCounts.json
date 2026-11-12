@@ -1,0 +1,72 @@
+[
+  {
+    "Category": "本轮交接与交付文档",
+    "Total": 10,
+    "Modified": 0,
+    "New": 10,
+    "Bytes": 217530.0
+  },
+  {
+    "Category": "仓库Skill规则",
+    "Total": 2,
+    "Modified": 2,
+    "New": 0,
+    "Bytes": 14688.0
+  },
+  {
+    "Category": "其他",
+    "Total": 1,
+    "Modified": 0,
+    "New": 1,
+    "Bytes": 39086.0
+  },
+  {
+    "Category": "需求和项目事实文档",
+    "Total": 7,
+    "Modified": 7,
+    "New": 0,
+    "Bytes": 76142.0
+  },
+  {
+    "Category": "正式项目测试/夹具",
+    "Total": 31,
+    "Modified": 4,
+    "New": 27,
+    "Bytes": 317474.0
+  },
+  {
+    "Category": "正式项目非测试源码",
+    "Total": 58,
+    "Modified": 31,
+    "New": 27,
+    "Bytes": 357703.0
+  },
+  {
+    "Category": "正式项目配置",
+    "Total": 5,
+    "Modified": 5,
+    "New": 0,
+    "Bytes": 3647.0
+  },
+  {
+    "Category": "SkillLabB1Validation_20261112",
+    "Total": 1096,
+    "Modified": 0,
+    "New": 1096,
+    "Bytes": 376412722.0
+  },
+  {
+    "Category": "SkillLabB1Validation_20261112_02",
+    "Total": 1096,
+    "Modified": 0,
+    "New": 1096,
+    "Bytes": 376143598.0
+  },
+  {
+    "Category": "SkillLabB1Validation_20261112_Final",
+    "Total": 1100,
+    "Modified": 0,
+    "New": 1100,
+    "Bytes": 376153832.0
+  }
+]

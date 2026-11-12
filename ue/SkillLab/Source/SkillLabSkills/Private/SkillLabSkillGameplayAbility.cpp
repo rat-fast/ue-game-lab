@@ -4,7 +4,7 @@
 
 USkillLabSkillGameplayAbility::USkillLabSkillGameplayAbility()
 {
-	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerExecution;
 	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::LocalOnly;
 }
 
@@ -26,16 +26,16 @@ void USkillLabSkillGameplayAbility::FinishSkillAbility(bool bWasCancelled)
 	if (bSkillActive) EndAbility(ActiveHandle, ActiveActorInfo, ActiveActivationInfo, true, bWasCancelled);
 }
 
-void USkillLabSkillGameplayAbility::BindSkillCast(USkillLabSkillRuntimeComponent* Runtime, const int32 CastId,
+void USkillLabSkillGameplayAbility::BindSkillCast(USkillLabSkillRuntimeComponent* Runtime, const FSkillLabCastExecutionToken& Token,
 	const FGameplayTagContainer& EventTags)
 {
-	if (!bSkillActive || !Runtime || CastId <= 0)
+	if (!bSkillActive || !Runtime || !Token.IsValid())
 	{
 		return;
 	}
 
 	SkillRuntime = Runtime;
-	BoundCastId = CastId;
+	BoundCastToken = Token;
 	EventTasks.Reset();
 	for (const FGameplayTag EventTag : EventTags)
 	{
@@ -56,29 +56,23 @@ void USkillLabSkillGameplayAbility::BindSkillCast(USkillLabSkillRuntimeComponent
 
 void USkillLabSkillGameplayAbility::HandleSkillGameplayEvent(const FGameplayEventData Payload)
 {
-	const USkillLabCastGameplayEventData* Identity = Cast<USkillLabCastGameplayEventData>(Payload.OptionalObject);
-	if (!bSkillActive || BoundCastId <= 0 || !Identity || Identity->CastId != BoundCastId
-		|| Identity->Ability.Get() != this || Identity->Runtime != SkillRuntime || !SkillRuntime.IsValid()
-		|| Payload.Instigator != GetOwningActorFromActorInfo())
-	{
-		return;
-	}
-	SkillRuntime->HandleAbilityGameplayEvent(this, BoundCastId, Payload.EventTag);
+	const auto* Identity = Cast<USkillLabCastGameplayEventData>(Payload.OptionalObject);
+	if (!bSkillActive || !BoundCastToken.IsValid() || !Identity || Identity->CastId != BoundCastToken.CastId
+		|| !(Identity->CastToken == BoundCastToken) || Identity->Ability.Get() != this || Identity->Runtime != SkillRuntime
+		|| !SkillRuntime.IsValid() || !SkillRuntime->FindExecution(BoundCastToken)
+		|| Payload.Instigator != GetOwningActorFromActorInfo()) return;
+	SkillRuntime->HandleAbilityGameplayEvent(this, BoundCastToken.CastId, Payload.EventTag);
 }
 
 void USkillLabSkillGameplayAbility::EndAbility(FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* Info,
 	FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
-	if (Info)
-	{
-		if (AActor* Owner = Info->OwnerActor.Get())
-		{
-			if (USkillLabSkillRuntimeComponent* Skills = Owner->FindComponentByClass<USkillLabSkillRuntimeComponent>()) Skills->NotifyAbilityEnded(this);
-		}
-	}
-	bSkillActive = false;
-	BoundCastId = 0;
-	SkillRuntime = nullptr;
-	EventTasks.Reset();
-	Super::EndAbility(Handle, Info, ActivationInfo, bReplicateEndAbility, bWasCancelled);
+ // 在通知 Runtime 前封闭 task/End 重入；通知始终发给最初绑定的 Runtime。
+ bSkillActive = false;
+ for (const auto& Task : EventTasks) if (Task) Task->EndTask();
+ EventTasks.Reset();
+ if (SkillRuntime.IsValid()) SkillRuntime->NotifyAbilityEnded(this);
+ BoundCastToken = {};
+ SkillRuntime.Reset();
+ Super::EndAbility(Handle, Info, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }

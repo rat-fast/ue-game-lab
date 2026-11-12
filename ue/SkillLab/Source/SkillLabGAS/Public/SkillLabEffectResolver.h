@@ -27,6 +27,8 @@ struct SKILLLABGAS_API FSkillLabEffectRequest
 	UPROPERTY(BlueprintReadWrite) float Period = 0.0f;
 	UPROPERTY(BlueprintReadWrite) ESkillLabDamageType DamageType = ESkillLabDamageType::Physical;
 	UPROPERTY(BlueprintReadWrite) TObjectPtr<UObject> SourceObject = nullptr;
+	// 原生生产适配器持有操作身份。只报告正式 GE 调用返回的接受事实，不是资源确认。
+	TFunction<void(bool, FName)> OnApplicationReturned;
 };
 
 USTRUCT(BlueprintType)

@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "SkillLabSkillTypes.h"
+#include "SkillLabSubmissionResults.h"
 #include "SkillLabSkillBehavior.generated.h"
 
 class USkillLabSkillRuntimeComponent;
@@ -20,7 +21,7 @@ public:
 	virtual void Cleanup() {}
 protected:
 	bool IsCurrent() const;
-	FSkillLabSkillResult ApplyEffect(AActor* Target);
+	FSkillLabSkillResult ApplyEffect(AActor* Target, const FSkillLabProductionHandle& Production = {});
 	void ReportMiss(FName Reason, AActor* Target = nullptr);
 	void Complete(FName Reason = NAME_None);
 	void Fail(FName Reason);
@@ -32,7 +33,7 @@ protected:
 	friend class USkillLabSkillRuntimeComponent;
 };
 
-/** Generic Lua composition behavior. Lua may request only the declared effect and finish. */
+/** 每 Cast 一张点表；Lua 只引用声明 id，不持有生产确认能力。 */
 UCLASS()
 class SKILLLABSKILLS_API USkillLabLuaSkillBehavior : public USkillLabSkillBehavior
 {
@@ -40,25 +41,47 @@ class SKILLLABSKILLS_API USkillLabLuaSkillBehavior : public USkillLabSkillBehavi
 public:
 	virtual void Execute() override;
 	virtual void Cleanup() override;
-	bool RequestDeclaredEffect();
-	bool RequestDeclaredAction();
+	virtual void ReceiveEvent(FGameplayTag EventTag) override;
+	bool RequestDeclaredEffect(int32 PointId = 0);
+	bool RequestDeclaredAction(int32 PointId = 0);
 	bool RequestFinish();
-	const FSkillLabSkillResult& GetEffectResult() const { return EffectResult; }
-	bool IsActionPending() const { return bActionPending; }
-	bool IsActionCompleted() const { return bActionCompleted; }
-
+	bool RequestSubmissionPoint(const FSkillLabCastExecutionToken& Token, int32 PointId,
+		ESkillLabSubmissionTrigger Trigger, FGameplayTag EventTag = {});
+	const FSkillLabSkillResult& GetEffectResult() const { return LastResponse; }
+	bool IsActionPending() const { return IsPointPending(LastPointId); }
+	bool IsActionCompleted() const { return IsPointCompleted(LastPointId); }
+	const FSkillLabSkillResult* GetPointResult(int32 PointId) const;
+	FSkillLabProductionHandle GetPointProduction(int32 PointId) const;
+	ASkillLabFireballProjectile* GetPointProjectile(int32 PointId) const;
+	bool IsPointPending(int32 PointId) const;
+	bool IsPointCompleted(int32 PointId) const;
 private:
+	friend class FSkillLabCastGameplayEventTest;
+	friend class FSkillLabProductionFixture;
+	enum class EPointState : uint8 { Waiting, Executing, AwaitingAction, Resolved, Unconfirmed, Cancelled };
+	struct FPointExecution
+	{
+		FSkillLabSubmissionPointDefinition Declaration;
+		EPointState State = EPointState::Waiting;
+		FSkillLabProductionHandle Production;
+		FSkillLabSkillResult Result;
+		TWeakObjectPtr<ASkillLabFireballProjectile> Projectile;
+		FTimerHandle Timer;
+	};
+	void EnsurePoints();
+	FSkillLabCastExecutionToken GetToken() const;
 	void RunScript();
-	void OnProjectileResolved(AActor* Target, FName Reason);
-	void SetActionResult(const FSkillLabSkillResult& Result, bool bResolved, bool bPending = false);
-	bool bEffectRequested = false;
+	bool ExecuteDeclaredAction(); // 既有失联回执 fixture 的真实生产调用适配。
+	bool ExecuteDeclaredAction(FPointExecution& Point);
+	void OnProjectileResolved(int32 PointId, ASkillLabFireballProjectile* Action, AActor* Target, FName Reason);
+	bool AllPointsResolved() const;
+	bool HasLegalWait() const;
+	void TryFinish();
+	TMap<int32, FPointExecution> Points;
+	FSkillLabSkillResult LastResponse;
+	int32 LastPointId = 0;
+	bool bReleased = false;
 	bool bFinished = false;
-	bool bActionRequested = false;
-	bool bActionResolved = false;
-	bool bActionPending = false;
-	bool bActionCompleted = false;
-	bool bActionSucceeded = false;
-	FSkillLabSkillResult EffectResult;
-	FSkillLabSkillResult ActionResult;
-	UPROPERTY(Transient) TObjectPtr<ASkillLabFireballProjectile> Projectile;
+	bool bFinishRequested = false;
+	bool bDispatching = false;
 };

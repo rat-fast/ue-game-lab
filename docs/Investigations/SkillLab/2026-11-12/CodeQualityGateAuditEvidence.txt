@@ -1,0 +1,230 @@
+CodeQualityGateAudit 原始对照附件
+时间：2026-11-13T00:00:36.2828337+08:00
+[HEAD字段全项目引用]
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:328:	bEffectSubmitted = false;
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:330:	ActiveEffectResult = FSkillLabSkillResult();
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:331:	ActiveEffectResults.Reset();
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:628:	bEffectSubmitted = false;
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:630:	ActiveEffectResult = FSkillLabSkillResult();
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:631:	ActiveEffectResults.Reset();
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:671:	bEffectSubmitted = false;
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:673:	ActiveEffectResult = FSkillLabSkillResult();
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:746:	for (const FSkillLabSkillResult& Existing : ActiveEffectResults)
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:755:	ActiveEffectOperationId = FName(*FString::Printf(TEXT("SkillEffect_%d_%d"), CastId, ActiveEffectResults.Num() + 1));
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:763:	bEffectSubmitted = true;
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:774:	ActiveEffectResult = Result;
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:775:	ActiveEffectResults.Add(Result);
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:960:	bEffectSubmitted = false;
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:962:	ActiveEffectResult = FSkillLabSkillResult();
+HEAD:ue/SkillLab/Source/SkillLabSkills/Private/SkillLabSkillRuntimeComponent.cpp:963:	ActiveEffectResults.Reset();
+HEAD:ue/SkillLab/Source/SkillLabSkills/Public/SkillLabSkillRuntimeComponent.h:122:	bool bEffectSubmitted = false;
+HEAD:ue/SkillLab/Source/SkillLabSkills/Public/SkillLabSkillRuntimeComponent.h:124:	FSkillLabSkillResult ActiveEffectResult;
+HEAD:ue/SkillLab/Source/SkillLabSkills/Public/SkillLabSkillRuntimeComponent.h:125:	TArray<FSkillLabSkillResult> ActiveEffectResults;
+[HEAD与当前旧大测试物理行]
+HEAD=357;Current=903
+[交接/原Review精确符号发现]
+文件：TimingRulesHandoff.md; 精确符号命中数=0
+文件：SubmissionEffectsHandoff.md; 精确符号命中数=0
+文件：VerificationHandoff.md; 精确符号命中数=0
+文件：CastExecutionReview.md; 精确符号命中数=0
+[当前交接关键行]
+TimingRulesHandoff.md:59: ## 首轮上下文与拆分落点
+TimingRulesHandoff.md:60: 
+TimingRulesHandoff.md:61: 以下路径相对 Source/，约 400 物理行是每工作单元首轮参考，不默认读完整 Runtime/旧大测试。
+TimingRulesHandoff.md:62: 
+TimingRulesHandoff.md:63: 1. **所有权**：SkillLabSkills/Public/SkillLabSkillRuntimeComponent.h 的 ISkillLabSkillCastContext、状态字段及 Behavior/Ability 接口；SkillLabCastLifecycle.h 的 token/提交接口；SkillLabSkillGameplayAbility.h/.cpp 的 Activate/Bind/End；Loadout 的 FindGrantedHandle。先控制在约 400 行，再补 Runtime 的 NotifyAbilityActivated/Ended、FinishCast/ClearPendingCast，以核对同步结束。
+TimingRulesHandoff.md:64: 2. **请求/规则**：Runtime 的 SubmitSkillOperation、EvaluateAbilityCategory、ResolveOperationRules、Store/Schedule/ConsumePendingSkillIntent；Types 的决策/规则结构。请求约 170 行、规则/缓存约 230 行分轮读取；状态再补 ReevaluateInterruptStates/NotifyDamageTaken，不加载 Provider 全篇。
+TimingRulesHandoff.md:65: 3. **提交接线**：RuntimeSubmission 的 Begin/Resolve、RuntimeUnconfirmed 的 StartIndeterminateWait、RuntimeConfirmation 的 OnSubmissionConfirmed 分轮适配；生产记录/GAS 算法只读。表现首轮读 ForwardAnimNotify/StopCastMontage 和 Ability 事件校验，再沿调用补播放及 Lua 适配。
+TimingRulesHandoff.md:66: 
+TimingRulesHandoff.md:67: A 开始时即将 Runtime 按“请求/缓存编排”“按 Cast 生命周期与终止”“规则快照/状态分派”拆内部单元，建议 SkillLabSkillRuntimeRequests.cpp、SkillLabSkillRuntimeExecution.cpp、SkillLabSkillRuntimeRules.cpp；提交/未决/确认沿现有独立 cpp。先建立唯一上下文和显式参数，再迁移调用，不能只搬函数保留一份 Active 状态。规则单元输出决策/原因，订阅和广播留编排层。先保持单 Cast 回归，再开放集合。
+TimingRulesHandoff.md:68: 
+TimingRulesHandoff.md:69: ## 修改责任、顺序与验证
+TimingRulesHandoff.md:70: 
+TimingRulesHandoff.md:71: A 独占 Runtime 头及各 Runtime cpp、执行结构、GameplayAbility/事件载荷、必要 Loadout 接线、Animation/AnimNotify 与表现 Cast 身份适配；可新增内部单元和独立测试。不改 GAS 账本、会话协议、生产 Lua/JSON、资产及旧批次。Types/Provider 由 B1 独占，A 所需 Allow 枚举及公开 Cast 身份类型由 B1 提供，避免公共头双写。
+TimingRulesHandoff.md:72: 
+TimingRulesHandoff.md:73: 旧 ProductionFixture/CastGameplayEvent 等测试直接访问 ActiveBehavior、Lifecycle、Timer 等私有状态；A 移除单实例字段会影响编译，不能忽略。A 提供统一按 token 的只读测试观察/查找入口，C2 负责旧 fixture/测试的兼容迁移；A 不在自己的分支复制另一套 fixture。合并编译快照须包含这部分兼容修改，但不要求 C2 全部新增验证完成。相关 friend 声明由 A 唯一改 Runtime/Ability 头。
+TimingRulesHandoff.md:74: 
+TimingRulesHandoff.md:75: A 可与 B1、B2、独立 C1 审计及 C2 准备并行：B2 保留现有 Behavior→Runtime 提交方法签名，在 Behavior 内实现点调度/动作状态与已交付 Projectile；A 迁移 Runtime 上下文并完成 point 去重及 CancelBehavior 适配。A 不改 Behavior/Projectile，B2 不改 Runtime，双方以方法合同和正式单 Cast 路径独立构建/测试；最后合入再验证双 Cast 多点。必要顺序是 B1 公开类型与 A 的窄终止接口先合入供对应消费者编译，以及 A+B2 的交叉验收必须在两者接通后进行，不要求完成 A 全任务才开发 B2。资源修复 R 如需改 Reset，给 A 窄接口要求，由 A 修改 Runtime。文档数不等于 Agent 数，A 可同一实现者分上述单元完成。
+TimingRulesHandoff.md:76: 
+TimingRulesHandoff.md:77: 新增独立 `SkillLab.Skills.CastExecutionOwnership`（拟名，须实际注册）：真实请求/Ability 两次激活、Allow 门控失败旧执行不变、同 spec 实例隔离、各自 Notify/Timer/取消/外部 End/重入、Runtime 重建同数字旧事件、共享 available 竞争、控制状态与角色单槽缓存/Recovery。至少一条走真实 GameplayEvent，不直调 ReleaseCast。保留 CastLifecycle/CastGameplayEvent/DefinitionValidation 及已接受身份回归。共享 fixture/旧测试拆分由 [C2 验证任务](VerificationHandoff.md)负责。
+TimingRulesHandoff.md:78: 
+TimingRulesHandoff.md:79: 交付实际 token/查找/终止接口、兼容调用者、源码拆分、正式测试名/证据、第 8.2 节共同仲裁结果和表现资源限制。编译通过不等于并行或可见 Montage 通过。
+SubmissionEffectsHandoff.md:62: ### 调度、Lua 宿主与幂等
+SubmissionEffectsHandoff.md:63: 
+SubmissionEffectsHandoff.md:64: 在每 Cast 的 Behavior 中建立唯一点运行表，保存声明快照、触发/动作状态、原 ProductionHandle、点结果与已交付动作引用；A 的 Cast 上下文通过拥有 Behavior 间接拥有这张表，不再复制一份。Lifecycle 的已成功点集合仍是提交幂等权威，Runtime 的 bCommitted 仍控制首次唯一费用。点失败不得消耗唯一计费机会；已成功/正在执行/未确认点不能重发，明确失败仅在内容再次正式请求且条件仍有效时可重试，不自动补发。
+SubmissionEffectsHandoff.md:65: 
+SubmissionEffectsHandoff.md:66: 统一 `RequestSubmissionPoint(token, pointId, triggerEvidence)`：查声明及 Cast/阶段 → 核对触发条件 → BeginBehaviorSubmission → 实际动作 → Resolve/Abort。未知点、早到/错 Tag/错 Cast、重复成功返回可区分原因，保持 Cast，不直接 Cancel。仅缺失必要通知超时、Ability 中断或其他既定终止规则取消。
+SubmissionEffectsHandoff.md:67: 
+SubmissionEffectsHandoff.md:68: Release/Timer/GameplayEvent 由 Behavior 的 C++ 点调度调用同一入口：Execute 对应 Release，ReceiveEvent 消费经 A 验证的事件，Timer 捕获 token+pointId 并由 Behavior::Cleanup 清理；A 从 B1 声明收集事件到 Ability 等待集合即可，不另建 Runtime 点调度状态。GameplayEvent 不从浮点 EventMagnitude 提取身份。Script 点仅可在内容声明允许的执行窗口由 Lua 请求。不要跨 Tick 持有 bSubmitting 或一个同步 reservation 调用栈。
+SubmissionEffectsHandoff.md:69: 
+SubmissionEffectsHandoff.md:70: 宿主公开 `SkillLabSkill_RequestAction(pointId)`、`SkillLabSkill_ApplyEffect(pointId)`，无参仅兼容隐式单点；返回至少 pointId、原 submissionId、accepted/applied、pending、completed、reason。两入口消费同一套点表，不能各用一组 bool 互相绕过。RequestFinish/自动完成检查整组点和异步解决状态，不再以一个 bActionResolved 判定。声明列表存在时，C++ 自动触发点与脚本调用也经过相同防重入口。
+SubmissionEffectsHandoff.md:71: 
+SubmissionEffectsHandoff.md:72: 当前 VM 是一次性调用；本方案由 C++ 持有定时与事件调度，不要求长期挂起 Lua/coroutine。RunScript 调用结束但仍有合法声明点或已交付动作等待时，不误报 ScriptNoFinish；无声明后续且无合法等待的旧脚本错误继续可观察。脚本调用不提供 Confirm/扣费/冷却入口。
+SubmissionEffectsHandoff.md:73: 
+SubmissionEffectsHandoff.md:74: ### 每点效果和费用接线
+SubmissionEffectsHandoff.md:75: 
+SubmissionEffectsHandoff.md:76: ApplyBehaviorEffect 的去重键由 A 改为“原 Cast + point + 目标/实际子操作”，B2 传入真实 ProductionHandle，不继续 Cast 内按目标全局拒绝，也不能简单删除防重。范围的每目标子操作继续复用 PlanArea，去重/结果关联保留完整生产键，失败重试不得复用旧已终结 operation 伪造新生产事实。A 适配未合入前，同目标不同点的端到端断言明确待集成；B2 仍可用不同目标/范围及独立点表单测验证自己的完整接线。
+SubmissionEffectsHandoff.md:77: 
+SubmissionEffectsHandoff.md:78: 每点 BeginProduction 保留 Point/Operation/Id/RequestId，首次成功按既有唯一交易结转；后点 Transaction=0，仍有独立完整生产身份。Resolve、未决交接、OnSubmissionConfirmed 适配 A 的上下文，不能替换会话结果系统。已计费后点未知不再预留，不重启冷却；等待结束后迟到结果只关联原点，不能误推进仍活动的另一执行。
+SubmissionEffectsHandoff.md:94: 首轮分三个直接依赖包，每包约 300–400 行：① Lifecycle Begin/Resolve 与 RuntimeSubmission Begin/Resolve、Behavior RequestDeclaredAction/Effect，核对唯一提交；② BehaviorProduction、Projectile ConfirmDelivery/Activate/ResolveImpact、Executor.Apply，核对真实创建和命中；③ Behavior RunScript/ReceiveEvent/RequestFinish/Cleanup、Adapter Track/HandleDamage/Removal，核对脚本等待和效果寿命。只在同步属性重入疑点补读 Runtime 的 FinishSubmissionTermination 或 GAS Resolver，注明依赖，不加载旧大测试全篇。
+SubmissionEffectsHandoff.md:95: 
+SubmissionEffectsHandoff.md:96: 实现时即拆 Behavior 为 Lua 宿主适配、每点编排、实际生产动作三个单元；点表只有一份，生产记录继续在会话。独立测试复用 C2 的最小 fixture，不把新用例继续追加进 CastGameplayEventTests。拟注册 `SkillLab.Skills.MultipleSubmissions` 和 `SkillLab.Skills.SubmittedActionLifetime`：
+SubmissionEffectsHandoff.md:97: 
+SubmissionEffectsHandoff.md:98: - 正式 JSON/Lua → Request → Ability → Release/Event/Timer → 真实 GE，覆盖同目标不同点、同点重复/重入、失败再试、未声明点、事件乱序、目标失效、取消/Reset 和终态后通知；费用与冷却只首次成功一次。
+SubmissionEffectsHandoff.md:99: - 多个真实 Projectile 各自创建/交付、创建时同步 overlap、自毁、命中/阻挡/过期；原 Cast 已完成/取消后命中仍按原身份结算，其他新 Cast 不变；命中后绝不改交付记录/再收费。
+SubmissionEffectsHandoff.md:100: - 独立持续 GE 在普通完成/取消后继续真实周期并自然移除；两个来源同 Tag 逐个移除；Reset/对象销毁另断言，不用普通 Cancel 代替。
+SubmissionEffectsHandoff.md:101: - 首点未知、已计费后点未知及迟到收敛继续经过真实生产/资源查询；保留现有 ProductionRecords、AreaSubmissionSettlement、SubmissionFeedbackIdentity 等相关回归，不重做已关闭缺陷。
+SubmissionEffectsHandoff.md:102: 
+SubmissionEffectsHandoff.md:103: 正式夹具可以注入经校验的最小候选目录/脚本文本并暂时替换测试目录，结束后恢复；不能直接塞成功 bool/手工提交事件作为验收。具体四技能是否选用多点、触发时刻、数值及动画资源由内容配置职责消费 B1/B2 接口，本任务不要求新增生产多段玩法。生产内容确需迁移时只交明确字段/兼容差异给 PM 安排。
+SubmissionEffectsHandoff.md:104: 
+SubmissionEffectsHandoff.md:105: ## 派发关系
+SubmissionEffectsHandoff.md:106: 
+SubmissionEffectsHandoff.md:107: B1、A、B2、已派独立 C1 审计、C2 准备可以并行，各自独占文件。B1 尽早落公开类型，A/B2 在类型合入前可基于本合同准备内部实现，不各自提交重复类型；此编译依赖不等于整任务串行。B2 的单 Cast 正式路径不等待 A 完成，A 的双执行可用旧单点内容验证。必要集成为 B1 类型/解析与 A 窄终止入口 → 对应消费者构建；A 上下文变化与 C2 旧私有字段测试迁移共同进入可编译快照；A+B2 接通 → 同目标多点/双 Cast 多点交叉验收。B2 若移除旧 Behavior 单动作私有字段，同样由 C2迁移既有 ProductionFixture，B2 不并发编辑共享夹具。R 的 GAS 修复消费 C1 已有发现即可开始，不必等审计所有条目结束。C2 在每条路径就绪时增量验证，不等全部完成，不重复 C1 已取得且未受影响的审计证据。
+VerificationHandoff.md:104: 首轮复用 C1 的直接符号包及与发现相关的少量调用，不全文复读审计。超过 400 行的 AbilitySystemResource.cpp 必须按“受控写入/排队”“reservation/结算”“历史查询/寿命”拆同一 ASC 的 cpp 单元（仅修改涉及的单元）；队列、reservation 和历史仍各一份。拆分以可独立测试为准，不能复制账本。拟新增 `SkillLab.GAS.ResourceWriteIntegration`：正式入口/GE 加减覆盖、MaxEnergy、接近上限、多笔 reservation、同步回调重入/对象销毁、拒绝后无副作用及迟到结算不重扣；保留 EnergyLedger/EnergySettlementHistory。
+VerificationHandoff.md:105: 
+VerificationHandoff.md:106: 直接原生非 virtual 旁路作为故障注入只证明边界/诊断；基于当前版本记录实际/预留/可用及 sticky 未决，不使用旧 52 数值作成功期望。若具体合法路径经协调/加载校验仍无法保护，交付调用/资产、最小复现、影响和已试方案，才构成技术阻塞；不能笼统要求用户重定已经确认的预留语义。
+VerificationHandoff.md:107: 
+VerificationHandoff.md:108: ## C2：可立即开始的验证与测试上下文
+VerificationHandoff.md:109: 
+VerificationHandoff.md:110: C2 独占新增共享测试 fixture 的实现及旧大测试的职责迁移；A/B1/B2/R 各自独占自己的新增测试文件。共享 SkillLabProductionFixture.h、SkillLabSubmissionTestWorld.h 的改动先交 C2，避免各任务同时追加 friend/World/目录状态。C2 不修生产源码，失败按拥有者回交。
+VerificationHandoff.md:111: 
+VerificationHandoff.md:112: A/B2 改掉旧 Active/单动作字段时，C2 同步将现有 fixture/旧测试的私有访问改为其唯一上下文/点表观察入口，不新增镜像运行状态；必要 friend 声明交 A/B2 各自维护。此兼容迁移与生产改动一起构成编译快照，不等待所有新用例完成。C2 提供 fixture API 后，各实现者只向各自测试文件添加用例，不能各复制一套全局目录恢复。
+VerificationHandoff.md:113: 
+VerificationHandoff.md:114: 立即可运行/准备的部分：现有十四项回归、Notify 实际超时、外部 Ability 中断、控制状态真实 GE 多来源、死亡/Reset 缓存、现有持续 GE 寿命、动画资产只读回查和当前可见运行。B1 的声明用例随解析就绪运行，A 的双执行随所有权就绪运行，B2 的单 Cast 多点和交付寿命可独立先测；同目标多点、双 Cast 多点/资源竞争在 A+B2 接通后补齐。只对新修改和未决疑点扩测。
+VerificationHandoff.md:115: 
+VerificationHandoff.md:116: 首轮先读 SkillLabSkills/Private/Tests/SkillLabSubmissionTestWorld.h、SkillLabProductionFixture.h 的 World/MakeUnit/Start/目录恢复（不把直接 Begin/Execute 当最终端到端证据），再读一个相关独立测试及项目 [测试入口文档](../../../../ProjectContext/Modules/TestAndVerification.md)，按符号控制约 300–400 行。验证需求只读第 7–8 节和本任务段；不把旧 CastGameplayEventTests.cpp 全篇列为必读。
+VerificationHandoff.md:117: 
+VerificationHandoff.md:118: 开始时从旧 CastGameplayEventTests 的 World/Actor/目录恢复职责提取可复用 fixture，建议 SkillLabCombatTestFixture.h/.cpp，仅暴露真实请求、GameplayEvent、World Tick、必要观察和 RAII 目录快照；不复制 Runtime/Lifecycle/账本。先迁移一组规则窗口/类别状态或缓存用例到独立文件，证明脱离旧全局状态能运行，再增加本批用例。原测试名保留一条真实 Ability/GAS 集成链。latent fixture 直到命令/Timer 完成才恢复目录/销毁 World，不能在排队后函数返回即恢复。全局目录替换用例同一进程串行；可以在独立隔离进程并行，不共享可写验证工程。
+README.md:11: 用户要求按上下文重叠收敛任务，先完成现有需求，再另做全面质量 Review。本轮只恢复下列两条实现线；原五线安排停止适用。原 A/B2/C2 共读施法身份、提交/终止与测试观察接口，合并给同一负责人；B1 的定义解析上下文独立，保留并行。下文分组、修改所有者与派发状态优先于三份交接中的旧任务所有权说明，技术合同继续沿用。
+README.md:12: 
+README.md:13: 普通窗口冲突保持 RuleWindowConflict。原需求负责人已将共同仲裁、缓存、闪避及独立效果规则写入唯一需求正文第 8.2 节，PM 已核对条款及验收场景；据此恢复下列两条实现线，原产品待决解除。必要构建和功能验证随实现完成，全面结构审查不在本轮展开。
+README.md:14: 
+README.md:15: ## 当前推进状态（2026-11-12）
+README.md:16: 
+README.md:17: 进入交付收尾：代码实现、专项独立 Review、资源审计和项目事实文档同步已完成。实际工程曾遗漏构建，旧技能DLL不接受新配置的combatRules字段；用户日志备份 `Saved/Logs/HUDInputRegression_UserSession_20261112.log`。用户保存关闭编辑器后，原A报告实际工程构建成功、新DLL已加载，四技能定义及快捷键日志正常，并已在实际游戏画面观察到血量、能量与四技能槽。用户随后明确反馈“我自己去测试了，技能能放出来”，据此记录技能释放人工验证通过。
+README.md:48: 两条实现线以 Types/规范化候选合同对接，公共字段唯一由定义解析负责人修改；执行与共享测试在同一所有者内接通，不再反复派接口微任务。先完成需求所需修改，不为缩短文件另开全仓重构。
+README.md:49: 
+README.md:50: ## 上下文控制规则
+README.md:51: 
+README.md:52: 约 400 行是实现者首轮读取上下文的控制偏好，不是按行数机械拆文件的阈值。架构交接应为每个实现任务指定首轮必读的文件、符号/章节和直接依赖，使首轮代码上下文通常不超过约 400 行；只有调用链或共享状态证明必要时再按需扩读，并记录扩读原因。超过该规模且存在独立变化原因、输入/输出和验证入口的职责应拆到窄接口或独立测试文件；共享生命周期、身份、资源所有权或同步重入无法隔离时保留在同一编排边界，避免为减少行数复制状态或制造空壳。Runtime、Provider 和长自动化测试均按此规则评估，具体候选见各交接；相关仓库 Skill 已表达同一职责分层原则，本偏好是本批交接约束，不修改通用 Skill。
+CastExecutionImplementationSummary.md:130: ## 表现与共享测试
+CastExecutionImplementationSummary.md:131: 
+CastExecutionImplementationSummary.md:132: Animation 按完整 token 记录实际 AnimInstance、Montage 与 InstanceId；Notify 同时核对真实实例、资源、Mesh 和原执行。停止使用实例 ID，仅停止原播放实例。Lua 生产脚本的 int Play/Stop 命令由宿主附加当前回调 token，回调结束恢复原归属；原生回退直接传 token。此适配不向表现层开放业务裁决。
+CastExecutionImplementationSummary.md:133: 
+CastExecutionImplementationSummary.md:134: `SkillLabCombatTestFixture.h` 统一真实 World/ASC/Runtime、正式目录解析/恢复、请求、Ability 事件和 Tick。旧 ProductionFixture/未决/GameplayEvent 测试迁到唯一执行观察；终态交易断言保存原交易身份，不在清理后读取不存在的执行。
+[当前原Review全文，供范围与未提及复核]
+CastExecutionReview.md:1: # Cast 执行集成独立 Review
+CastExecutionReview.md:2: 
+CastExecutionReview.md:3: 2026-11-12。范围：当前 B1 定义解析与 A+B2+C2 执行集成；依据本批 README、三份当前交接、SkillCombatRulesRequirements 第 2–8.2 节及项目程序分层约定。保留此前已接受的账本、有限等待、同会话迟到收敛及原提交身份结论，不重开历史问题。
+CastExecutionReview.md:4: 
+CastExecutionReview.md:5: **当前结论：P2-CE-1 已关闭，本次 B1 与 A+B2+C2 代码集成在已审范围内通过。** 关闭依据为修复源码、修前真实失败、修后五场景回归与 15 项定向运行、409 文件三方哈希一致。旧 23 项是修前证据，没有在修后全套重跑；资源审计、可见验收及项目事实文档同步仍未关闭，不据此宣布整批完成。Reviewer 仅更新本报告，未修改生产代码、配置、资产或作者验证工程，也未启动其他 Agent。
+CastExecutionReview.md:6: 
+CastExecutionReview.md:7: ## P2-CE-1 定向复查与关闭（2026-11-12）
+CastExecutionReview.md:8: 
+CastExecutionReview.md:9: 本轮只复查 `SkillLabSkillRuntimeRequests.cpp` 的请求编排、新增 `Tests/SkillLabCastRequestReentryTests.cpp` 及直接门控/取消/缓存依赖，沿用原需求第 8.2 节和既有规范，没有重新全审。
+CastExecutionReview.md:10: 
+CastExecutionReview.md:11: - 清缓存同步通知后，在当前 Requests.cpp 第 147–156 行检查请求有效性、保留回调写入的较新意图，并重新使用同一 BuildActivationPlan；Reject 结束 D，Buffer 仅缓存 D，旧 Allow/取消列表不再直接沿用。
+CastExecutionReview.md:12: - 第 103–109 行捕获并核对原 RuntimeGeneration，以及组件、Owner、ASC、World 和 Reset/EndPlay 屏障。同步 Reset 已完成、bResetting 已恢复时，generation 变化仍能阻止旧请求。闪避清槽和取消后也检查原请求有效性。
+CastExecutionReview.md:13: - 第 158–177 行处理实际取消后的回调变化：重查共同决策和新缓存、会话、未决隔离与重复请求 ID；回调又产生新的取消来源时以 OperationReentered 收束，不循环追逐。TryActivateRequest 继续执行原状态、资源、冷却、目标和 GAS 门控。未发现本次修改在该直接请求链引入新的阻塞问题。
+CastExecutionReview.md:14: - 新测试通过正式解析、Lua、请求、Ability 完成事件触发原缺陷，五场景分别为 Reject E、Buffer E、Reset、真实 DestroyComponent/EndPlay、回调写入较新缓存。断言 D 不提前 Started/提交/施加效果/扣费，E 保持；Buffer D 仅在 E 自然结束后消费；旧 C 不复活，较新 C 按新请求身份消费；EndPlay 后不要求已失效接收者收到 native 事件。
+CastExecutionReview.md:15: 
+CastExecutionReview.md:16: 证据继续位于下述原隔离工程 Saved/Logs，均为只读核对，Reviewer 没有重新构建或运行 UE：
+CastExecutionReview.md:17: 
+CastExecutionReview.md:18: | 本轮独立核对 | 结果 |
+CastExecutionReview.md:19: | --- | --- |
+CastExecutionReview.md:20: | 修前复现 | CastCE1BeforeBuild2.log 实际编译新测试并 Succeeded；CastCE1BeforeValidation2.log 第 2203 行为 CastRequestReentry Fail，第 2232 行为 1 tests performed。Reject/Buffer 下 D Started=1、能量应为 97 实为 90；Reset 下应为 100 实为 93。退出码虽为 0，测试仍明确失败。修前清单中的 Requests.cpp 哈希与旧已接受快照相同。 |
+CastExecutionReview.md:21: | 修后构建当前性 | CastCE1AfterBuild.log 实际编译 Requests.cpp；CastCE1FinalBuild.log 实际编译最终测试并 Succeeded。Requests 源码/obj 分别为 UTC 18:24:58 / 18:25:10，最终测试源码/obj 为 18:26:50 / 18:27:00，Skills DLL 为 18:27:01，均早于最终运行；最终测试与修前测试哈希不同，不把两次测试文件冒称完全相同。 |
+CastExecutionReview.md:22: | 修后运行 | CastCE1FinalValidation.log 独立提取 15 条不同目标 Test Completed，全部 Success；CastRequestReentry 为第 2825 行，第 3845 行为 15 tests performed，第 3848 行退出状态为 0。UTC 2026-11-11 18:27:39–43，即上海 2026-11-12 02:27:39–43。 |
+CastExecutionReview.md:23: | 修后文件 | 逐项计算当前生产与隔离副本 Source/Config/Content 的 SHA-256，与 CastCE1AfterSourceHashes.json 三方一致：409 文件、Source 217 文件，差异/多余/删除均为 0，uproject 相同。相对 CastExecutionAccepted23SourceHashes.json 仅 Requests.cpp 修改和新测试新增；修前清单相对旧快照仅新增测试。 |
+CastExecutionReview.md:24: | 直接回归 | 修后 15 项为 CastRequestReentry、SharedCastArbitration、CastExecutionOwnership、CastSubmissionIsolation、CastIntentLifecycle、CastGameplayEvent、MultipleSubmissions、ProductionRecords、SubmissionReconciliation、LateSubmission、UnconfirmedSubmission、AreaSubmissionSettlement、SubmissionFeedbackRouting、SubmissionFeedbackIdentity、Presentation.SubmissionIdentity，保留共同仲裁、闪避、缓存、资源竞争、多点和未决/迟到身份的直接回归。 |
+CastExecutionReview.md:25: | 保留限制 | 修后仍有 13 条启动 Condition failed、PIX 初始化失败及多平台 SetupSDK 失败；不能描述日志无错误。未重跑纯解析/GAS 算法、独立动作寿命、资产加载、生产 Probe 或可见运行；这些使用未变更代码及原限定证据，不当作修后运行结果。 |
+CastExecutionReview.md:26: 
+CastExecutionReview.md:27: 证据与修复足以关闭原问题，无需为本次定向复查另起构建。以下保留首次审查定位与修前证据，均为历史记录。
+CastExecutionReview.md:28: 
+CastExecutionReview.md:29: ## P2-CE-1 原始发现（已关闭；以下行号为修前）
+CastExecutionReview.md:30: 
+CastExecutionReview.md:31: - 定位：`Source/SkillLabSkills/Private/SkillLabSkillRuntimeRequests.cpp:145–146`；同文件 `ClearPendingSkillIntent:251–261`、`TryActivateRequest:149–160`；`SkillLabSkillRuntimeComponent.cpp:257–268`。
+CastExecutionReview.md:32: - 事实：`SubmitSkillOperation` 先调用 `BuildActivationPlan`。当结果允许且没有待取消来源时，随后 `ClearPendingSkillIntent(BufferedIntentReplaced)` 会经 `Reject → Emit` 同步广播旧缓存意图的拒绝事件。监听者可以在这里正式启动另一 Cast。返回后外层直接调用 `TryActivateRequest`；该函数重查角色/资源/冷却/目标，却不重查所有有效 Cast 的操作规则。原仲裁结果此时已失效。清缓存后的入口也没有重新核对 Reset/EndPlay 屏障。
+CastExecutionReview.md:33: - 最小触发：A 限制期间缓存 C；A 自然完成移出执行集合，在其 Completed 监听中请求 D。D 此时取得 Allow；清除 C 时，C 的 `Rejected/BufferedIntentReplaced` 监听再正式启动 E，E 的规则为 `skill=Reject` 且保持运行。E 正常激活后，D 仍沿广播前的计划激活，与 E 并存。可分别让 E 返回 Buffer 或在通知中结束 Runtime，检查同一失效计划边界。
+CastExecutionReview.md:34: - 影响：E 的明确拒绝不能阻止 D，违反需求第 3、5、8.2 节“所有仍有效 Cast 共同判断、拒绝优先、全部允许后才激活”的规则。属于本次多执行及同步回调集成的正确性问题。
+CastExecutionReview.md:35: - 最小修复方向：在最后一次可能同步广播之后，重新确认 Runtime/生命周期有效性和完整共同仲裁结果，或以等效的请求编排屏障保证计划不会被回调改变；不能仅重查能量。
+CastExecutionReview.md:36: - 最小复查：复用正式目录/请求 fixture，实现上述 Completed → 缓存拒绝回调 → 新 E 的场景；断言 D 不产生 Started/效果/费用，E 原执行保持，Reject/Buffer 原因正确。修复影响请求编排后保留 SharedCastArbitration、CastExecutionOwnership、CastSubmissionIsolation 及已有身份/未决回归。
+CastExecutionReview.md:37: 
+CastExecutionReview.md:38: 首次审查由当时源码的完整同步调用链静态确认，未新增或运行复现测试。当时 SharedCastArbitration 未在替换通知中改变执行集合，23 项 Success 不排除此问题；后续真实复现及关闭依据见上节。
+CastExecutionReview.md:39: 
+CastExecutionReview.md:40: ## 首次审查已核对的实现与证据（修前）
+CastExecutionReview.md:41: 
+CastExecutionReview.md:42: 实际核对了 Provider 候选替换与点/规则解析、每 Cast 执行所有权与 Ability 事件身份、共同仲裁和单槽缓存、点表及 Begin/Resolve/Abort 接口、同目标不同点去重、生产动作与交付后投射物、持续 GE 观察清理、表现播放 token/实例接口，以及对应新增测试的关键断言。
+CastExecutionReview.md:43: 
+CastExecutionReview.md:44: 定义解析通过唯一候选入口规范化，失败候选保留旧结果；旧四生产定义的隐式单点兼容、Allow 限域、显式点校验及反射 token 复制均有最终运行测试。多点正式测试经过解析 → 请求 → Ability/Event/Timer → 真实 GE；投射物和持续效果测试有真实 Actor/ASC/GE，不是用成功 bool 代替端到端事实。Runtime、点编排、Lua 宿主、实际动作和已交付效果沿职责拆分；本轮未做全仓结构质量审计。
+CastExecutionReview.md:45: 
+CastExecutionReview.md:46: 证据目录：`C:/Users/Administrator/AppData/Local/Temp/SkillLabCastExecutionValidation/Saved/Logs/`。
+CastExecutionReview.md:47: 
+CastExecutionReview.md:48: | 独立核对 | 结果与边界 |
+CastExecutionReview.md:49: | --- | --- |
+CastExecutionReview.md:50: | 冻结清单与当时文件 | 首次审查逐项 SHA-256 比对的 408 文件、Source 216 文件快照现备份为 `CastExecutionAccepted23SourceHashes.json`，结果汇总为 `CastExecutionAccepted23Verification.json`；当时三方一致、无清单外生产文件、uproject 相同。此数目不包含 Plugins 的全面审计。当前修后 409 文件见上节。 |
+CastExecutionReview.md:51: | 最终构建 | `CastExecutionFinalBuild.log` 明确 `Result: Succeeded`；最后编译 SubmissionPointExecution 并重新链接 Skills。相关新解析/测试 obj 均存在；检查到的 obj 晚于各自源码，Skills DLL 为 UTC 18:08:43，晚于最新源码 UTC 18:08:32，早于最终测试。退出码 0 由交付 JSON 记录。 |
+CastExecutionReview.md:52: | 最终自动化 | `CastExecutionFinalValidation2.log` 有 23 条不同目标的 Test Completed/Success，第 4047 行为 23 tests performed，第 4050 行 RequestExitWithStatus 为 0。运行时间为 UTC 2026-11-11 18:09:26–29，即上海 2026-11-12 02:09:26–29。未以汇总 JSON 或单纯进程 0 替代逐项结果。 |
+CastExecutionReview.md:53: | B1 当前性 | SubmissionDefinition（3303 行）及 DefinitionValidation（2942 行）均在最终进程 Success；B1 摘要“仅编译未运行”和旧失败记录是历史状态，不作为当前缺陷。 |
+CastExecutionReview.md:54: | 日志噪声 | 1620–1632 行有 13 条启动期 Condition failed；457 行 PixWinPlugin 初始化失败，955–967 行有 Android/IOS/Linux/Mac/TVOS SetupSDK 失败。AutoSDK 总返回 0，目标测试随后实际运行；不能称日志无错误，也不以旧 GameFeatureData 错误代替当前日志事实。 |
+CastExecutionReview.md:55: 
+CastExecutionReview.md:56: 本轮只读核对既有构建/运行材料，没有重新构建或重跑 UE。未决和迟到身份的已接受十四项回归仍在本次 23 项中成功；不据此重新宣称需求 8.1 整体完成。
+CastExecutionReview.md:57: 
+CastExecutionReview.md:58: ## 仍保留的交付边界
+CastExecutionReview.md:59: 
+CastExecutionReview.md:60: - ProductionProbe 为最终测试补充前构建 11 的真实 `-game/NullRHI` 生产链证据，不能冒称最终 23 项快照的完整生产端到端验收。
+CastExecutionReview.md:61: - 四个生产 Montage 只读加载均成功，但都使用 DefaultGroup/DefaultSlot；没有兼容双 group 并播或可见 PIE 证据。Lua stop 是适配器 token 绑定验证，不能替代真实双 Montage 视觉验收。
+CastExecutionReview.md:62: - 沉默/硬直多来源测试使用真实 GE；不代表已有可游玩的生产授予者。普通/重击测试也不证明所有生产攻击者已正确选择类别。
+CastExecutionReview.md:63: - 暂停的 C1 资源写入及二进制资产/GE 审计、可见运行验收仍待 PM 接续；本报告不代做全审，不承诺跨进程恢复。
+CastExecutionReview.md:64: - 当前项目事实文档尚需在修复及 Review 后同步多执行、点调度、交付后寿命、表现 token 和新增测试入口；本次仅写审查报告，不改这些被审文档。
+CastExecutionReview.md:65: 
+CastExecutionReview.md:66: P2-CE-1 已关闭，由 PM 接续剩余审计、可见验收和项目事实文档同步；本报告不宣布整批需求完成。
+CastExecutionReview.md:67: 
+CastExecutionReview.md:68: 
+CastExecutionReview.md:69: ## 2026-11-12 R 资源修复与 Reset 跨层接入定向复审
+CastExecutionReview.md:70: 
+CastExecutionReview.md:71: **结论：本轮未发现需要立即修复的确定性代码缺陷；资源协调和 Reset 接入的已覆盖路径可接受，但交接要求的 Reset 专项验证尚未全部闭合。** 不重开已接受的 B1、多 Cast 和 P2-CE-1；不以本轮结论宣布需求 8.1 或整批完成。此前末尾“C1 资源写入暂停”的文字为历史状态，以本节为当前定向审查结论。
+CastExecutionReview.md:72: 
+CastExecutionReview.md:73: - `SkillLabAbilitySystemResource.cpp:36` 将钳制后的目标写入 base 并核对 current/base，先检查预留；资源变更队列在执行前重新校验，项移出队列后才回调，Queued 不是最终成功。Tracked 回执区分 Applied、Rejected、Failed、Unavailable；EndPlay/BeginDestroy 关闭待处理项，失效接收者不强行通知。失败可能已有副作用，不推断回滚。
+CastExecutionReview.md:74: - `SkillLabSkillRuntimeComponent.cpp:213` 在取消前登记 Attempt/ASC/generation；清理时绑定新 generation，进入 Waiting 后请求资源。`BeforeApply` 再核对身份和未决，完成处理核对回执身份，只有 Applied 且无未决才清已确认冷却；EndPlay 使旧尝试失效。资源写入及 Health/效果清理不具有整体事务原子性。
+CastExecutionReview.md:75: - 静态资源 modifier 在 GE 应用前拒绝；`SkillLabCombatAttributeSet.cpp:41` 对 execution 实际 Energy/MaxEnergy 输出逐项 veto，非资源输出仍可执行。混合 execution 不保证整笔 GE 回滚；调用方不得把 GE 整体成功当作资源输出已写入。
+CastExecutionReview.md:76: - GAS 集成用例覆盖立即与排队许可拒绝、后续队列、回调重入、执行后故障注入、EndPlay/BeginDestroy 和失效接收者；正式 Reset 用例覆盖立即及排队 Applied、Health 回调屏障、旧 Runtime 替换、故障注入 Failed、ASC 结束及 Actor 销毁。已有未决和迟到回归覆盖阻塞、预留/隔离、冷却及迟到收束。上述 Failed 使用不支持的重入写入故障注入，不是合法 Rejected。
+CastExecutionReview.md:77: 
+CastExecutionReview.md:78: **仍须补证：**交接要求正式 Reset 的无未决立即 Rejected、Queued 后合法 Rejected，或用实际执行顺序和生产边界证明相应组合不可达；当前通用 GAS 的人工许可拒绝不足以证明 Runtime 端到端拒绝路径，亦不能据此断言所有合法拒绝不可达。还需针对取消收束中新增未决以及成功资源回调重入的正式场景补充测试或可核查的不可达分析，核对一次终态、屏障、预留、隔离和冷却。现有代码的多次未决检查和成功路径静态证据不能替代这些专项运行证据。这些是交接验收缺口，当前不将其描述为已复现的生产缺陷。
+CastExecutionReview.md:79: 
+CastExecutionReview.md:80: **独立证据核对：**Reviewer 只读检查，未重新构建或运行。`C:/Users/Administrator/AppData/Local/Temp/SkillLabCastExecutionValidation/Saved/Logs/ResetResourceFinal3Hashes.json` 的 SHA-256 为 `1049706A67CAA6CBE2E46D2F7D3588ABD82A5849E33DF8748E2B96CF7EAF8A70`；逐项计算生产工程、隔离工程和清单的 Source/Config/Content 共 416 文件（224/43/149），三方一致、双方无额外或缺失文件，uproject 哈希一致。此比较不覆盖 Plugins 或引擎。
+CastExecutionReview.md:81: 
+CastExecutionReview.md:82: `ResetResourceFinal3Build.log` 显示实际编译 Reset 测试并链接 Skills DLL，Result Succeeded；隔离工程相关 GAS、Runtime、测试 obj 及 GAS/Skills DLL 均存在且早于最终运行。`ResetResourceFinal3Validation.log` 分别记录 EnergyLedger、EnergySettlementHistory、ResourceExecutionBoundary、ResourceWriteIntegration、CastRequestReentry、LateSubmission、ResetResourceCompletion、UnconfirmedSubmission 八个不同目标 Success，队列共 8 tests performed，RequestExitWithStatus 为 0。启动阶段仍有 13 条 `Condition failed` 和 PIX 初始化失败，不能称日志无错误；上述目标确实随后执行成功。旧隔离快照的 R 全量用例不冒称在此交叉快照重跑。
+CastExecutionReview.md:83: 
+CastExecutionReview.md:84: 可见 PIE、双 Montage、资源资产审计的剩余范围及项目事实文档同步仍由 PM 接续；本次只更新本报告。
+CastExecutionReview.md:85: 
+CastExecutionReview.md:86: 
+CastExecutionReview.md:87: ## 2026-11-12 Reset 三项补证定向复查
+CastExecutionReview.md:88: 
+CastExecutionReview.md:89: **结论：取消收束中新未决、成功路径重入两项补证可接受；合法资源 Rejected 的不可达论证仍缺关键前提，本轮资源/Reset 验收暂不完全闭合。** 本轮未重新审查 R+A 全部实现或已接受功能，也未改生产代码。
+CastExecutionReview.md:90: 
+CastExecutionReview.md:91: 1. **合法 Rejected：仍需补证。** `SkillLabSkillRuntimeComponent.cpp:310` 先取得 ResetEnergy，随后第 311 行写 Health 并同步触发委托，直到第 326 行才提出资源请求。原论证将“取值时预留不超过旧 MaxEnergy”直接用于请求执行时，忽略 Health 委托可通过正式资源协调接口改变 MaxEnergy、Energy 和预留。可核查的最小场景：初始 MaxEnergy=100、Health 未满，Health 委托经协调接口将 MaxEnergy 和 Energy 均提升到 200，再经 `BeginEnergyEscrow` 为同 ASC 建立成本 150 的合法独立预留；无未确认提交时，外层 Reset 仍以旧目标 100 Override，`SkillLabAbilitySystemResource.cpp:151`–166 因低于当前预留返回 Rejected。`BeginEnergyEscrow` 的写深度和队列门控（`SkillLabAbilitySystemEnergyReservations.cpp:23`–38）不禁止这里的立即路径，因为 Health 委托本身不处于资源写入保护中。此为静态可达性反例，尚未运行复现；不预判生产内容一定存在该委托，也不把它称为已复现的代码缺陷。请使用正式 Reset、正式协调接口及合法预留验证 Rejected 的一次报告、屏障释放、预留与冷却事实，或指出可核查的现有业务约束为何排除该组合。
+CastExecutionReview.md:92: 
+CastExecutionReview.md:93:    对真正处于资源写保护内入队的路径，队列未空或写深度非零时禁止新增预留；先行合法 MaxEnergy 降低须保持现有预留，升高也不能单独增大旧预留，因此在有限、无聚合、有效会话且无原生旁路的限定下，排队后资源参数/预留 Rejected 的分析可接受。运行中失效与新增未决分别按 Unavailable 或许可阻断处理，不等同该资源 Rejected；不将此结论外推到任意原生旁路、非法初始状态或未审计内容。
+CastExecutionReview.md:94: 
+CastExecutionReview.md:95: 2. **取消收束中新未决：可接受。** `SkillLabResetResourceCompletionTests.cpp:171` 从正式 Cast/Begin 和真实生产记录出发，提交中 Reset 后丢失返回，经未决交接再完成 Reset，断言一次 Blocked、实际 Energy 100、唯一预留 2、隔离及无早冷却；重复查询真实迟到结果只扣一次至 98、释放预留并启动冷却。对应代码先 `StartIndeterminateWait` 留存记录，再通过终止收束进入 `CompleteReset`。该结果闭合本项限定场景，不承诺跨进程恢复。
+CastExecutionReview.md:96: 
+CastExecutionReview.md:97: 3. **成功路径重入：可接受。** 当前 `OnResetResourceFinished` 的成功分支清确认冷却，`ResetConfirmedCooldowns` 只操作内部映射；`FinishResetAttempt` 先清本次状态，成功只写日志，没有对外成功委托，故没有可由产品监听者进入的“成功回执内部新 Attempt”入口。新增测试覆盖资源写入期间实际 Energy 委托中的重复 Reset/请求屏障，以及写入中销毁旧 Runtime 后替换请求；Energy 委托发生在最终回执之前，不能称为成功回执回调测试。未来若新增成功通知，须重新验证通知中的新 Attempt 和旧栈收尾。
+CastExecutionReview.md:98: 
+CastExecutionReview.md:99: **独立证据：**`ResetEvidenceFinalHashes.json` SHA-256 为 `0B11F9F4BCBFF25B88486899C95178803A6AEDBF717A5A48B0A271EF9C0C2DBA`；生产工程、隔离副本和清单的 Source/Config/Content 416 文件逐项哈希一致（224/43/149），无额外或缺失文件，uproject 一致。与此前独立核对的 `ResetResourceFinal3Hashes.json` 相比仅 `SkillLabResetResourceCompletionTests.cpp` 改变；不覆盖 Plugins 或引擎。构建日志实际编译该测试并链接 Skills，Result Succeeded；运行日志的 ResetResourceCompletion 与 ResetSubmissionDuringCompletion 均 Success，2 tests performed，退出状态 0，启动期仍有 13 条 Condition failed。旧八项目标没有在此快照重跑，不称为十项同轮通过。Reviewer 未重新构建或运行。
+CastExecutionReview.md:100: 
+CastExecutionReview.md:101: 本节更新上一节的三项缺口判断；可见 PIE、双 Montage、资源资产审计剩余范围及项目事实文档同步仍待后续，不能据此宣布整批完成。
+CastExecutionReview.md:102: 
+CastExecutionReview.md:103: 
+CastExecutionReview.md:104: ## 2026-11-12 立即合法资源 Rejected 补证复查
+CastExecutionReview.md:105: 
+CastExecutionReview.md:106: **结论：上一节的立即合法 Rejected 验证缺口关闭；结合此前已接受的排队限定分析、取消收束中新未决及成功路径重入证据，R 资源修复与 Reset 跨层接入的本轮专项验收通过。** 这是限定于本次合同和证据范围的结论，不宣布整批完成。
+CastExecutionReview.md:107: 
+CastExecutionReview.md:108: `SkillLabResetResourceCompletionTests.cpp:36` 经正式技能建立已确认冷却，Health 设为 40 后调用正式 Reset；Health 委托经协调接口将 MaxEnergy/Energy 升至 200，建立独立预留 150。对照 `SkillLabSkillRuntimeComponent.cpp:310`–326，Reset 已在该委托前取得旧目标 100；`SkillLabAbilitySystemResource.cpp:151`–166 的预留校验因目标低于预留而拒绝，回执由 Runtime 映射为 `ResetResourceChangeRejected`，结束屏障且不清确认冷却。测试断言一次拒绝、Health 委托一次、Energy 仅有委托内一次写入，实际/最大/预留/可用为 200/200/150/50，已有冷却保持；另一技能可请求，独立预留可释放。日志实录资源 Rejected、Reset 拒绝及对应事件，支持该场景实际执行；没有将故障注入 Failed 当成合法拒绝，也没有补偿或自动重试。
+CastExecutionReview.md:109: 
+CastExecutionReview.md:110: Reviewer 独立核对 `ResetImmediateRejectedHashes.json` SHA-256 为 `7A0A64A063F094D9D37FDBD5288EB90DE749493A261793BAF405E054C220ACA1`。生产工程、隔离工程及清单 Source/Config/Content 416 文件逐项一致（224/43/149），无额外或缺失文件，uproject 一致；对比 `ResetEvidenceFinalHashes.json` 仅该测试文件变化，比较不覆盖 Plugins 或引擎。`ResetImmediateRejectedBuild.log` 实际编译测试、链接 Skills，Result Succeeded；`ResetImmediateRejectedValidation.log` 中 ResetResourceCompletion 为 Success、1 tests performed、退出状态 0。启动仍有 13 条 Condition failed 和 PIX 初始化失败；此前八项及两项证据保留在各自快照，不冒称本轮全部重跑。Reviewer 未重新构建或运行。
+CastExecutionReview.md:111: 
+CastExecutionReview.md:112: 上一节关于立即 Rejected 待证的结论由本节关闭；此前排队分析的有效会话、有限资源、无聚合及无原生旁路等限定继续有效。可见 PIE、双 Montage、资源资产审计剩余范围及项目事实文档同步仍待后续，不作跨进程承诺。
+[当前历史移除/保留检索，注意Allocated与PendingFeedback会移除]
+ue/SkillLab/Source/SkillLabGAS/Private\SkillLabAbilitySystemEnergyReservations.cpp:27:	AllocatedEnergyTransactionIds.Remove(TransactionId);
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:137:	PendingFeedback.Remove(Index);

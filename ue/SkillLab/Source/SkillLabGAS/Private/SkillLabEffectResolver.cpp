@@ -1,10 +1,13 @@
 #include "SkillLabEffectResolver.h"
 #include "SkillLabCombatAttributeSet.h"
 #include "GameFramework/Actor.h"
+#include "Misc/ScopeExit.h"
 
 FSkillLabEffectResult USkillLabEffectResolver::Apply(const FSkillLabEffectRequest& Request)
 {
 	FSkillLabEffectResult Result;
+	bool bReported = false;
+	ON_SCOPE_EXIT { if (!bReported && Request.OnApplicationReturned) Request.OnApplicationReturned(Result.bApplied, Result.Reason); };
 	Result.RequestedAmount = Request.Magnitude;
 	if (!IsValid(Request.SourceASC) || !IsValid(Request.TargetASC) || !FMath::IsFinite(Request.Magnitude)
 		|| !FMath::IsFinite(Request.PowerCoefficient) || Request.Magnitude <= 0.0f)
@@ -54,7 +57,10 @@ FSkillLabEffectResult USkillLabEffectResolver::Apply(const FSkillLabEffectReques
 		Result.Reason = TEXT("EffectOperationUnsupported");
 		break;
 	}
-	Result.HealthAfter = Attributes->GetHealth();
+	if (Request.OnApplicationReturned) Request.OnApplicationReturned(Result.bApplied,
+		Result.bApplied ? FName(TEXT("GameplayEffectAccepted")) : FName(TEXT("GameplayEffectRejected")));
+	bReported = true;
+	Result.HealthAfter = IsValid(Attributes) ? Attributes->GetHealth() : Result.HealthBefore;
 	Result.ActualAmount = FMath::Max(0.0f, Request.Operation == ESkillLabEffectOperation::Healing
 		? Result.HealthAfter - Result.HealthBefore : Result.HealthBefore - Result.HealthAfter);
 	if (!Result.bApplied && Result.Reason.IsNone()) Result.Reason = TEXT("GameplayEffectFailed");

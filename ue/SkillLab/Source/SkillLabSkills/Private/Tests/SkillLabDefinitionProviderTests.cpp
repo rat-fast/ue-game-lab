@@ -80,6 +80,31 @@ bool FSkillLabDefinitionProviderValidationTest::RunTest(const FString& Parameter
 	};
 
 	const FString UnitLua = MakeLua()[TEXT("fixture.lua")];
+	{
+		TMap<FName, FSkillLabSkillDefinition> SeparateStateRules;
+		FString LocalError;
+		TestTrue(TEXT("Activation block and interrupt sources can be declared separately"), ParseFixture(
+			MakeJson(TEXT("Skill_Test"), TEXT(",\"blockedBy\":[\"State.SkillLab.Dead\"],\"interruptBy\":[]")), MakeLua(), SeparateStateRules, LocalError));
+		if (const FSkillLabSkillDefinition* StateRules = SeparateStateRules.Find(TEXT("Skill_Test")))
+		{
+			TestEqual(TEXT("Activation block remains present"), StateRules->BlockedByTags.Num(), 1);
+			TestEqual(TEXT("Explicit empty interrupt list stays empty"), StateRules->InterruptedByTags.Num(), 0);
+		}
+	}
+	const FString RulesLua = UnitLua.Replace(TEXT("\"execution\",\"InstantTarget\""), TEXT("\"execution\",\"InstantTarget\",\"combatRules\",\"Missing\",\"recoveryRules\",\"Missing\""));
+	ExpectRejected(TEXT("Unknown rule profile is rejected"), MakeJson(), RulesLua, TEXT("unknown combatRules"));
+	ExpectRejected(TEXT("Unknown window profile is rejected"), MakeJson(TEXT("Skill_Test"), TEXT(",\"ruleWindows\":[{\"id\":\"Window\",\"beginEvent\":\"SkillLab.Event.Window.Open\",\"endEvent\":\"SkillLab.Event.Window.Close\",\"rules\":\"Missing\"}]")), UnitLua, TEXT("ruleWindows"));
+	ExpectRejected(TEXT("Invalid skill category is rejected"), MakeJson(), UnitLua.Replace(TEXT("\"execution\",\"InstantTarget\""), TEXT("\"execution\",\"InstantTarget\",\"category\",\"Other\"")), TEXT("category"));
+	ExpectRejected(TEXT("Unknown ability category tag is rejected"), MakeJson(), UnitLua.Replace(TEXT("\"execution\",\"InstantTarget\""), TEXT("\"execution\",\"InstantTarget\",\"categoryTag\",\"Ability.SkillLab.Unknown\"")), TEXT("categoryTag"));
+	ExpectRejected(TEXT("Event tags cannot be used as ability categories"), MakeJson(), UnitLua.Replace(TEXT("\"execution\",\"InstantTarget\""), TEXT("\"execution\",\"InstantTarget\",\"categoryTag\",\"SkillLab.Event.Cast\"")), TEXT("categoryTag"));
+	ExpectRejected(TEXT("Independent preparation requires a release event"), MakeJson(), UnitLua.Replace(TEXT("\"execution\",\"InstantTarget\""), TEXT("\"execution\",\"InstantTarget\",\"windupEnd\",\"Timer\"")), TEXT("independent windup"));
+	ExpectRejected(TEXT("Completion wait requires an active timeout"), MakeJson(TEXT("Skill_Test"), TEXT(",\"completionEventTag\":\"SkillLab.Event.Cast.Complete\"")), UnitLua, TEXT("completionEventTag"));
+	const FString RuleProfile = TEXT(R"({"id":"TestProfile","skill":"Buffer","dodge":"CancelAndActivate","movement":"Continue","userCancel":"Continue","normalHit":"Continue","heavyHit":"Interrupt","unknownHit":"Continue"})");
+	const FString WithRules = MakeJson().Replace(TEXT("{\"skills\":"), *(FString(TEXT("{\"combatRules\":[")) + RuleProfile + TEXT("],\"skills\":")));
+	ExpectRejected(TEXT("Continue is invalid for the skill request decision"), WithRules.Replace(TEXT("\"Buffer\""), TEXT("\"Continue\"")), UnitLua, TEXT("invalid decision 'Continue' for skill"));
+	ExpectRejected(TEXT("A hit reaction cannot reject already settled damage"), WithRules.Replace(TEXT("\"normalHit\":\"Continue\""), TEXT("\"normalHit\":\"Reject\"")), UnitLua, TEXT("invalid decision"));
+	const FString DuplicateRules = WithRules.Replace(*RuleProfile, *(RuleProfile + TEXT(",") + RuleProfile));
+	ExpectRejected(TEXT("Duplicate shared rule profile is rejected"), DuplicateRules, UnitLua, TEXT("duplicated"));
 	ExpectRejected(TEXT("Unknown JSON fields are rejected"), MakeJson(TEXT("Skill_Test"), TEXT(",\"unexpected\":1")), UnitLua, TEXT("unknown JSON field"));
 	ExpectRejected(TEXT("Missing required range is rejected"), TEXT(R"({"skills":[{"id":"Skill_Test","luaScript":"fixture.lua","cost":1,"cooldown":0,"magnitude":1,"windup":0,"recovery":0}]})"), UnitLua, TEXT("range"));
 	ExpectRejected(TEXT("JSON cannot duplicate Lua-owned classification"), MakeJson(TEXT("Skill_Test"), TEXT(",\"targetShape\":\"Unit\"")), UnitLua, TEXT("unknown JSON field"));

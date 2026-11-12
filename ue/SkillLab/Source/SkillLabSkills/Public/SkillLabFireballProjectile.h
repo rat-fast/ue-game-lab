@@ -4,8 +4,12 @@
 #include "GameFramework/Actor.h"
 #include "SkillLabProjectileTypes.h"
 #include "SkillLabSkillTypes.h"
+#include "SkillLabSubmissionResults.h"
 #include "SkillLabFireballProjectile.generated.h"
 
+class USkillLabAbilitySystemComponent;
+class USkillLabSkillEffectEventAdapter;
+class USkillLabSkillEffectExecutor;
 class USphereComponent;
 class UProjectileMovementComponent;
 class UMaterialInstanceDynamic;
@@ -21,8 +25,12 @@ class SKILLLABSKILLS_API ASkillLabFireballProjectile : public AActor
 
 public:
 	ASkillLabFireballProjectile();
-	void Initialize(AActor* InSource, AActor* InTarget, const FSkillLabSkillDefinition& InDefinition, const FSkillLabSkillRequest& InRequest, int32 InCastId, const FSkillLabProjectileParameters& InParameters = FSkillLabProjectileParameters());
+	void Initialize(AActor* InSource, AActor* InTarget, const FSkillLabSkillDefinition& InDefinition, const FSkillLabSkillRequest& InRequest, int32 InCastId, const FSkillLabProjectileParameters& InParameters = FSkillLabProjectileParameters(), const FSkillLabProductionHandle& Delivery = {});
+	// FinishSpawning 完成后记录交付，再开放碰撞；同步 overlap 自毁不改变交付事实。
+	bool ConfirmDelivery();
 	FSkillLabProjectileResolved OnResolved;
+	bool IsDeliveryConfirmed() const { return bDeliveryConfirmed; }
+	const FSkillLabSkillResult& GetImpactResult() const { return ImpactResult; }
 
 protected:
 	virtual void BeginPlay() override;
@@ -55,11 +63,19 @@ private:
 	TObjectPtr<UMaterialInstanceDynamic> VisualMaterial;
 
 	UPROPERTY(Transient)
-	TObjectPtr<AActor> Source;
+	TWeakObjectPtr<AActor> Source;
 
 	UPROPERTY(Transient)
-	TObjectPtr<AActor> Target;
+	TWeakObjectPtr<AActor> Target;
 
+	friend class USkillLabSkillEffectExecutor;
+	TWeakObjectPtr<USkillLabAbilitySystemComponent> SourceASC;
+	TWeakObjectPtr<USkillLabSkillRuntimeComponent> OriginRuntime;
+	TWeakObjectPtr<USkillLabSkillEffectEventAdapter> EffectObserver;
+	FSkillLabSkillResult Origin, ImpactResult;
+	int32 SourceTeam = 0;
+	bool bDeliveryConfirmed = false;
+	bool bHitEffectConsumed = false;
 	FSkillLabSkillDefinition Definition;
 	FSkillLabSkillRequest Request;
 	FSkillLabProjectileParameters Parameters;
@@ -67,5 +83,7 @@ private:
 	bool bResolved = false;
 	bool bInitialized = false;
 	bool bActivationStarted = false;
+	bool bDeliveryPending = false;
+	FSkillLabProductionHandle Delivery;
 	FTimerHandle ExpireTimerHandle;
 };

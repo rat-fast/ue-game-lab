@@ -12,7 +12,7 @@ void USkillLabSkillAnimNotify::Notify(USkeletalMeshComponent* MeshComp, UAnimSeq
 	AActor* Owner = MeshComp->GetOwner();
 	USkillLabSkillAnimationComponent* AnimationComponent = Owner
 		? Owner->FindComponentByClass<USkillLabSkillAnimationComponent>() : nullptr;
-	if (!AnimationComponent || !AnimationComponent->ForwardAnimNotify(Animation, EventTag, EventReference))
+	if (!AnimationComponent || !AnimationComponent->ForwardAnimNotify(Animation, EventTag, EventReference, false, MeshComp))
 	{
 		UE_LOG(LogTemp, Verbose, TEXT("[SkillLabAnimation] Notify ignored: no matching active cast montage"));
 	}
@@ -32,7 +32,7 @@ namespace
 		AActor* Owner = MeshComp->GetOwner();
 		USkillLabSkillAnimationComponent* AnimationComponent = Owner
 			? Owner->FindComponentByClass<USkillLabSkillAnimationComponent>() : nullptr;
-		if (!AnimationComponent || !AnimationComponent->ForwardAnimNotify(Animation, EventTag, EventReference))
+		if (!AnimationComponent || !AnimationComponent->ForwardAnimNotify(Animation, EventTag, EventReference, false, MeshComp))
 		{
 			UE_LOG(LogTemp, Verbose, TEXT("[SkillLabAnimation] Notify state ignored: no matching active cast montage"));
 		}
@@ -52,7 +52,7 @@ void USkillLabSkillAnimNotifyState::NotifyEnd(USkeletalMeshComponent* MeshComp, 
 	AActor* Owner = MeshComp->GetOwner();
 	USkillLabSkillAnimationComponent* AnimationComponent = Owner
 		? Owner->FindComponentByClass<USkillLabSkillAnimationComponent>() : nullptr;
-	if (!AnimationComponent || !AnimationComponent->ForwardAnimNotify(Animation, EventTag, EventReference, true))
+	if (!AnimationComponent || !AnimationComponent->ForwardAnimNotify(Animation, EventTag, EventReference, true, MeshComp))
 	{
 		UE_LOG(LogTemp, Verbose, TEXT("[SkillLabAnimation] Notify state end ignored: no matching active cast montage"));
 	}

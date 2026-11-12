@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "SkillLabSkillTypes.h"
 #include "SkillLabCharacterAnimationStateComponent.h"
 #include "SkillLabCharacterPresentationLuaComponent.generated.h"
 
@@ -23,6 +24,7 @@ public:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
+	friend class FSkillLabPresentationSubmissionIdentityTest;
 	static int32 LuaPlaySkillAction(FSkillLabLuaState* State);
 	static int32 LuaStopSkillAction(FSkillLabLuaState* State);
 	static int32 LuaSetLocomotionIntent(FSkillLabLuaState* State);
@@ -46,4 +48,5 @@ private:
 	UPROPERTY(Transient)
 	TObjectPtr<USkillLabSkillPresentationRouter> SkillPresentationRouter;
 	FSkillLabLuaState* Lua = nullptr;
+	FSkillLabCastExecutionToken CallbackCastToken;
 };

@@ -17,6 +17,7 @@
 #include "NiagaraSystem.h"
 #include "../SkillLabCharacter.h"
 #include "SkillLabSkillInputComponent.h"
+#include "SkillLabSkillRuntimeComponent.h"
 
 USkillLabPlayerInputComponent::USkillLabPlayerInputComponent()
 {
@@ -211,6 +212,15 @@ void USkillLabPlayerInputComponent::MoveToCursor()
 	if (!ControlledPawn)
 	{
 		return;
+	}
+	if (USkillLabSkillRuntimeComponent* Runtime = ControlledPawn->FindComponentByClass<USkillLabSkillRuntimeComponent>())
+	{
+		FName Reason;
+		if (!Runtime->RequestNonSkillOperation(ESkillLabOperationCategory::Movement, Reason))
+		{
+			UE_LOG(LogTemp, Log, TEXT("[SkillLabInput] Movement rejected: %s"), *Reason.ToString());
+			return;
+		}
 	}
 
 	UNavigationPath* Path = UNavigationSystemV1::FindPathToLocationSynchronously(

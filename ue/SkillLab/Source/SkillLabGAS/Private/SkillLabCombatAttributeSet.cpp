@@ -38,6 +38,16 @@ void USkillLabCombatAttributeSet::PreAttributeChange(const FGameplayAttribute& A
 	}
 }
 
+bool USkillLabCombatAttributeSet::PreGameplayEffectExecute(FGameplayEffectModCallbackData& Data)
+{
+	if (Data.EvaluatedData.Attribute == GetEnergyAttribute() || Data.EvaluatedData.Attribute == GetMaxEnergyAttribute())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("[SkillLabResource] GE resource output rejected before modification: %s"), *Data.EvaluatedData.Attribute.GetName());
+		return false;
+	}
+	return Super::PreGameplayEffectExecute(Data);
+}
+
 void USkillLabCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data)
 {
 	Super::PostGameplayEffectExecute(Data);
@@ -70,17 +80,23 @@ void USkillLabCombatAttributeSet::PostGameplayEffectExecute(const FGameplayEffec
 	{
 		SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
 	}
-	else if (Data.EvaluatedData.Attribute == GetEnergyAttribute())
-	{
-		SetEnergy(FMath::Clamp(GetEnergy(), 0.0f, GetMaxEnergy()));
-	}
 	ClampVitals();
 }
 
 void USkillLabCombatAttributeSet::ClampVitals()
 {
 	SetHealth(FMath::Clamp(GetHealth(), 0.0f, GetMaxHealth()));
-	SetEnergy(FMath::Clamp(GetEnergy(), 0.0f, GetMaxEnergy()));
+	const float ClampedEnergy = FMath::Clamp(GetEnergy(), 0.0f, GetMaxEnergy());
+	if (!FMath::IsNearlyEqual(GetEnergy(), ClampedEnergy))
+	{
+		if (USkillLabAbilitySystemComponent* SkillASC = Cast<USkillLabAbilitySystemComponent>(GetOwningAbilitySystemComponent()))
+		{
+			const ESkillLabResourceChangeResult Result = SkillASC->RequestResourceChangeDetailed(false, EGameplayModOp::Override, ClampedEnergy);
+			if (Result != ESkillLabResourceChangeResult::Applied)
+				UE_LOG(LogTemp, Warning, TEXT("[SkillLabResource] ClampVitals resource correction not completed: Result=%d"), static_cast<int32>(Result));
+		}
+		else SetEnergy(ClampedEnergy);
+	}
 
 	if (UAbilitySystemComponent* ASC = GetOwningAbilitySystemComponent())
 	{

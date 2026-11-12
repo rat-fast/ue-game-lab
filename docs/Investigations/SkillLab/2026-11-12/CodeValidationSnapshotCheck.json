@@ -1,0 +1,10 @@
+{
+  "Time": "2026-11-12T22:38:45.5864307+08:00",
+  "ManifestPath": "C:/Users/Administrator/AppData/Local/Temp/SkillLabCastExecutionValidation/Saved/Logs/ResetImmediateRejectedHashes.json",
+  "ManifestSHA256": "7A0A64A063F094D9D37FDBD5288EB90DE749493A261793BAF405E054C220ACA1",
+  "Count": 416,
+  "Mismatch": [],
+  "ExtraProduction": [],
+  "UprojectProduction": "E2C37AECEABA523273FFFD7001604A306EEB412DB7192259672C6D4C1BBFDC4F",
+  "UprojectValidation": "E2C37AECEABA523273FFFD7001604A306EEB412DB7192259672C6D4C1BBFDC4F"
+}

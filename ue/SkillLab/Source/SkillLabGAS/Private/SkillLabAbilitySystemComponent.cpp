@@ -8,6 +8,9 @@
 USkillLabAbilitySystemComponent::USkillLabAbilitySystemComponent()
 {
 	SetIsReplicatedByDefault(true);
+	FGameplayEffectApplicationQuery ResourceQuery;
+	ResourceQuery.BindUObject(this, &USkillLabAbilitySystemComponent::CanApplyResourceEffect);
+	GameplayEffectApplicationQueries.Add(ResourceQuery);
 	OnPeriodicGameplayEffectExecuteDelegateOnSelf.AddUObject(this, &USkillLabAbilitySystemComponent::HandlePeriodicExecution);
 }
 
@@ -66,6 +69,11 @@ void USkillLabAbilitySystemComponent::InitializeSkillLabAbilityActorInfo(AActor*
 		{
 			AddAttributeSetSubobject(CombatAttributeSet.Get());
 		}
+	}
+	if (CombatAttributeSet && !GetGameplayAttributeValueChangeDelegate(USkillLabCombatAttributeSet::GetEnergyAttribute()).IsBoundToObject(this))
+	{
+		GetGameplayAttributeValueChangeDelegate(USkillLabCombatAttributeSet::GetEnergyAttribute()).AddUObject(this, &USkillLabAbilitySystemComponent::OnResourceChanged);
+		GetGameplayAttributeValueChangeDelegate(USkillLabCombatAttributeSet::GetMaxEnergyAttribute()).AddUObject(this, &USkillLabAbilitySystemComponent::OnResourceChanged);
 	}
 }
 

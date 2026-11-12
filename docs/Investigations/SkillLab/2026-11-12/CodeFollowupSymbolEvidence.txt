@@ -1,0 +1,153 @@
+调查时间：2026-11-12T23:07:05.6302508+08:00
+范围：正式 Source 文本检索，不含第三方或副本，不执行测试。
+[状态字段、完整结果与测试适配：全 Source]
+ue/SkillLab/Source\SkillLabSkills\Public\SkillLabSkillBehavior.h:74:	bool ExecuteDeclaredAction(); // 既有失联回执 fixture 的真实生产调用适配。
+ue/SkillLab/Source\SkillLabSkills\Public\SkillLabSkillBehavior.h:75:	bool ExecuteDeclaredAction(FPointExecution& Point);
+ue/SkillLab/Source\SkillLabSkills\Public\SkillLabCastExecution.h:45:	uint64 PendingSubmissionId = 0;
+ue/SkillLab/Source\SkillLabSkills\Public\SkillLabCastExecution.h:51:	bool bEffectSubmitted = false;
+ue/SkillLab/Source\SkillLabSkills\Public\SkillLabCastExecution.h:53:	FSkillLabSkillResult ActiveEffectResult;
+ue/SkillLab/Source\SkillLabSkills\Public\SkillLabCastExecution.h:54:	TArray<FSkillLabSkillResult> ActiveEffectResults;
+ue/SkillLab/Source\SkillLabSkills\Public\SkillLabCastExecution.h:57:	TMap<uint64, TArray<FSkillLabSkillResult>> SuccessfulPointEffects;
+ue/SkillLab/Source\SkillLabGAS\Public\SkillLabAbilitySystemComponent.h:162:	bool bAwaitingResourceNotification = false;
+ue/SkillLab/Source\SkillLabGAS\Private\SkillLabAbilitySystemResource.cpp:13:			bAwaitingResourceNotification = false;
+ue/SkillLab/Source\SkillLabGAS\Private\SkillLabAbilitySystemResource.cpp:52:	bAwaitingResourceNotification = !FMath::IsNearlyEqual(OldValue, NewValue);
+ue/SkillLab/Source\SkillLabGAS\Private\SkillLabAbilitySystemResource.cpp:58:	bAwaitingResourceNotification = false;
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillBehaviorProduction.cpp:9:bool USkillLabLuaSkillBehavior::ExecuteDeclaredAction()
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillBehaviorProduction.cpp:19: const bool bAccepted = ExecuteDeclaredAction(*Point);
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillBehaviorProduction.cpp:23:bool USkillLabLuaSkillBehavior::ExecuteDeclaredAction(FPointExecution& Point)
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillRuntimeExecution.cpp:443:	for (const FSkillLabSkillResult& Existing : Execution.SuccessfulPointEffects.FindOrAdd(PointId))
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillRuntimeExecution.cpp:452:	Execution.ActiveEffectOperationId = FName(*FString::Printf(TEXT("SkillEffect_%d_%d"), CastId, Execution.ActiveEffectResults.Num() + 1));
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillRuntimeExecution.cpp:455:	Execution.bEffectSubmitted = true;
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillRuntimeExecution.cpp:472:	Execution.ActiveEffectResult = Result;
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillRuntimeExecution.cpp:473:	if (Result.bEffectApplied) { Execution.ActiveEffectResults.Add(Result); Execution.SuccessfulPointEffects.FindOrAdd(PointId).Add(Result); }
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSubmissionPointExecution.cpp:91: const bool bSucceeded = ExecuteDeclaredAction(*Point);
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillRuntimeUnconfirmed.cpp:60:	Execution.PendingSubmissionId = 0;
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillRuntimeSubmission.cpp:101:	Execution.PendingSubmissionId = 0;
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillRuntimeSubmission.cpp:126:	Execution.PendingSubmissionId = SubmissionPointId;
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillRuntimeSubmission.cpp:140:		Execution.PendingSubmissionId = 0;
+ue/SkillLab/Source\SkillLabSkills\Private\SkillLabSkillRuntimeSubmission.cpp:186:	Execution.PendingSubmissionId = 0;
+ue/SkillLab/Source\SkillLabSkills\Private\Tests\SkillLabProductionFixture.h:120:	bool Execute(FUnit& Unit) { return Unit.Behavior->ExecuteDeclaredAction(); }
+[RequestResourceEffect：全 Source]
+ue/SkillLab/Source\SkillLabGAS\Public\SkillLabAbilitySystemComponent.h:103:	ESkillLabResourceChangeResult RequestResourceEffect(const FGameplayEffectSpec& Spec, FName& OutReason);
+ue/SkillLab/Source\SkillLabGAS\Private\SkillLabResourceEffects.cpp:58:ESkillLabResourceChangeResult USkillLabAbilitySystemComponent::RequestResourceEffect(const FGameplayEffectSpec& Spec, FName& OutReason)
+ue/SkillLab/Source\SkillLabGAS\Private\Tests\SkillLabResourceWriteIntegrationTests.cpp:237:		TestTrue(TEXT("Coordinated resource GE applied"), ASC->RequestResourceEffect(Spec, Reason) == ESkillLabResourceChangeResult::Applied);
+ue/SkillLab/Source\SkillLabGAS\Private\Tests\SkillLabResourceWriteIntegrationTests.cpp:243:		TestTrue(TEXT("Resource duration GE rejected by coordinator"), ASC->RequestResourceEffect(DurationSpec, Reason) == ESkillLabResourceChangeResult::Rejected);
+[生产与资源事实查询：正式 Skills 私有实现]
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:278: else if (UnconfirmedSubmissions.IsValid()) UnconfirmedSubmissions->ResetConfirmedCooldowns();
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeExecution.cpp:467:			&& Handle.Owner->GetProductionResults().Query(Handle.Key).Kind == ESkillLabProductionKind::Effect)
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeUnconfirmed.cpp:32:			Record.bAlreadyCommitted = UnconfirmedSubmissions->GetProductionResults().Query(Record.ProductionKey).bAlreadyCommitted;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillEffectExecutor.cpp:49:			const auto Record = Production.Owner->ProductionResults.Query(Production.Key);
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeSubmission.cpp:32:			? UnconfirmedSubmissions->GetProductionResults().Query(Execution.Submission.Production.Key).State
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeSubmission.cpp:57:		bCooldownRecorded = bReceiversAlive && UnconfirmedSubmissions->StartConfirmedCooldown(
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabAreaSubmissionSettlementTests.cpp:41:		const auto Production = Source.Session->GetProductionResults().Query(Key);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabAreaSubmissionSettlementTests.cpp:42:		const auto Resource = Source.ASC->QueryEnergySettlement(Key.Transaction);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabAreaSubmissionSettlementTests.cpp:50:				const auto State = Source.Session->GetProductionResults().Query(Child).State;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionResults.cpp:103:void FSkillLabSubmissionResults::EndSession()
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmittedEffect.cpp:14: const auto Receipt = Action.Delivery.Owner->GetProductionResults().Query(Action.Delivery.Key);
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabUnconfirmedSubmissions.cpp:75:bool USkillLabUnconfirmedSubmissions::StartConfirmedCooldown(const FName SkillId, const double EndTime)
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabUnconfirmedSubmissions.cpp:82:void USkillLabUnconfirmedSubmissions::ResetConfirmedCooldowns()
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabUnconfirmedSubmissions.cpp:90:	if (!ResourceOwner.IsValid() || ResourceOwner->IsBeingDestroyed() || ResourceOwner->HasEndedEnergySession()) { ProductionResults.EndSession(); ReportLostOwner(); }
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabUnconfirmedSubmissions.cpp:97:	ProductionResults.EndSession();
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabUnconfirmedSubmissions.cpp:105:	ProductionResults.EndSession();
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:46:	const FSkillLabProductionResult Production = ProductionResults.Query(Key);
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:63:		FSkillLabEnergySettlement Resource = ResourceOwner->QueryEnergySettlement(Key.Transaction);
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:76:				const bool bResourceClosed = ResourceOwner.IsValid() && ResourceOwner->QueryEnergySettlement(Key.Transaction).State
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:83:			Resource = ResourceOwner->QueryEnergySettlement(Key.Transaction);
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:99:		Confirmation.bCooldownRecorded = bAccepted && (Production.bCooldownRecorded || StartConfirmedCooldown(Key.SkillId,
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:119:	PendingFeedback.Add(Index, Confirmation);
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:126:	if (Records[Index].bNotified || !CanAcceptConfirmedCooldown(ResourceOwner.Get()) || !FeedbackRuntime.IsValid()
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:128:	const auto* Pending = PendingFeedback.Find(Index);
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:131:	Records[Index].bNotified = true; // 先锁定；反馈中的查询或 Runtime 重建不得重复广播。
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:134:		Records[Index].bNotified = false;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSubmissionReconciliation.cpp:137:	PendingFeedback.Remove(Index);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmittedActionLifetimeTests.cpp:35: const auto Receipt = Delivery.Owner->GetProductionResults().Query(Delivery.Key);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmittedActionLifetimeTests.cpp:45: TestEqual(TEXT("Delivery receipt version is not rewritten by hit"), Delivery.Owner->GetProductionResults().Query(Delivery.Key).Version, Receipt.Version);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmittedActionLifetimeTests.cpp:60: TestEqual(TEXT("Original delivery stays accepted"), OldDelivery.Owner->GetProductionResults().Query(OldDelivery.Key).State, ESkillLabProductionState::ConfirmedAccepted);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmittedActionLifetimeTests.cpp:78: TestEqual(TEXT("External destruction cannot retract delivery"),DestroyedDelivery.Owner->GetProductionResults().Query(DestroyedDelivery.Key).State,ESkillLabProductionState::ConfirmedAccepted);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmissionReconciliationTests.cpp:128:	TestEqual(TEXT("Known action cannot confirm uncertain debit"), Unknown.ASC->QueryEnergySettlement(Unknown.Production.Key.Transaction).State,
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmissionFeedbackRoutingTests.cpp:47:			TestEqual(TEXT("Real producer supplies final action fact before delayed settlement"), Unit.Session->GetProductionResults().Query(Original).State,
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmissionFeedbackRoutingTests.cpp:61:					TestFalse(TEXT("Absent feedback receiver does not consume notification"), Unit.Session->GetRecords().Last().bNotified);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmissionFeedbackRoutingTests.cpp:115:			TestTrue(TEXT("Notification marked only after actual feedback dispatch"), Unit.Session->GetRecords().Last().bNotified);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmissionFeedbackRoutingTests.cpp:141:		TestFalse(TEXT("Undelivered final supplement remains pending after cleanup callback"), PendingUnit.Session->GetRecords().Last().bNotified);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmissionFeedbackRoutingTests.cpp:176:	TestTrue(TEXT("Delivered feedback stays consumed after callback destroys and rebuilds Runtime"), Unit.Session->GetRecords().Last().bNotified);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmissionFeedbackIdentityTests.cpp:62:			Test->TestFalse(TEXT("Final result stays undelivered with no Runtime"), Unit.Session->GetRecords().Last().bNotified);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabSubmissionFeedbackIdentityTests.cpp:118:			Test->TestEqual(TEXT("New producer remains unexecuted after old supplement"), Unit.Session->GetProductionResults().Query(Current).State, ESkillLabProductionState::InProgress);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:21:		{ bUnknownInsideGE = Instant.Session->GetProductionResults().Query(Key).State == ESkillLabProductionState::InProgress; });
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:25:			bRecordedBeforeHit = Instant.Session->GetProductionResults().Query(Key).State == ESkillLabProductionState::ConfirmedAccepted;
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:32:	const auto Known = Instant.Session->GetProductionResults().Query(Key);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:36:	TestEqual(TEXT("Real accepted record survives Runtime cleanup/rebuild"), Instant.Session->GetProductionResults().Query(Key).State,
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:40:	TestEqual(TEXT("Wrong generation cannot read original result"), Instant.Session->GetProductionResults().Query(Wrong).State,
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:43:	TestEqual(TEXT("Missing operation is unknown, not rejection"), Instant.Session->GetProductionResults().Query(Wrong).State,
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:47:	TestEqual(TEXT("Duplicate did not change version"), Instant.Session->GetProductionResults().Query(Key).Version, Known.Version);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:53:	TestEqual(TEXT("Rejected operation has an explicit production record"), Rejected.Session->GetProductionResults().Query(Rejected.Production.Key).State,
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:61:	const auto EmptyResult = Empty.Session->GetProductionResults().Query(Empty.Production.Key);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:80:	const auto Partial = Area.Session->GetProductionResults().Query(Area.Production.Key);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:84:		const auto State = Area.Session->GetProductionResults().Query(Child).State;
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:102:	TestEqual(TEXT("All explicit child rejections permit aggregate rejection"), AllRejected.Session->GetProductionResults().Query(AllRejected.Production.Key).State,
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:117:	TestEqual(TEXT("Missing planned child is unknown rather than aggregate failure"), Interrupted.Session->GetProductionResults().Query(Interrupted.Production.Key).State,
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:131:	TestEqual(TEXT("No invented acceptance in side-effect-to-return loss window"), Lost.Session->GetProductionResults().Query(Lost.Production.Key).State,
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:144:			bDeliveryBeforeImpact = Shooter.Session->GetProductionResults().Query(Shooter.Production.Key).State == ESkillLabProductionState::ConfirmedAccepted;
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:150:	const auto Delivered = Shooter.Session->GetProductionResults().Query(Shooter.Production.Key);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:160:	const auto BeforeDestroy = SecondShooter.Session->GetProductionResults().Query(SecondShooter.Production.Key);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabProductionRecordsTests.cpp:166:		SecondShooter.Session->GetProductionResults().Query(SecondShooter.Production.Key).Version, BeforeDestroy.Version);
+ue/SkillLab/Source/SkillLabSkills/Private\Tests\SkillLabLateSubmissionTests.cpp:51:		EmptyAcceptance = Empty.Session->GetProductionResults().Query(Empty.Production.Key).AcceptedAt.GetValue();
+[资源ID与历史容器]
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabEnergySettlement.cpp:8:	const FSkillLabEnergySettlement* History = EnergySettlementHistory.Find(TransactionId);
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabEnergySettlement.cpp:43:	FSkillLabEnergySettlement* History = EnergySettlementHistory.Find(TransactionId);
+ue/SkillLab/Source/SkillLabGAS\Public\SkillLabAbilitySystemComponent.h:167:	TMap<uint64, FSkillLabEnergySettlement> EnergySettlementHistory;
+ue/SkillLab/Source/SkillLabGAS\Public\SkillLabAbilitySystemComponent.h:170:	TSet<uint64> UsedEnergyTransactionIds;
+ue/SkillLab/Source/SkillLabGAS\Public\SkillLabAbilitySystemComponent.h:171:	TSet<uint64> AllocatedEnergyTransactionIds;
+ue/SkillLab/Source/SkillLabGAS\Private\Tests\SkillLabEnergySettlementTests.cpp:9:IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSkillLabEnergySettlementTest, "SkillLab.GAS.EnergySettlementHistory",
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:15:	while (NextEnergyTransaction != 0 && UsedEnergyTransactionIds.Contains(NextEnergyTransaction)) ++NextEnergyTransaction;
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:18:	UsedEnergyTransactionIds.Add(Id);
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:19:	AllocatedEnergyTransactionIds.Add(Id);
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:25:	if (!TransactionId || (UsedEnergyTransactionIds.Contains(TransactionId) && !AllocatedEnergyTransactionIds.Contains(TransactionId))) return false;
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:26:	UsedEnergyTransactionIds.Add(TransactionId);
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:27:	AllocatedEnergyTransactionIds.Remove(TransactionId);
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:47:	EnergySettlementHistory.Add(TransactionId, Snapshot);
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:97:						FSkillLabEnergySettlement& History = EnergySettlementHistory.FindChecked(TransactionId);
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:100:						EnergyReservations.Remove(TransactionId);
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:109:			FSkillLabEnergySettlement& History = EnergySettlementHistory.FindChecked(TransactionId);
+ue/SkillLab/Source/SkillLabGAS\Private\SkillLabAbilitySystemEnergyReservations.cpp:112:			EnergyReservations.Remove(TransactionId);
+[每Cast、等待与Reset]
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeUnconfirmed.cpp:47:		}), 1.0f, false);
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:60: ResetAttempt.Reset();
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:218: FResetAttempt Attempt;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:219: Attempt.Id = NextResetAttemptId++;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:220: if (!Attempt.Id) Attempt.Id = NextResetAttemptId++;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:224: ResetAttempt = Attempt;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:228: if (!IsResetAttemptCurrent(AttemptId, Generation)) return;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:235:   if (!IsResetAttemptCurrent(AttemptId, Generation)) return;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:238: ResetAttempt->Phase = EResetPhase::Cleaning;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:242:bool USkillLabSkillRuntimeComponent::IsResetAttemptCurrent(uint64 AttemptId, uint64 Generation) const
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:245: return IsValid(this) && !IsBeingDestroyed() && !bShuttingDown && bResetting && ResetAttempt.IsSet()
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:246:  && ResetAttempt->Id == AttemptId && ResetAttempt->Generation == Generation && RuntimeGeneration == Generation
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:250:void USkillLabSkillRuntimeComponent::FinishResetAttempt(uint64 AttemptId, uint64 Generation, FName Reason)
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:252: if (!IsResetAttemptCurrent(AttemptId, Generation)) return;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:253: ResetAttempt.Reset();
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:263: if (!IsResetAttemptCurrent(Receipt.AttemptId, Generation) || ResetAttempt->Phase != EResetPhase::Waiting
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:264:  || Receipt.ASC != ResetAttempt->SourceASCKey) return;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:281: FinishResetAttempt(Receipt.AttemptId, Generation, Reason);
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:286: if (!bResetRequested || AnySubmitting() || bShuttingDown || !ResetAttempt.IsSet()
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:287:  || ResetAttempt->Phase != EResetPhase::Cleaning) return;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:288: const uint64 AttemptId = ResetAttempt->Id;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:289: uint64 Generation = ResetAttempt->Generation;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:290: if (!IsResetAttemptCurrent(AttemptId, Generation)) return;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:294: ResetAttempt->Generation = Generation;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:296: if (!IsResetAttemptCurrent(AttemptId, Generation)) return;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:301:  FinishResetAttempt(AttemptId, Generation, TEXT("ResetBlockedByUnconfirmedSubmission"));
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:304: auto* SourceASC = ResetAttempt->SourceASC.Get();
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:307:  FinishResetAttempt(AttemptId, Generation, TEXT("ResetResourceChangeUnavailable"));
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:312: if (!IsResetAttemptCurrent(AttemptId, Generation)) return;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:315:  FinishResetAttempt(AttemptId, Generation, TEXT("ResetBlockedByUnconfirmedSubmission"));
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:320:  FinishResetAttempt(AttemptId, Generation, TEXT("ResetResourceChangeUnavailable"));
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:323: ResetAttempt->Phase = EResetPhase::Waiting;
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:326: SourceASC->RequestResourceChangeTracked(false, EGameplayModOp::Override, ResetEnergy, AttemptId, this,
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:330:   if (!Runtime || !Runtime->IsResetAttemptCurrent(AttemptId, Generation) || !WeakASC.IsValid()
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:331:    || Runtime->ASC != WeakASC || Runtime->ResetAttempt->SourceASC != WeakASC
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillRuntimeComponent.cpp:332:    || Runtime->ResetAttempt->Phase != EResetPhase::Waiting) return TEXT("ResetResourceChangeUnavailable");
+ue/SkillLab/Source/SkillLabSkills/Private\SkillLabSkillGameplayAbility.cpp:7:	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerExecution;
+[HEAD原字段]
+	bool bEffectSubmitted = false;
+	FSkillLabSkillResult ActiveEffectResult;
+	TArray<FSkillLabSkillResult> ActiveEffectResults;
