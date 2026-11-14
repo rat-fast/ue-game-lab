@@ -1,6 +1,6 @@
-#include "SkillLabCombatTestFixture.h"
 #pragma once
 #if WITH_DEV_AUTOMATION_TESTS
+#include "SkillLabCombatTestFixture.h"
 #include "Misc/AutomationTest.h"
 #include "SkillLabSubmissionTestWorld.h"
 #include "Components/SphereComponent.h"
@@ -33,7 +33,6 @@ public:
 		World = CreateSkillLabSubmissionTestWorld(true);
 		// 无 GameMode 的独立世界需要正式分发 BeginPlay，FinishSpawning 才会运行 Actor BeginPlay。
 		if (World) World->GetWorldSettings()->NotifyBeginPlay();
-		bPreviousLoad = FSkillLabSkillDefinitionProvider::CopyDefinitionsForAutomation(Previous);
 		TMap<FString, FString> Sources;
 		Sources.Add(TEXT("Hold.lua"), TEXT("SkillLabSkill_Define(\"targetShape\",\"Self\",\"relation\",\"Self\",\"effect\",\"Healing\",\"execution\",\"InstantTarget\")\nfunction OnSkillCast(context) end"));
 		Sources.Add(TEXT("Area.lua"), TEXT("SkillLabSkill_Define(\"targetShape\",\"Ground\",\"relation\",\"Any\",\"effect\",\"Damage\",\"execution\",\"GroundArea\")\nfunction OnSkillCast(context) end"));
@@ -55,7 +54,6 @@ public:
 	~FSkillLabProductionFixture()
 	{
 		for (const TWeakObjectPtr<AActor>& Actor : Actors) if (Actor.IsValid()) Actor->Destroy();
-		FSkillLabSkillDefinitionProvider::ReplaceDefinitionsForAutomation(Previous, bPreviousLoad);
 		if (World) { World->DestroyWorld(false); if (GEngine) GEngine->DestroyWorldContext(World); }
 	}
 	FUnit MakeUnit(const FVector& Location = FVector::ZeroVector)
@@ -117,7 +115,21 @@ public:
 		Unit.Production = Unit.Runtime->GetProductionHandle(Unit.Behavior, Unit.Cast);
 		return Test->TestTrue(TEXT("Production begins with real reservation and operation key"), bBegan && Unit.Production.Key.IsSet());
 	}
-	bool Execute(FUnit& Unit) { return Unit.Behavior->ExecuteDeclaredAction(); }
+	bool Execute(FUnit& Unit)
+	{
+		// 仅丢弃同步回执交付，动作仍调用生产重载；适配只在测试编译边界内存在。
+		auto* Behavior = Unit.Behavior;
+		Behavior->EnsurePoints();
+		const auto Production = Unit.Runtime->GetProductionHandle(Behavior, Unit.Cast);
+		auto* Point = Behavior->Points.Find(static_cast<int32>(Production.Key.Point));
+		if (!Point) return false;
+		Point->Production = Production;
+		Point->Result.SubmissionKey = Production.Key;
+		Behavior->LastPointId = Point->Declaration.Id;
+		const bool bAccepted = Behavior->ExecuteDeclaredAction(*Point);
+		Behavior->LastResponse = Point->Result;
+		return bAccepted;
+	}
 	FSkillLabSkillResult Apply(FUnit& Unit, AActor* Target)
 	{
 		return Unit.Runtime->ApplyBehaviorEffect(Unit.Behavior, Unit.Cast, Target, Unit.Runtime->GetSingleExecution()->ActiveDefinition);
@@ -148,8 +160,8 @@ public:
 	UWorld* World = nullptr;
 	bool bReady = false;
 private:
+	FSkillLabScopedTestCatalog Catalog;
 	TArray<TWeakObjectPtr<AActor>> Actors;
-	TMap<FName, FSkillLabSkillDefinition> Definitions, Previous;
-	bool bPreviousLoad = false;
+	TMap<FName, FSkillLabSkillDefinition> Definitions;
 };
 #endif

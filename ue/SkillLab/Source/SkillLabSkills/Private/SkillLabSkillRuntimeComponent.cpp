@@ -81,6 +81,7 @@ void USkillLabSkillRuntimeComponent::FinishEndPlayCleanup()
  ClearInterruptListeners();
  if (ASC.IsValid() && DamageTakenHandle.IsValid()) ASC->OnSkillLabDamageTaken.Remove(DamageTakenHandle);
  DamageTakenHandle.Reset();
+ if (Loadout) Loadout->RevokeGrantedAbilities();
 }
 
 void USkillLabSkillRuntimeComponent::InitializeSkills()

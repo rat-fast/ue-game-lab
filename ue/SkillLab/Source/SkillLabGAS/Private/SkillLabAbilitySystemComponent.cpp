@@ -4,6 +4,7 @@
 #include "SkillLabCombatAttributeSet.h"
 #include "SkillLabCombatGameplayEffects.h"
 #include "SkillLabGASTags.h"
+#include "UObject/StrongObjectPtr.h"
 
 USkillLabAbilitySystemComponent::USkillLabAbilitySystemComponent()
 {
@@ -34,19 +35,7 @@ void USkillLabAbilitySystemComponent::HandlePeriodicExecution(UAbilitySystemComp
 	FSkillLabDamageResult Result;
 	// UE executes ActiveEffect.Spec and then sends the same spec through this native callback.
 	// Remove before broadcasting so nested effects cannot overwrite this execution's result.
-	if (!PendingPeriodicDamage.RemoveAndCopyValue(&Spec, Result))
-	{
-		// The engine normally forwards the same spec reference. A few UE paths
-		// materialize a transient copy; with one modifier/effect in this module,
-		// the single pending result is still unambiguous.
-		if (PendingPeriodicDamage.Num() != 1) return;
-		for (const TPair<const FGameplayEffectSpec*, FSkillLabDamageResult>& Pair : PendingPeriodicDamage)
-		{
-			Result = Pair.Value;
-			break;
-		}
-		PendingPeriodicDamage.Reset();
-	}
+	if (!PendingPeriodicDamage.RemoveAndCopyValue(&Spec, Result)) return;
 	Result.ActiveEffectHandle = Handle;
 	OnPeriodicDamageResolved.Broadcast(Handle, Result);
 }
@@ -156,7 +145,8 @@ FSkillLabDamageResult USkillLabAbilitySystemComponent::ApplyDamageOverTimeToTarg
 		return Result;
 	}
 
-	UGameplayEffect* Effect = NewObject<UGameplayEffect>(this);
+	TStrongObjectPtr<UGameplayEffect> Effect(NewObject<UGameplayEffect>(this));
+	if (!Effect.IsValid()) return Result;
 	Effect->DurationPolicy = EGameplayEffectDurationType::HasDuration;
 	Effect->Period = Period;
 	Effect->bExecutePeriodicEffectOnApplication = true;
@@ -171,11 +161,9 @@ FSkillLabDamageResult USkillLabAbilitySystemComponent::ApplyDamageOverTimeToTarg
 	Effect->StackLimitCount = 1;
 	Effect->StackDurationRefreshPolicy = EGameplayEffectStackingDurationPolicy::RefreshOnSuccessfulApplication;
 	Effect->Period = Period;
-	RuntimeEffects.Add(Effect);
-
 	FGameplayEffectContextHandle Context = MakeEffectContext();
 	if (Request.SourceObject) Context.AddSourceObject(Request.SourceObject);
-	FGameplayEffectSpecHandle SpecHandle(new FGameplayEffectSpec(Effect, Context, 1.0f));
+	FGameplayEffectSpecHandle SpecHandle(new FGameplayEffectSpec(Effect.Get(), Context, 1.0f));
 	if (!SpecHandle.IsValid() || !SpecHandle.Data.IsValid()) return Result;
 	SpecHandle.Data->SetDuration(Duration, true);
 	const float RawDamage = FMath::Max(0.0f, Request.BaseDamage + (SourceAttributes ? SourceAttributes->GetPower() * Request.PowerCoefficient : 0.0f));

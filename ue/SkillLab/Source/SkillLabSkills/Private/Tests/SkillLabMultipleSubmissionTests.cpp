@@ -14,12 +14,16 @@ bool FSkillLabMultipleSubmissionsTest::RunTest(const FString&)
  if (!F.LoadCatalog(Json, {{TEXT("multi.lua"), Lua}})) return false;
  auto U = F.MakeUnit();
  int32 Effects = 0, Commits = 0;
- U.Runtime->OnNativeSkillEvent.AddLambda([&](const auto& R) { Effects += R.Event == ESkillLabSkillEvent::EffectApplied; Commits += R.Event == ESkillLabSkillEvent::SubmissionCommitted; });
+ TArray<FName> EffectOperations;
+ U.Runtime->OnNativeSkillEvent.AddLambda([&](const auto& R) { Effects += R.Event == ESkillLabSkillEvent::EffectApplied; Commits += R.Event == ESkillLabSkillEvent::SubmissionCommitted; if (R.Event == ESkillLabSkillEvent::EffectApplied) EffectOperations.Add(R.EffectOperationId); });
  const auto Start = F.Submit(U, TEXT("Multi"));
  const auto* E = U.Runtime->FindExecution(Start.CastToken);
  if (!TestTrue(TEXT("Formal multi-point activation is alive"), Start.bSuccess && E)) return false;
  TStrongObjectPtr<USkillLabLuaSkillBehavior> Behavior(Cast<USkillLabLuaSkillBehavior>(E->ActiveBehavior));
  TestEqual(TEXT("Release and explicit Script hit the same target independently"), Effects, 2);
+ const auto Duplicate = U.Runtime->ApplyBehaviorEffect(Behavior.Get(), Start.CastId, U.Actor, E->ActiveDefinition, Behavior->GetPointProduction(4));
+ TestEqual(TEXT("Duplicate target reuses its successful point result"), Duplicate.Reason, FName(TEXT("EffectAlreadySubmitted")));
+ TestEqual(TEXT("Duplicate target preserves the original operation"), Duplicate.EffectOperationId, EffectOperations.Last());
  TestEqual(TEXT("Unique cost committed once"), U.ASC->GetActualEnergy(), 93.0f);
  TestFalse(TEXT("Explicit definition cannot use unqualified legacy action"), Behavior->RequestDeclaredAction());
  TestFalse(TEXT("Unknown point is rejected without cancel"), Behavior->RequestDeclaredAction(99));
@@ -31,6 +35,8 @@ bool FSkillLabMultipleSubmissionsTest::RunTest(const FString&)
  const float CooldownBefore = U.Runtime->GetCooldownRemaining(TEXT("Multi"));
  F.Notify(U, Start.CastId, SkillLabGASTags::Event_Cast_Complete);
  TestEqual(TEXT("Ability GameplayEvent submits final point"), Effects, 4);
+ for (int32 Index = 0; Index < EffectOperations.Num(); ++Index)
+  TestEqual(TEXT("Successful effects keep consecutive Cast-wide operation names across points"), EffectOperations[Index], FName(*FString::Printf(TEXT("SkillEffect_%d_%d"), Start.CastId, Index + 1)));
  TestEqual(TEXT("Each point has one committed fact"), Commits, 4);
  TestEqual(TEXT("Four points still cost once"), U.ASC->GetActualEnergy(), 93.0f);
  TestTrue(TEXT("Later points do not restart cooldown"), U.Runtime->GetCooldownRemaining(TEXT("Multi")) <= CooldownBefore);

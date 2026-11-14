@@ -25,6 +25,7 @@
 | 范围/前缀 | 测试后缀 |
 | --- | --- |
 | `SkillLab.Skills.` 定义与阶段 | `CastLifecycle`、`DefinitionValidation`、`SubmissionDefinition`、`CastGameplayEvent` |
+| `SkillLab.Skills.` Cast 场景拆分 | `CastTimingAndReservations`、`CastUnconfirmedReentry`、`CastSettlementTermination`、`CastRuleWindowTransitions`、`CastControlTransitions`、`CastDeferredIntent`、`CastFixtureCleanup` |
 | `SkillLab.Skills.` 执行与仲裁 | `CastExecutionOwnership`、`SharedCastArbitration`、`CastIntentLifecycle`、`CastControlAndRules`、`CastRequestReentry`、`CastSubmissionIsolation` |
 | `SkillLab.Skills.` 提交、寿命与来源 | `MultipleSubmissions`、`SubmittedActionLifetime`、`ProductionRecords`、`SubmissionReconciliation`、`LateSubmission`、`UnconfirmedSubmission`、`AreaSubmissionSettlement`、`SubmissionFeedbackRouting`、`SubmissionFeedbackIdentity` |
 | `SkillLab.Skills.` Reset | `ResetResourceCompletion`、`ResetSubmissionDuringCompletion` |
@@ -38,7 +39,9 @@
 
 ## Verification
 
-本次文档维护只静态核对源码、当前实现摘要和已接受 Review，未构建、运行测试、审资产或重做可见验收。B1/多 Cast 与 P2-CE-1、R 资源修复及 Reset 专项的当前接受依据是 [CastExecutionReview](../../ProgramWorkflow/SkillSystem/Batches/SkillCombatRulesCompletion/CastExecutionReview.md)，其中 **2026-11-12 立即合法资源 Rejected 补证复查**关闭最后该项缺口。报告较早章节的待证状态按其后续结论解读，专项通过不代表整批玩家验收完成。
+本次文档更新核对了源码注册名、当前实现摘要与已接受 Review，并运行了下述代码质量整改定向集成回归；该验证只覆盖列出的 34 项，不代表完整自动化、资产审查或可见验收。B1/多 Cast 与 P2-CE-1、R 资源修复及 Reset 专项的当前接受依据是 [CastExecutionReview](../../ProgramWorkflow/SkillSystem/Batches/SkillCombatRulesCompletion/CastExecutionReview.md)，其中 **2026-11-12 立即合法资源 Rejected 补证复查**关闭最后该项缺口。报告较早章节的待证状态按其后续结论解读，专项通过不代表整批玩家验收完成。
+
+**代码质量整改集成回归（2026-11-14）**：实际工程 `SkillLabEditor Win64 Development` 构建成功，目标最新且 0 个动作；[`CodeQualityFinalBuild.log`](../../../Saved/Logs/CodeQualityFinalBuild.log)。[`CodeQualityFinalTests.log`](../../../Saved/Logs/CodeQualityFinalTests.log) 中 34 项定向自动化全部 Success、0 Fail、队列清空，UE 退出状态 0；日志确认从实际工程 `Binaries/Win64/` 加载 GAS 与 Skills 模块。该集合合并了测试边界 25 项与 F1/F3、F6、F7 的专属回归。启动阶段仍有既有 13 条 `Condition failed`；没有运行完整自动化全集、真实 120 帧超时、PIE、可见游戏或 Shipping 打包启动。逐项范围见 [代码质量整改摘要](../../ProgramWorkflow/SkillSystem/Batches/CodeQualityRemediation/TestBoundarySummary.md) 和对应 Review。
 
 以下均为既有隔离验证日志，根目录为 `C:/Users/Administrator/AppData/Local/Temp/SkillLabCastExecutionValidation/Saved/Logs/`：
 

@@ -56,7 +56,7 @@ public:
 	bool IsPointPending(int32 PointId) const;
 	bool IsPointCompleted(int32 PointId) const;
 private:
-	friend class FSkillLabCastGameplayEventTest;
+	friend class FSkillLabCastScenarioFixture;
 	friend class FSkillLabProductionFixture;
 	enum class EPointState : uint8 { Waiting, Executing, AwaitingAction, Resolved, Unconfirmed, Cancelled };
 	struct FPointExecution
@@ -71,7 +71,6 @@ private:
 	void EnsurePoints();
 	FSkillLabCastExecutionToken GetToken() const;
 	void RunScript();
-	bool ExecuteDeclaredAction(); // 既有失联回执 fixture 的真实生产调用适配。
 	bool ExecuteDeclaredAction(FPointExecution& Point);
 	void OnProjectileResolved(int32 PointId, ASkillLabFireballProjectile* Action, AActor* Target, FName Reason);
 	bool AllPointsResolved() const;

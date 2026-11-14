@@ -28,9 +28,13 @@ FSkillLabProductionHandle USkillLabUnconfirmedSubmissions::BeginProduction(UObje
 void USkillLabUnconfirmedSubmissions::ReconcileProductionResults()
 {
 	if (!CanAcceptConfirmedCooldown(ResourceOwner.Get())) { ReportLostOwner(); return; }
-	// 每次只消费入口时已有的记录；同步广播可追加记录，不能持有 TArray 元素引用。
-	const int32 Count = Records.Num();
-	for (int32 Index = 0; Index < Count && CanAcceptConfirmedCooldown(ResourceOwner.Get()); ++Index) ReconcileRecord(Index);
+	// 同步回调可以追加或完成记录；快照只处理本轮开始时仍活跃的稳定下标。
+	const TArray<int32> PendingIndices = ActiveRecordIndices.Array();
+	for (const int32 Index : PendingIndices)
+	{
+		if (!CanAcceptConfirmedCooldown(ResourceOwner.Get())) break;
+		if (ActiveRecordIndices.Contains(Index) && Records.IsValidIndex(Index)) ReconcileRecord(Index);
+	}
 }
 
 void USkillLabUnconfirmedSubmissions::ReconcileRecord(const int32 Index)
@@ -111,6 +115,7 @@ void USkillLabUnconfirmedSubmissions::ReconcileRecord(const int32 Index)
 	}
 	Records[Index].bResolved = true;
 	Records[Index].bResolving = false;
+	Records[Index].bReportedLostOwner = false;
 	Confirmation.Reason = bAccepted ? TEXT("SubmissionConfirmedAccepted") : TEXT("SubmissionConfirmedRejected");
 	Confirmation.bCostCommitted = (bAccepted || Record.bAlreadyCommitted) && Confirmation.bResourceResolved;
 	Confirmation.CooldownRemaining = GetCooldownRemaining(Key.SkillId);
@@ -135,5 +140,6 @@ void USkillLabUnconfirmedSubmissions::DeliverConfirmation(const int32 Index)
 		return; // 原 Cast 清理时接收方失效；由本会话下一个有效反馈入口继续交付。
 	}
 	PendingFeedback.Remove(Index);
+	ActiveRecordIndices.Remove(Index);
 	if (CanAcceptConfirmedCooldown(ResourceOwner.Get())) OnSubmissionConfirmed.Broadcast(Confirmation);
 }

@@ -97,7 +97,13 @@ void USkillLabCombatAttributeSet::ClampVitals()
 		}
 		else SetEnergy(ClampedEnergy);
 	}
+}
 
+void USkillLabCombatAttributeSet::PostAttributeChange(const FGameplayAttribute& Attribute, float OldValue, float NewValue)
+{
+	Super::PostAttributeChange(Attribute, OldValue, NewValue);
+	// Health 的最终值变化统一同步生命状态，覆盖 GE 和 Reset 的直接 Base 写入。
+	if (Attribute != GetHealthAttribute()) return;
 	if (UAbilitySystemComponent* ASC = GetOwningAbilitySystemComponent())
 	{
 		const bool bDead = GetHealth() <= 0.0f;

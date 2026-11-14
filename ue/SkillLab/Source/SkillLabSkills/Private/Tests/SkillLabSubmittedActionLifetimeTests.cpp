@@ -5,6 +5,8 @@
 #include "SkillLabUnconfirmedSubmissions.h"
 #include "SkillLabCombatAttributeSet.h"
 #include "SkillLabGASTags.h"
+#include "GameplayEffect.h"
+#include "UObject/UObjectIterator.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSkillLabSubmittedActionLifetimeTest, "SkillLab.Skills.SubmittedActionLifetime", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FSkillLabSubmittedActionLifetimeTest::RunTest(const FString&)
@@ -101,8 +103,12 @@ bool FSkillLabSubmittedActionLifetimeTest::RunTest(const FString&)
  Source.Runtime->ResetSkills();
  int32 Ticks = 0, Removed = 0;
  TArray<FSkillLabSkillResult> Observed;
+	TArray<FSkillLabSkillResult> RemovedResults;
  Source.Runtime->OnNativeSkillEvent.AddLambda([&](const auto& R)
- { if (R.Event == ESkillLabSkillEvent::DamageTick) { ++Ticks; Observed.Add(R); } Removed += R.Event == ESkillLabSkillEvent::BuffRemoved; });
+	{
+		if (R.Event == ESkillLabSkillEvent::DamageTick) { ++Ticks; Observed.Add(R); }
+		if (R.Event == ESkillLabSkillEvent::BuffRemoved) { ++Removed; RemovedResults.Add(R); }
+	});
  auto Burning = F.Submit(Source,TEXT("Burn"),Target.Actor);
  Source.Runtime->CancelCast(Burning.CastToken,TEXT("KeepIndependentGE"));
  F.Tick(0.25f);
@@ -117,8 +123,138 @@ bool FSkillLabSubmittedActionLifetimeTest::RunTest(const FString&)
  TestTrue(TEXT("Periodic GE ticks after normal completion"),Ticks > BeforeCompletedTicks);
  F.Tick(0.4f);
  TestEqual(TEXT("Normally completed Cast effect also removes naturally"),Removed,2);
+
+ // Active target specs own their transient definitions; distinct applications retain distinct stacking identity.
+ auto EffectSourceA = F.MakeUnit(FVector(0,1200,0));
+ auto EffectSourceB = F.MakeUnit(FVector(0,1500,0));
+ auto EffectTarget = F.MakeUnit(FVector(600,1200,0));
+ TArray<TPair<FActiveGameplayEffectHandle,FSkillLabDamageResult>> PeriodicResults;
+ EffectTarget.ASC->OnPeriodicDamageResolved.AddLambda([&](const FActiveGameplayEffectHandle Handle, const FSkillLabDamageResult& Result)
+ {
+  PeriodicResults.Emplace(Handle,Result);
+ });
+ FSkillLabDamageRequest RequestA;
+ RequestA.SourceASC = EffectSourceA.ASC;
+ RequestA.TargetASC = EffectTarget.ASC;
+ RequestA.BaseDamage = 11.0f;
+ FSkillLabDamageRequest RequestB = RequestA;
+ RequestB.SourceASC = EffectSourceB.ASC;
+ RequestB.BaseDamage = 23.0f;
+ const FSkillLabDamageResult AppliedA = EffectSourceA.ASC->ApplyDamageOverTimeToTarget(RequestA,0.45f,0.1f);
+ const FSkillLabDamageResult AppliedB = EffectSourceB.ASC->ApplyDamageOverTimeToTarget(RequestB,0.65f,0.2f);
+ TestTrue(TEXT("First independent periodic effect is accepted"),AppliedA.bApplied && AppliedA.ActiveEffectHandle.IsValid());
+ TestTrue(TEXT("Second independent periodic effect is accepted"),AppliedB.bApplied && AppliedB.ActiveEffectHandle.IsValid());
+ TestTrue(TEXT("Different applications retain different active handles"),AppliedA.ActiveEffectHandle != AppliedB.ActiveEffectHandle);
+ const FActiveGameplayEffect* ActiveA = EffectTarget.ASC->GetActiveGameplayEffect(AppliedA.ActiveEffectHandle);
+ const FActiveGameplayEffect* ActiveB = EffectTarget.ASC->GetActiveGameplayEffect(AppliedB.ActiveEffectHandle);
+ TestNotNull(TEXT("First active effect retains its spec"),ActiveA);
+ TestNotNull(TEXT("Second active effect retains its spec"),ActiveB);
+ if (!ActiveA || !ActiveB) return false;
+ TWeakObjectPtr<const UGameplayEffect> WeakDefinitionA(ActiveA->Spec.Def);
+ TWeakObjectPtr<const UGameplayEffect> WeakDefinitionB(ActiveB->Spec.Def);
+ TestTrue(TEXT("Stacking identity remains definition-specific"),ActiveA->Spec.Def != ActiveB->Spec.Def
+  && ActiveA->Spec.GetContext().GetInstigatorAbilitySystemComponent() == EffectSourceA.ASC
+  && ActiveB->Spec.GetContext().GetInstigatorAbilitySystemComponent() == EffectSourceB.ASC);
+ CollectGarbage(RF_NoFlags,true);
+ TestTrue(TEXT("Active target spec keeps the first transient definition alive"),WeakDefinitionA.IsValid());
+ TestTrue(TEXT("Active target spec keeps the second transient definition alive"),WeakDefinitionB.IsValid());
+ F.Tick(0.25f);
+ int32 TicksA = 0, TicksB = 0;
+ for (const auto& Entry : PeriodicResults)
+ {
+  if (Entry.Key == AppliedA.ActiveEffectHandle)
+  {
+   ++TicksA;
+   TestEqual(TEXT("First spec reports its own periodic damage"),Entry.Value.RawDamage,11.0f);
+  }
+  else if (Entry.Key == AppliedB.ActiveEffectHandle)
+  {
+   ++TicksB;
+   TestEqual(TEXT("Second spec reports its own periodic damage"),Entry.Value.RawDamage,23.0f);
+  }
+ }
+ TestTrue(TEXT("First periodic handle produced observed damage results"),TicksA >= 2);
+ TestTrue(TEXT("Second periodic handle produced observed damage results"),TicksB >= 2);
+ EffectTarget.ASC->RemoveActiveGameplayEffect(AppliedA.ActiveEffectHandle);
+ EffectTarget.ASC->RemoveActiveGameplayEffect(AppliedB.ActiveEffectHandle);
+ CollectGarbage(RF_NoFlags,true);
+ TestFalse(TEXT("Removed first effect definition is collectible"),WeakDefinitionA.IsValid());
+ TestFalse(TEXT("Removed second effect definition is collectible"),WeakDefinitionB.IsValid());
+
+ // The application query runs before GAS copies the spec into its active container.
+ TWeakObjectPtr<const UGameplayEffect> WeakAllowedDefinition;
+ bool bAllowedQueryRan = false;
+ bool bAllowedDefinitionSurvivedQueryGC = false;
+ FGameplayEffectApplicationQuery AllowAfterGC;
+ AllowAfterGC.BindLambda([&](const FActiveGameplayEffectsContainer&, const FGameplayEffectSpec& Spec)
+ {
+  bAllowedQueryRan = true;
+  WeakAllowedDefinition = Spec.Def;
+  CollectGarbage(RF_NoFlags,true);
+  bAllowedDefinitionSurvivedQueryGC = WeakAllowedDefinition.IsValid();
+  return true;
+ });
+ const int32 AllowQueryIndex = EffectTarget.ASC->GameplayEffectApplicationQueries.Add(AllowAfterGC);
+ const FSkillLabDamageResult AllowedAfterGC = EffectSourceA.ASC->ApplyDamageOverTimeToTarget(RequestA,0.45f,0.1f);
+ EffectTarget.ASC->GameplayEffectApplicationQueries.RemoveAt(AllowQueryIndex);
+ TestTrue(TEXT("Allowing application query ran its in-callback GC"),bAllowedQueryRan);
+ TestTrue(TEXT("Scope strong reference keeps definition alive during allowing query GC"),bAllowedDefinitionSurvivedQueryGC);
+ TestTrue(TEXT("Effect is accepted after application query GC"),AllowedAfterGC.bApplied && AllowedAfterGC.ActiveEffectHandle.IsValid());
+ TestTrue(TEXT("Allowed effect remains active after query returns"),
+  EffectTarget.ASC->GetActiveGameplayEffect(AllowedAfterGC.ActiveEffectHandle) != nullptr && WeakAllowedDefinition.IsValid());
+ EffectTarget.ASC->RemoveActiveGameplayEffect(AllowedAfterGC.ActiveEffectHandle);
+ CollectGarbage(RF_NoFlags,true);
+ TestFalse(TEXT("Allowed effect definition is collectible after active removal"),WeakAllowedDefinition.IsValid());
+
+ auto CountTransientDefinitions = [](USkillLabAbilitySystemComponent* Outer)
+ {
+  int32 Count = 0;
+  for (TObjectIterator<UGameplayEffect> It; It; ++It)
+   if (It->GetOuter() == Outer && !It->HasAnyFlags(RF_ClassDefaultObject | RF_ArchetypeObject)) ++Count;
+  return Count;
+ };
+ TWeakObjectPtr<const UGameplayEffect> WeakRejectedDefinition;
+ bool bRejectedQueryRan = false;
+ bool bRejectedDefinitionSurvivedQueryGC = false;
+ FGameplayEffectApplicationQuery RejectEffect;
+ RejectEffect.BindLambda([&](const FActiveGameplayEffectsContainer&, const FGameplayEffectSpec& Spec)
+ {
+  bRejectedQueryRan = true;
+  WeakRejectedDefinition = Spec.Def;
+  CollectGarbage(RF_NoFlags,true);
+  bRejectedDefinitionSurvivedQueryGC = WeakRejectedDefinition.IsValid();
+  return false;
+ });
+ const int32 RejectQueryIndex = EffectTarget.ASC->GameplayEffectApplicationQueries.Add(RejectEffect);
+ const int32 DefinitionsBeforeRejectedApply = CountTransientDefinitions(EffectSourceA.ASC);
+ const FSkillLabDamageResult Rejected = EffectSourceA.ASC->ApplyDamageOverTimeToTarget(RequestA,0.45f,0.1f);
+ TestFalse(TEXT("Application query rejection returns no accepted effect"),Rejected.bApplied);
+ EffectTarget.ASC->GameplayEffectApplicationQueries.RemoveAt(RejectQueryIndex);
+ TestTrue(TEXT("Rejecting application query ran its in-callback GC"),bRejectedQueryRan);
+ TestTrue(TEXT("Scope strong reference keeps definition alive during rejecting query GC"),bRejectedDefinitionSurvivedQueryGC);
+ CollectGarbage(RF_NoFlags,true);
+ TestFalse(TEXT("Rejected effect definition is collectible after application returns"),WeakRejectedDefinition.IsValid());
+ TestEqual(TEXT("Rejected application leaves no source-owned transient definition"),
+  CountTransientDefinitions(EffectSourceA.ASC),DefinitionsBeforeRejectedApply);
+
+ auto DestroyedDoTSource = F.MakeUnit(FVector(0,1800,0));
+ auto DestroyedDoTTarget = F.MakeUnit(FVector(600,1800,0));
+ FSkillLabDamageRequest DestroyedSourceRequest;
+ DestroyedSourceRequest.SourceASC = DestroyedDoTSource.ASC;
+ DestroyedSourceRequest.TargetASC = DestroyedDoTTarget.ASC;
+ DestroyedSourceRequest.BaseDamage = 7.0f;
+ const FSkillLabDamageResult BeforeSourceDestruction = DestroyedDoTSource.ASC->ApplyDamageOverTimeToTarget(DestroyedSourceRequest,0.5f,0.1f);
+ TestTrue(TEXT("DoT is active before source destruction"),BeforeSourceDestruction.bApplied);
+ const float HealthAfterInitialTick = DestroyedDoTTarget.ASC->GetCombatAttributeSet()->GetHealth();
+ DestroyedDoTSource.Actor->Destroy();
+ F.Tick(0.15f);
+ TestTrue(TEXT("Target-owned active DoT continues after source Actor and ASC destruction"),
+  DestroyedDoTTarget.ASC->GetCombatAttributeSet()->GetHealth() < HealthAfterInitialTick);
+
  auto ResetBurn = F.Submit(Source,TEXT("Burn"),Target.Actor);
  Source.Runtime->ResetSkills();
+	TestTrue(TEXT("Reset emits a removal event with live source and target actors"), RemovedResults.Num() >= 3
+		&& RemovedResults.Last().SourceActor == Source.Actor && RemovedResults.Last().TargetActor == Target.Actor);
  const int32 AtReset = Ticks; F.Tick(0.3f);
  TestEqual(TEXT("Explicit Reset removes tracked periodic effect"),Ticks,AtReset);
  auto EndBurn = F.Submit(Source,TEXT("Burn"),Target.Actor);

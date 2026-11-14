@@ -10,7 +10,6 @@ void USkillLabAbilitySystemComponent::OnResourceChanged(const FOnAttributeChange
 			&& FMath::IsNearlyEqual(Data.OldValue, ExpectedResourceOldValue)
 			&& FMath::IsNearlyEqual(Data.NewValue, ExpectedResourceNewValue))
 		{
-			bAwaitingResourceNotification = false;
 			if (Data.Attribute == USkillLabCombatAttributeSet::GetEnergyAttribute() && SettlingEnergyTransactionId != 0)
 			{
 				if (FEnergyReservation* Reservation = EnergyReservations.Find(SettlingEnergyTransactionId))
@@ -49,13 +48,11 @@ bool USkillLabAbilitySystemComponent::ApplyResourceChange(const FPendingResource
 	ExpectedResourceNotification = Attribute;
 	ExpectedResourceOldValue = OldValue;
 	ExpectedResourceNewValue = NewValue;
-	bAwaitingResourceNotification = !FMath::IsNearlyEqual(OldValue, NewValue);
 	{
 		TGuardValue<uint32> WriteDepth(ResourceWriteDepth, ResourceWriteDepth + 1);
 		// 写入钳制后的权威目标，不能把原始越界值留在 GAS base。
 		SetNumericAttributeBase(Attribute, NewValue);
 	}
-	bAwaitingResourceNotification = false;
 	// 属性委托可结束本会话；禁止继续夹紧另一属性或消费队列。
 	if (!CanWriteResources()) return false;
 	bool bApplied = FMath::IsNearlyEqual(Change.bMaxEnergy ? Attributes->GetMaxEnergy() : Attributes->GetEnergy(), NewValue);

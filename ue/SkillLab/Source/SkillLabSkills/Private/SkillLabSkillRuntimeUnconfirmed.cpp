@@ -18,7 +18,6 @@ void USkillLabSkillRuntimeComponent::StartIndeterminateWait(USkillLabCastExecuti
 	{
 		FSkillLabUnconfirmedSubmission Record;
 		Record.SkillId = Execution.ActiveDefinition.SkillId;
-		Record.RuntimeId = GetUniqueID();
 		Record.RuntimeIdentity = FObjectKey(this);
 		Record.RuntimeGeneration = Execution.Submission.RuntimeGeneration;
 		Record.CastId = Execution.Submission.CastToken.CastId;
@@ -57,7 +56,6 @@ void USkillLabSkillRuntimeComponent::FinishUnavailableSubmission(USkillLabCastEx
 	Execution.Submission.Outcome = ESubmissionState::DeliveryUnavailable;
 	Execution.Submission.State = ESubmissionState::Closed;
 	Execution.bSubmitting = false;
-	Execution.PendingSubmissionId = 0;
 	Execution.bDeferredSubmissionFinish = false;
 	Execution.DeferredSubmissionCancel = NAME_None;
 	if (WorldBefore.IsValid())

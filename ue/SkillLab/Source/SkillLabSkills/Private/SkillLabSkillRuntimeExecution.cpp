@@ -449,10 +449,9 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::ApplyBehaviorEffect(const U
 			return Result;
 		}
 	}
-	Execution.ActiveEffectOperationId = FName(*FString::Printf(TEXT("SkillEffect_%d_%d"), CastId, Execution.ActiveEffectResults.Num() + 1));
+	Execution.ActiveEffectOperationId = FName(*FString::Printf(TEXT("SkillEffect_%d_%d"), CastId, Execution.SuccessfulEffectCount + 1));
 	if (!Execution.bSubmitting && !Execution.bCommitted) { Result.Reason = TEXT("SubmissionRequired"); return Result; }
 	TGuardValue<bool> ApplyingEffect(Execution.bApplyingEffect, true);
-	Execution.bEffectSubmitted = true;
 	Result.EffectOperationId = Execution.ActiveEffectOperationId;
 	if (EffectExecutor)
 	{
@@ -469,8 +468,11 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::ApplyBehaviorEffect(const U
 	}
 	if (!IsBehaviorCurrent(Behavior, CastId)) return Result;
 	Result.EffectOperationId = Execution.ActiveEffectOperationId;
-	Execution.ActiveEffectResult = Result;
-	if (Result.bEffectApplied) { Execution.ActiveEffectResults.Add(Result); Execution.SuccessfulPointEffects.FindOrAdd(PointId).Add(Result); }
+	if (Result.bEffectApplied)
+	{
+		++Execution.SuccessfulEffectCount;
+		Execution.SuccessfulPointEffects.FindOrAdd(PointId).Add(Result);
+	}
 	if (!Result.bSuccess)
 	{
 		Emit(ESkillLabSkillEvent::Hit, Result, Result.Reason);

@@ -12,7 +12,6 @@ class USkillLabAbilitySystemComponent;
 struct FSkillLabUnconfirmedSubmission
 {
 	FName SkillId;
-	uint32 RuntimeId = 0;
 	FObjectKey RuntimeIdentity;
 	uint64 RuntimeGeneration = 0;
 	uint64 CastId = 0;
@@ -24,6 +23,7 @@ struct FSkillLabUnconfirmedSubmission
 	FSkillLabSubmissionKey ProductionKey;
 	bool bResolving = false, bResolved = false, bNotified = false;
 	bool bReportedResourceUnknown = false;
+	bool bReportedLostOwner = false;
 };
 
 struct SKILLLABSKILLS_API FSkillLabSubmissionConfirmation
@@ -47,7 +47,7 @@ public:
 	void Record(const FSkillLabUnconfirmedSubmission& Record);
 	bool BlocksSkill(FName SkillId) const;
 	bool HasUnconfirmed() const;
-	bool HasLostResourceOwnerDiagnosis() const { return !ReportedLostOwnerRecords.IsEmpty(); }
+	bool HasLostResourceOwnerDiagnosis() const { return bHasLostResourceOwnerDiagnosis; }
 	// 同一 ASC 的已确认冷却只有此处保存截止时间，不随 Runtime 重建迁移或重启。
 	float GetCooldownRemaining(FName SkillId) const;
 	bool CanAcceptConfirmedCooldown(const USkillLabAbilitySystemComponent* ASC) const;
@@ -67,6 +67,7 @@ private:
 	friend class USkillLabLuaSkillBehavior;
 	friend class ASkillLabFireballProjectile;
 	friend class FSkillLabProductionRecordsTest;
+	friend class FSkillLabSubmissionReconciliationTest;
 	FSkillLabProductionHandle BeginProduction(UObject* Runtime, uint64 Generation, uint64 Cast, uint64 Point,
 		uint64 Transaction, int32 RequestId, const struct FSkillLabSkillDefinition& Definition, bool bAlreadyCommitted);
 	void ReconcileRecord(int32 Index);
@@ -78,7 +79,7 @@ private:
 	FSkillLabSubmissionResults ProductionResults;
 	TWeakObjectPtr<USkillLabAbilitySystemComponent> ResourceOwner;
 	TArray<FSkillLabUnconfirmedSubmission> Records;
-	TSet<int32> ReportedLostOwnerRecords;
+	TSet<int32> ActiveRecordIndices;
 	TMap<FName, double> CooldownEnd;
-	bool bOwnerEnded = false;
+	bool bOwnerEnded = false, bHasLostResourceOwnerDiagnosis = false;
 };

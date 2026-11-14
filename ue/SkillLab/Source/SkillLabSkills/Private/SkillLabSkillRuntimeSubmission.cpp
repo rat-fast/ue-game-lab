@@ -98,7 +98,6 @@ bool USkillLabSkillRuntimeComponent::ResolveBehaviorSubmission(const USkillLabSk
 	}
 	Execution.Submission.State = ESubmissionState::Closed;
 	Execution.bSubmitting = false;
-	Execution.PendingSubmissionId = 0;
 	if (Execution.Submission.Outcome == ESubmissionState::Indeterminate) StartIndeterminateWait(Execution);
 	FinishSubmissionTermination(Execution);
 	return bResourceResolved && bPointResolved;
@@ -123,7 +122,6 @@ bool USkillLabSkillRuntimeComponent::BeginBehaviorSubmission(const USkillLabSkil
 		OutReason = TEXT("SubmissionPointUnavailable"); return false;
 	}
 	Execution.bSubmitting = true;
-	Execution.PendingSubmissionId = SubmissionPointId;
 	Execution.Submission = FSubmissionContext();
 	Execution.Submission.CastToken = Execution.Lifecycle.GetCastToken();
 	Execution.Submission.RuntimeGeneration = Execution.Token.RuntimeGeneration;
@@ -137,7 +135,6 @@ bool USkillLabSkillRuntimeComponent::BeginBehaviorSubmission(const USkillLabSkil
 			? ESubmissionState::Indeterminate : ESubmissionState::Failed;
 		Execution.Submission.State = ESubmissionState::Closed;
 		Execution.bSubmitting = false;
-		Execution.PendingSubmissionId = 0;
 		OutReason = Execution.Submission.Outcome == ESubmissionState::Indeterminate ? TEXT("SubmissionUnconfirmed") : TEXT("ResourceEscrowFailed");
 		if (Execution.Submission.Outcome == ESubmissionState::Indeterminate) StartIndeterminateWait(Execution);
 		FinishSubmissionTermination(Execution);
@@ -183,7 +180,6 @@ void USkillLabSkillRuntimeComponent::AbortBehaviorSubmission(const USkillLabSkil
 		UE_LOG(LogTemp, Error, TEXT("[SkillLabResource] Indeterminate submission escrow did not close: Cast=%d"), CastId);
 	Execution.Submission.State = ESubmissionState::Closed;
 	Execution.bSubmitting = false;
-	Execution.PendingSubmissionId = 0;
 	StartIndeterminateWait(Execution);
 	FinishSubmissionTermination(Execution);
 }

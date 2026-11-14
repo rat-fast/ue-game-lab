@@ -40,12 +40,15 @@ bool FSkillLabCastSubmissionIsolationTest::RunTest(const FString&)
  TStrongObjectPtr<USkillLabLuaSkillBehavior> R(Cast<USkillLabLuaSkillBehavior>(Execution->ActiveBehavior));
  Target.Runtime->TeamId = U.Runtime->TeamId;
  TestFalse(TEXT("Changed relation produces a confirmed failure"),R->RequestDeclaredAction(1));
+ const FName FirstOperation(*FString::Printf(TEXT("SkillEffect_%d_1"), Retry.CastId));
+ TestEqual(TEXT("Failed effect reports the first operation name"),R->GetPointResult(1)->EffectOperationId,FirstOperation);
  const auto Failed = R->GetPointProduction(1);
  TestEqual(TEXT("Confirmed failure costs nothing"),U.ASC->GetActualEnergy(),100.0f);
  Target.Runtime->TeamId = 2;
  F.Tick(0.1f);
  TestEqual(TEXT("There is no automatic failed-point retry"),R->GetPointProduction(1).Key.Operation,Failed.Key.Operation);
  TestTrue(TEXT("Explicit retry can succeed after target validity recovers"),R->RequestDeclaredAction(1));
+ TestEqual(TEXT("Failed effect does not consume an operation number"),R->GetPointResult(1)->EffectOperationId,FirstOperation);
  TestTrue(TEXT("Retry allocates new production operation"),R->GetPointProduction(1).Key.Operation != Failed.Key.Operation);
  TestEqual(TEXT("Only successful retry commits cost"),U.ASC->GetActualEnergy(),95.0f);
  TestFalse(TEXT("Success cannot be retried"),R->RequestDeclaredAction(1));

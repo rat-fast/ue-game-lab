@@ -24,7 +24,11 @@
 
 ## Runtime Flow
 
-伤害和治疗通过 meta effect 进入 AttributeSet，统一执行减免、生命钳制与死亡 Tag 更新。`ApplyDamageToTarget` 可携带攻击类别；目标生命实际下降时广播 `OnSkillLabDamageTaken`，Runtime 决定是否打断 Cast。空/未知类别仍可通知，但不据此打断。持续伤害由带周期/时长的 GE 承载，按目标聚合，周期结果通过 `OnPeriodicDamageResolved` 广播；技能侧保存来源与效果句柄。
+伤害和治疗通过 meta effect 进入 AttributeSet，统一执行减免、生命钳制与死亡 Tag 更新。`ApplyDamageToTarget` 可携带攻击类别；目标生命实际下降时广播 `OnSkillLabDamageTaken`，Runtime 决定是否打断 Cast。空/未知类别仍可通知，但不据此打断。
+
+`ApplyDamageOverTimeToTarget` 每次创建独立的动态 GE 定义，局部 `TStrongObjectPtr` 从定义创建起覆盖 Spec 构造及整个同步 Apply 调用，包括目标 ASC 的应用查询回调。成功应用后由目标 ASC 活跃 Spec 的 `UPROPERTY Def` 接续保活；效果移除且无其他强引用后，定义可由 GC 回收。拒绝应用返回后局部强引用释放，源 ASC 不永久保留定义。当前定义配置为 `AggregateByTarget`，但 GAS 堆叠匹配还要求 Def 身份相同，逐次独立创建不会把不同应用合并；定义寿命不依赖原 Cast 或技能 Runtime 存活。
+
+AttributeSet 将周期伤害结算暂存到目标 ASC，按本次 `FGameplayEffectSpec` 的精确地址关联；GAS 周期回调以同一活跃 Spec 身份取出结果，在广播 `OnPeriodicDamageResolved` 前移除暂存项，并附上效果句柄。不匹配时不猜测归属；技能侧按效果句柄保存来源并观察事件。
 
 `GetActualEnergy` 读取 GAS Energy，`GetReservedEnergy` 汇总预留，`GetAvailableEnergy` 给出扣除预留后的可用视图。Begin 只预留，不先减实际能量；成功确认扣实际一次，明确失败释放，未知保持预留并由原事务对账。结算历史可独立查询，不依赖当前 Cast 存活。
 

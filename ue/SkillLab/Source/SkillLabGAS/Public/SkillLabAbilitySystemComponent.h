@@ -134,8 +134,6 @@ private:
 	struct FEnergyReservation
 	{
 		float Amount;
-		uint64 RuntimeGeneration;
-		uint64 CastId;
 		EEnergyReservationState State;
 		bool bDebitAttempted = false;
 		bool bDebitObserved = false;
@@ -159,7 +157,6 @@ private:
 	FGameplayAttribute ExpectedResourceNotification;
 	float ExpectedResourceOldValue = 0.0f;
 	float ExpectedResourceNewValue = 0.0f;
-	bool bAwaitingResourceNotification = false;
 	// Sticky for the lifetime of this ASC after any detected bypass write.
 	bool bUnsupportedResourceWrite = false;
 	TArray<FPendingResourceChange> PendingResourceChanges;
@@ -174,7 +171,4 @@ private:
 	bool ApplyMetaEffect(UAbilitySystemComponent* TargetASC, TSubclassOf<UGameplayEffect> EffectClass, float Amount, UObject* SourceObject);
 	UPROPERTY(Transient)
 	TObjectPtr<USkillLabCombatAttributeSet> CombatAttributeSet;
-
-	UPROPERTY(Transient)
-	TArray<TObjectPtr<UGameplayEffect>> RuntimeEffects;
 };

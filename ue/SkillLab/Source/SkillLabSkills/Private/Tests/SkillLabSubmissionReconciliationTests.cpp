@@ -180,6 +180,66 @@ bool FSkillLabSubmissionReconciliationTest::RunTest(const FString&)
 	TestEqual(TEXT("Receiver ending during notification cannot cause a second supplement"), FinalReports, 1);
 	TestEqual(TEXT("Notification lifetime does not compensate closed cost"), NotificationEnd.ASC->GetActualEnergy(), 98.0f);
 	NotificationEnd.Session->OnSubmissionConfirmed.Remove(EndOnReport);
+
+	// Closed producer history remains queryable while only unresolved/undelivered records stay active.
+	auto LongHistory = Fixture.MakeUnit(FVector(2100, 0, 0));
+	TArray<FSkillLabSubmissionKey> ClosedKeys;
+	auto MakeRecord = [&](const uint64 PointId, const bool bConfirmNow)
+	{
+		FSkillLabSubmissionKey Seed;
+		Seed.Session = FObjectKey(LongHistory.Session);
+		Seed.ResourceOwner = FObjectKey(LongHistory.ASC);
+		Seed.Runtime = FObjectKey(LongHistory.Runtime);
+		Seed.Generation = 9001;
+		Seed.Cast = 7001;
+		Seed.Point = PointId;
+		Seed.SkillId = TEXT("Receipt_Any");
+		const FSkillLabSubmissionKey Key = LongHistory.Session->ProductionResults.Begin(
+			Seed, ESkillLabProductionKind::Effect, 0.0f, 0.0f, true, Fixture.World);
+		if (bConfirmNow) LongHistory.Session->ProductionResults.Confirm(Key, true, TEXT("HistoryFixture"), Fixture.World->GetTimeSeconds());
+		FSkillLabUnconfirmedSubmission Record;
+		Record.SkillId = Key.SkillId;
+		Record.RuntimeIdentity = Key.Runtime;
+		Record.RuntimeGeneration = Key.Generation;
+		Record.CastId = Key.Cast;
+		Record.PointId = Key.Point;
+		Record.ResultSourceId = TEXT("SkillLabProduction");
+		Record.bAlreadyCommitted = true;
+		Record.ProductionKey = Key;
+		LongHistory.Session->Record(Record);
+		return Key;
+	};
+	for (uint64 Point = 1; Point <= 128; ++Point) ClosedKeys.Add(MakeRecord(Point, true));
+	bool bAddedDuringFeedback = false;
+	const auto AddDuringFeedback = LongHistory.Session->OnSubmissionConfirmed.AddLambda(
+		[&](const FSkillLabSubmissionConfirmation&)
+		{
+			if (bAddedDuringFeedback) return;
+			bAddedDuringFeedback = true;
+			MakeRecord(1000, false);
+		});
+	LongHistory.Session->ReconcileProductionResults();
+	LongHistory.Session->OnSubmissionConfirmed.Remove(AddDuringFeedback);
+	TestTrue(TEXT("Reentrant record is appended outside the current active-index snapshot"), bAddedDuringFeedback);
+	TestEqual(TEXT("Long closed history leaves only the reentrant unresolved operation active"), LongHistory.Session->ActiveRecordIndices.Num(), 1);
+	TestEqual(TEXT("Closed producer history remains available by full identity"),
+		LongHistory.Session->GetProductionResults().Query(ClosedKeys.Last()).State, ESkillLabProductionState::ConfirmedAccepted);
+	TestEqual(TEXT("Closed records remain available to existing indexed readers"), LongHistory.Session->GetRecords().Num(), 129);
+	TArray<FSkillLabSubmissionKey> PendingKeys;
+	PendingKeys.Add(LongHistory.Session->GetRecords().Last().ProductionKey);
+	for (uint64 Point = 1001; Point <= 1127; ++Point) PendingKeys.Add(MakeRecord(Point, false));
+	LongHistory.Session->ReconcileProductionResults();
+	TestEqual(TEXT("Long unresolved set is retained while no producer result exists"), LongHistory.Session->ActiveRecordIndices.Num(), 128);
+	TestTrue(TEXT("Unresolved records continue to isolate their skill"), LongHistory.Session->BlocksSkill(TEXT("Receipt_Any")));
+	TestTrue(TEXT("Unresolved records remain visible during convergence"), LongHistory.Session->HasUnconfirmed());
+	TestEqual(TEXT("Full record history is not compacted while entries are active"), LongHistory.Session->GetRecords().Num(), 256);
+	for (const FSkillLabSubmissionKey& Key : PendingKeys)
+		LongHistory.Session->ProductionResults.Confirm(Key, true, TEXT("ReentrantResolved"), Fixture.World->GetTimeSeconds());
+	LongHistory.Session->ReconcileProductionResults();
+	TestEqual(TEXT("Confirmed records leave the active scan set together"), LongHistory.Session->ActiveRecordIndices.Num(), 0);
+	TestFalse(TEXT("Converged records no longer block skill requests"), LongHistory.Session->HasUnconfirmed());
+	TestEqual(TEXT("Reentrant producer result remains queryable after convergence"),
+		LongHistory.Session->GetProductionResults().Query(PendingKeys.Last()).State, ESkillLabProductionState::ConfirmedAccepted);
 	return true;
 }
 #endif

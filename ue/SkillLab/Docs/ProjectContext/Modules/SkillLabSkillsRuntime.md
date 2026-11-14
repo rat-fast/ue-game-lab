@@ -40,13 +40,17 @@
 
 目标形状为 `Self/Unit/Ground`，关系为 `Self/Ally/Enemy/Any`，效果为 `Damage/Healing/DamageOverTime`，执行模板为 `InstantTarget/Projectile/GroundArea`。当前四个生产技能均使用 `USkillLabLuaSkillBehavior`；没有显式 `submissionPoints` 时生成隐式 Script 点 1，并保持旧目标绑定。显式点 id 为正 int32，声明包含 trigger、target，Timer 配 delay，GameplayEvent 配 eventTag；Provider 校验重复、角色冲突和目标适配。完成模式为 `ScriptOrEvent` 或 `AllSubmissionPointsResolved`，后者等待点表收束。
 
+含 GameplayEvent 提交点的定义必须配置正数 `active` 超时；缺省或零值由 `SkillLabSkillEntryParsing.cpp` 在加载期拒绝。释放后该等待由既有 `ActiveTimeout` 取消契约保障结束，不能依赖已清理的释放事件超时；无此类提交点的定义不因该校验被强制配置 Active 时长。
+
 Lua 宿主仅提供受限 `SkillLabSkill_RequestAction(pointId)`、`SkillLabSkill_ApplyEffect(pointId)` 和 `SkillLabSkill_Finish()`。无参动作只兼容隐式单点；成功提交一次，明确失败不消耗该 Cast 的唯一费用机会。VM 按次创建和关闭、受指令预算限制，不是常驻协程；Lua 不能直接访问 Actor/ASC 或绕过声明执行。当前生产 JSON 未显式使用多点，多点能力由专门测试覆盖。
 
-普通 Cast 结束清理其 Timer、检测和回调，未确认交付的投射物销毁；已确认投射物脱离 Cast 寿命。命中走 `ApplySubmitted`，按已确认交付记录、原来源快照及一次命中消费执行效果，不要求原 Cast 仍活动；只在原 Runtime 有效时向其转发结果。持续 GE 由目标 ASC 持有，Adapter 按句柄保存 Origin、周期与移除事件，普通 Cast 终止不移除；Runtime EndPlay `Clear(false)` 解除观察，Reset `Clear(true)` 显式清理。Actor/ASC 失效不调用失效对象。
+普通 Cast 结束清理其 Timer、检测和回调，未确认交付的投射物销毁；已确认投射物脱离 Cast 寿命。命中走 `ApplySubmitted`，按已确认交付记录、原来源快照及一次命中消费执行效果，不要求原 Cast 仍活动；只在原 Runtime 有效时向其转发结果。持续 GE 由目标 ASC 持有，Adapter 按句柄保存 Origin、周期与移除事件，普通 Cast 终止不移除；Runtime EndPlay 在活动 Cast 与提交收束后以 `Clear(false)` 解除效果观察，并通过 Loadout 保存的精确句柄撤销该 Runtime 授予的 Ability spec，不移除已交付 GE；Reset `Clear(true)` 显式清理。Actor/ASC 失效不调用失效对象。
 
-`USkillLabUnconfirmedSubmissions` 保存会话生产结果、唯一冷却、迟到去重和未决 SkillId 隔离。有限等待结束仍未知的提交保留预留与隔离；迟到确认按原身份对账，不归到新 Cast，也不承诺跨进程恢复。
+`USkillLabUnconfirmedSubmissions` 保存会话生产结果、唯一冷却、迟到去重和未决 SkillId 隔离。有限等待结束仍未知的提交保留预留与隔离；迟到确认按原身份对账，不归到新 Cast，也不承诺跨进程恢复。`ActiveRecordIndices` 以稳定记录下标索引待结算或待反馈项，每轮对账只扫描活动索引快照，反馈成功后才移出；`BlocksSkill`、`HasUnconfirmed` 和失主诊断也只遍历活动项。`Records` 本体保持追加，交接时的重复身份检测仍扫描历史；终态生产结果、Area 父子结果及 GAS 的能源结算与已用事务 ID 历史继续保留，以支持迟到查询和幂等，当前没有会话内裁剪。
 
 Reset 在清意图/取消前登记 attempt、原 ASC 与 generation，保持请求屏障，等待提交收束后更新 generation 并清理效果观察。若仍有未决，报告 `ResetBlockedByUnconfirmedSubmission` 并保留其预留/隔离；否则快照能量恢复目标、恢复 Health，再登记 Waiting 并调用 GAS `RequestResourceChangeTracked`。写前与最终回执均核对 attempt、原 Runtime/ASC、generation、阶段和未决；只有最终 Applied 且无未决才清已确认冷却。Rejected/Failed/Unavailable 映射为 `ResetResourceChangeRejected/Failed/Unavailable`；先释放屏障再发布失败。成功只记 `ResetCompleted` 日志，没有对外成功委托。EndPlay 使旧 attempt 失效；Health/效果清理与 Energy 恢复不是整体事务，没有补偿或自动重试。
+
+死亡状态由 GAS 的 `USkillLabCombatAttributeSet::PostAttributeChange` 随 Health 最终值同步 `State_Dead` loose tag，覆盖 GE 伤害/治疗及 Reset 直接恢复 Health 的路径；Runtime 消费该状态执行死亡门控与取消，不另行手工清除死亡标签。
 
 ## Current Responsibilities And Evolution Boundaries
 

@@ -187,7 +187,6 @@ private:
 			FSkillLabUnconfirmedSubmission First;
 			First.SkillId = FName(*FString::Printf(TEXT("Skill_Diagnostic_%dA"), Mode));
 			First.RuntimeIdentity = FObjectKey(Late.Runtime);
-			First.RuntimeId = Late.Runtime->GetUniqueID();
 			First.CastId = 1;
 			FSkillLabUnconfirmedSubmission Second = First;
 			Second.SkillId = FName(*FString::Printf(TEXT("Skill_Diagnostic_%dB"), Mode));

@@ -68,6 +68,7 @@ private:
 	friend class USkillLabLuaSkillBehavior;
 	friend class ASkillLabFireballProjectile;
 	friend class FSkillLabProductionRecordsTest;
+	friend class FSkillLabSubmissionReconciliationTest;
 	FSkillLabSubmissionKey Begin(FSkillLabSubmissionKey Key, ESkillLabProductionKind Kind,
 		float Cost, float Cooldown, bool bAlreadyCommitted, UWorld* Clock);
 	TArray<FSkillLabSubmissionKey> PlanArea(const FSkillLabSubmissionKey& Key, int32 Count, bool bQueryComplete);

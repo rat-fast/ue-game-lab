@@ -115,8 +115,7 @@ public:
 private:
 	friend class USkillLabUnconfirmedSubmissions;
 	friend class ASkillLabFireballProjectile;
-	friend class FSkillLabCastGameplayEventTest;
-	friend class FSkillLabBufferedIntentConsumeCommand;
+	friend class FSkillLabCastScenarioFixture;
 	friend class FSkillLabUnconfirmedSubmissionTest;
 	friend class FSkillLabUnconfirmedWaitCommand;
 	friend class FSkillLabProductionFixture;

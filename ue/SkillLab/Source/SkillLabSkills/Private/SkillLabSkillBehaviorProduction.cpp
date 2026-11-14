@@ -6,20 +6,6 @@
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 
-bool USkillLabLuaSkillBehavior::ExecuteDeclaredAction()
-{
- // 既有失联回执测试进入的仍是当前同步提交，而不是第二套状态。
- EnsurePoints();
- const auto Production = Runtime ? Runtime->GetProductionHandle(this, CastId) : FSkillLabProductionHandle();
- auto* Point = Points.Find(static_cast<int32>(Production.Key.Point));
- if (!Point) return false;
- Point->Production = Production;
- Point->Result.SubmissionKey = Production.Key;
- LastPointId = Point->Declaration.Id;
- const bool bAccepted = ExecuteDeclaredAction(*Point);
- LastResponse = Point->Result;
- return bAccepted;
-}
 bool USkillLabLuaSkillBehavior::ExecuteDeclaredAction(FPointExecution& Point)
 {
  const auto Production = Point.Production;

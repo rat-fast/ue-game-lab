@@ -29,6 +29,7 @@ void USkillLabUnconfirmedSubmissions::Record(const FSkillLabUnconfirmedSubmissio
 			&& Existing.PointId == Record.PointId && Existing.TransactionId == Record.TransactionId
 			&& Existing.SkillId == Record.SkillId && Existing.ProductionKey == Record.ProductionKey) return;
 	Records.Add(Record);
+	ActiveRecordIndices.Add(Records.Num() - 1);
 	UE_LOG(LogTemp, Warning, TEXT("[SkillLabUnconfirmed] Retained Skill=%s Generation=%llu Cast=%llu Point=%llu Transaction=%llu AlreadyCommitted=%d"),
 		*Record.SkillId.ToString(), Record.RuntimeGeneration, Record.CastId, Record.PointId, Record.TransactionId, Record.bAlreadyCommitted);
 	if (bOwnerEnded || !ResourceOwner.IsValid() || ResourceOwner->IsBeingDestroyed()
@@ -37,23 +38,28 @@ void USkillLabUnconfirmedSubmissions::Record(const FSkillLabUnconfirmedSubmissio
 
 bool USkillLabUnconfirmedSubmissions::BlocksSkill(const FName SkillId) const
 {
-	return Records.ContainsByPredicate([SkillId](const FSkillLabUnconfirmedSubmission& Record)
-		{ return Record.SkillId == SkillId && !Record.bResolved; });
+	for (const int32 Index : ActiveRecordIndices)
+		if (Records.IsValidIndex(Index) && !Records[Index].bResolved && Records[Index].SkillId == SkillId) return true;
+	return false;
 }
 
 bool USkillLabUnconfirmedSubmissions::HasUnconfirmed() const
 {
-	return Records.ContainsByPredicate([](const FSkillLabUnconfirmedSubmission& Record) { return !Record.bResolved; });
+	for (const int32 Index : ActiveRecordIndices)
+		if (Records.IsValidIndex(Index) && !Records[Index].bResolved) return true;
+	return false;
 }
 
 void USkillLabUnconfirmedSubmissions::ReportLostOwner()
 {
-	for (int32 Index = 0; Index < Records.Num(); ++Index)
+	for (const int32 Index : ActiveRecordIndices)
 	{
-		if (ReportedLostOwnerRecords.Contains(Index)) continue;
-		if (Records[Index].bResolved) continue;
-		ReportedLostOwnerRecords.Add(Index);
-		const FSkillLabUnconfirmedSubmission& Record = Records[Index];
+		if (!Records.IsValidIndex(Index)) continue;
+		FSkillLabUnconfirmedSubmission& Record = Records[Index];
+		if (Record.bReportedLostOwner) continue;
+		if (Record.bResolved) continue;
+		Record.bReportedLostOwner = true;
+		bHasLostResourceOwnerDiagnosis = true;
 		UE_LOG(LogTemp, Warning, TEXT("[SkillLabUnconfirmed] Session cannot confirm: resource owner or actor destroyed; Skill=%s Generation=%llu Cast=%llu Point=%llu Transaction=%llu"),
 			*Record.SkillId.ToString(), Record.RuntimeGeneration, Record.CastId, Record.PointId, Record.TransactionId);
 	}

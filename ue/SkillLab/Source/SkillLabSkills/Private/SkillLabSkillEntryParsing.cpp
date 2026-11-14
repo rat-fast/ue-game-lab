@@ -192,6 +192,10 @@ namespace SkillLabSkillDefinitionParsing
 		if (!ParseSubmissionPoints(Json, Out, Error)) return false;
 		if (Out.CompletionMode == ESkillLabCompletionMode::AllSubmissionPointsResolved && (!Out.bHasExplicitSubmissionPoints || Out.CompletionEventTag.IsValid()))
 			return Fail(Error, TEXT("AllSubmissionPointsResolved requires explicit submissionPoints and cannot use completionEventTag"));
+		// 释放超时在释放时已清理；后续事件必须由 Active 超时保障终止。
+		if (Out.Phases.ActiveSeconds <= 0.0f && Out.SubmissionPoints.ContainsByPredicate([](const FSkillLabSubmissionPointDefinition& Point)
+			{ return Point.Trigger == ESkillLabSubmissionTrigger::GameplayEvent; }))
+			return Fail(Error, TEXT("GameplayEvent submission points require a positive active timeout"));
 		return true;
 	}
 }

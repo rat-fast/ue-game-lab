@@ -15,6 +15,8 @@ class SKILLLABSKILLS_API USkillLabSkillLoadout : public UObject
 public:
 	/** Grants the current default catalog once and preserves the existing handles. */
 	bool Initialize(USkillLabAbilitySystemComponent* InAbilitySystemComponent);
+	/** Revokes only specs granted by this loadout. Safe to call more than once. */
+	void RevokeGrantedAbilities();
 	bool IsGranted(FName SkillId) const;
 	FGameplayAbilitySpecHandle FindGrantedHandle(FName SkillId) const;
 	void GetGrantedSkillIds(TArray<FName>& OutIds) const;

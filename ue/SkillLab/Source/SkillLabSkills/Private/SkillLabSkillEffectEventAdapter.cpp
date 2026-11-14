@@ -105,6 +105,8 @@ void USkillLabSkillEffectEventAdapter::Clear(const bool bRemoveEffects)
 		FSkillLabSkillResult Result = Pair.Value.Origin;
 		Result.Event = ESkillLabSkillEvent::BuffRemoved;
 		Result.bSuccess = true;
+		Result.SourceActor = Pair.Value.Source.Get();
+		Result.TargetActor = Pair.Value.Target.Get();
 		Result.Reason = TEXT("EffectTrackingCleared");
 		OnEffectEvent.Broadcast(Result);
 	}

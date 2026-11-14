@@ -35,6 +35,24 @@ bool USkillLabSkillLoadout::Initialize(USkillLabAbilitySystemComponent* InAbilit
 	return GrantedSkills.Num() > 0;
 }
 
+void USkillLabSkillLoadout::RevokeGrantedAbilities()
+{
+	USkillLabAbilitySystemComponent* GrantedASC = AbilitySystemComponent.Get();
+	if (IsValid(GrantedASC) && !GrantedASC->IsBeingDestroyed())
+	{
+		for (const TPair<FName, FGameplayAbilitySpecHandle>& GrantedSkill : GrantedSkills)
+		{
+			if (GrantedSkill.Value.IsValid())
+			{
+				GrantedASC->ClearAbility(GrantedSkill.Value);
+			}
+		}
+	}
+
+	GrantedSkills.Reset();
+	AbilitySystemComponent.Reset();
+}
+
 bool USkillLabSkillLoadout::IsGranted(const FName SkillId) const
 {
 	return GrantedSkills.Contains(SkillId);

@@ -35,7 +35,7 @@ bool USkillLabAbilitySystemComponent::BeginEnergyEscrow(const uint64 Transaction
 		UE_LOG(LogTemp, Warning, TEXT("[SkillLabResource] Energy reservation rejected by current GAS state or active resource write"));
 		return false;
 	}
-	EnergyReservations.Add(TransactionId, {Cost, RuntimeGeneration, CastId, EEnergyReservationState::Pending});
+	EnergyReservations.Add(TransactionId, {Cost, EEnergyReservationState::Pending});
 	FSkillLabEnergySettlement Snapshot;
 	Snapshot.Owner = FObjectKey(this);
 	Snapshot.Transaction = TransactionId;

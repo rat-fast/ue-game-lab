@@ -42,16 +42,14 @@ public:
 	};
 	FSubmissionContext Submission;
 	bool bApplyingEffect = false;
-	uint64 PendingSubmissionId = 0;
 	FName DeferredSubmissionCancel;
 	bool bDeferredSubmissionReset = false;
 	bool bDeferredSubmissionFinish = false;
 	FName DeferredSubmissionFinishReason;
 	bool bFinishing = false;
-	bool bEffectSubmitted = false;
 	FName ActiveEffectOperationId = NAME_None;
-	FSkillLabSkillResult ActiveEffectResult;
-	TArray<FSkillLabSkillResult> ActiveEffectResults;
+	// 操作编号仅在效果实际生效后递增；失败和重复目标不占用编号。
+	int32 SuccessfulEffectCount = 0;
 	TSet<FGameplayTag> ConsumedWindowEvents;
 	FName OutcomeReason;
 	TMap<uint64, TArray<FSkillLabSkillResult>> SuccessfulPointEffects;
