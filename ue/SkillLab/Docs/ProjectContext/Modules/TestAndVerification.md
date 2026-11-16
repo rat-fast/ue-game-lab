@@ -29,6 +29,7 @@
 | `SkillLab.Skills.` 执行与仲裁 | `CastExecutionOwnership`、`SharedCastArbitration`、`CastIntentLifecycle`、`CastControlAndRules`、`CastRequestReentry`、`CastSubmissionIsolation` |
 | `SkillLab.Skills.` 提交、寿命与来源 | `MultipleSubmissions`、`SubmittedActionLifetime`、`ProductionRecords`、`SubmissionReconciliation`、`LateSubmission`、`UnconfirmedSubmission`、`AreaSubmissionSettlement`、`SubmissionFeedbackRouting`、`SubmissionFeedbackIdentity` |
 | `SkillLab.Skills.` Reset | `ResetResourceCompletion`、`ResetSubmissionDuringCompletion` |
+| 空间能力完整名 | `SkillLab.Skills.SpatialTransform`、`SkillLab.Presentation.SpatialLifecycle`；同时复用 `SkillLab.Skills.DefinitionValidation`、`SkillLab.Skills.SubmittedActionLifetime` 和 `SkillLab.Presentation.SubmissionIdentity` |
 | `SkillLab.GAS.` | `DamageCalculation`、`EnergyLedger`、`EnergySettlementHistory`、`ResourceWriteIntegration`、`ResourceExecutionBoundary` |
 | 表现与动画完整名 | `SkillLab.Presentation.SubmissionIdentity`、`SkillLab.Presentation.CastAnimationResources`、`SkillLab.Animation.DefinitionProvider` |
 | 其他既有入口，本次未复测 | `SkillLab.UI.WidgetTreeBeforeSlate`、`SkillLab.LuaRuntime.Boundary` |
@@ -39,7 +40,7 @@
 
 ## Verification
 
-本次文档更新核对了源码注册名、当前实现摘要与已接受 Review，并运行了下述代码质量整改定向集成回归；该验证只覆盖列出的 34 项，不代表完整自动化、资产审查或可见验收。B1/多 Cast 与 P2-CE-1、R 资源修复及 Reset 专项的当前接受依据是 [CastExecutionReview](../../ProgramWorkflow/SkillSystem/Batches/SkillCombatRulesCompletion/CastExecutionReview.md)，其中 **2026-11-12 立即合法资源 Rejected 补证复查**关闭最后该项缺口。报告较早章节的待证状态按其后续结论解读，专项通过不代表整批玩家验收完成。
+本次文档同步只核对源码、配置和既有证据，未重新构建、运行测试或操作游戏。以下代码质量整改定向集成回归仅覆盖列出的34项，不代表完整自动化、资产审查或可见验收。B1/多 Cast 与 P2-CE-1、R 资源修复及 Reset 专项的当前接受依据是 [CastExecutionReview](../../ProgramWorkflow/SkillSystem/Batches/SkillCombatRulesCompletion/CastExecutionReview.md)，其中 **2026-11-12 立即合法资源 Rejected 补证复查**关闭最后该项缺口。报告较早章节的待证状态按其后续结论解读，专项通过不代表整批玩家验收完成。
 
 **代码质量整改集成回归（2026-11-14）**：实际工程 `SkillLabEditor Win64 Development` 构建成功，目标最新且 0 个动作；[`CodeQualityFinalBuild.log`](../../../Saved/Logs/CodeQualityFinalBuild.log)。[`CodeQualityFinalTests.log`](../../../Saved/Logs/CodeQualityFinalTests.log) 中 34 项定向自动化全部 Success、0 Fail、队列清空，UE 退出状态 0；日志确认从实际工程 `Binaries/Win64/` 加载 GAS 与 Skills 模块。该集合合并了测试边界 25 项与 F1/F3、F6、F7 的专属回归。启动阶段仍有既有 13 条 `Condition failed`；没有运行完整自动化全集、真实 120 帧超时、PIE、可见游戏或 Shipping 打包启动。逐项范围见 [代码质量整改摘要](../../ProgramWorkflow/SkillSystem/Batches/CodeQualityRemediation/TestBoundarySummary.md) 和对应 Review。
 
@@ -58,6 +59,12 @@
 最终生产内容运行样本为同一隔离目录下的 `FinalProductionRuntimeProbe.log`：四技能提交、Fireball 40 伤害、AreaBurst 25 伤害、满血 Mend 实际治疗 0、BurningBuff 三次各 8 点周期、提交前取消及 ResetCompleted 均有日志，Probe COMPLETE、退出 0。运行负责人报告运行前后 416 文件与已接受 `ResetImmediateRejectedHashes.json` 一致；PM 已核对日志及其 SHA-256 `E7710BE5158CD351E945A470D819CB6C636A096F969A88AF8CE7D539E4B6EF96`。这是最终版本的 `-game -nullrhi -SkillLabRuntimeProbe` 样本，不能证明可见画面或 PIE；启动另有 NiagaraToolsets Python AttributeError。该次 Probe 未启动可见 SkillLab；后续实际工程窗口证据单列如下。
 
 **实际工程交付证据（2026-11-12）**：`E:/agent/game/ue/SkillLab/Saved/Logs/HUDInputDeliveryBuild.log` 记录实际工程 SkillLabEditor Win64 Development 构建 Succeeded，执行摘要记录退出 0，并确认游戏进程从该工程 `Binaries/Win64/` 加载 SkillLab、Skills、GAS、Presentation 模块。隔离构建不自动更新实际启动工程 DLL；交付需构建实际工程并核对加载来源。构建、模块身份及用户反馈的权威定位为 [CastExecutionImplementationSummary 的实际工程交付修复](../../ProgramWorkflow/SkillSystem/Batches/SkillCombatRulesCompletion/CastExecutionImplementationSummary.md#实际工程交付修复2026-11-12)。
+
+**Batch04-01 空间配置验证（2026-11-15）**：实际工程 `SkillLabEditor Win64 Development` 构建见 [`Batch04SpatialFinalWithConfigBuild.log`](../../../Saved/Logs/Batch04SpatialFinalWithConfigBuild.log)。[`Batch04SpatialFinalWithConfigTests.log`](../../../Saved/Logs/Batch04SpatialFinalWithConfigTests.log) 中上述五项空间定向测试全部 Success、队列清空，覆盖配置解析/缺省兼容、变换、真实 Spawn/外观与碰撞隔离、既有障碍阻挡、独立 Related 来源和 Buff 多实例跟随/移除。该版四技能 Probe 见 [`Batch04SpatialFinalWithConfigProbe.log`](../../../Saved/Logs/Batch04SpatialFinalWithConfigProbe.log)：四个临时对象均有空间记录和 `COMPLETE`，但其中 AreaBurst 比例为修正前的8.0，不能当作当前配置的生效证据。
+
+AreaBurst 后续仅修正临时配置；当前参数经 [`Batch04AreaBurstProfileReload.log`](../../../Saved/Logs/Batch04AreaBurstProfileReload.log) 回读/重载。[`Batch04AreaBurstSpatialTests.log`](../../../Saved/Logs/Batch04AreaBurstSpatialTests.log) 中 `SpatialLifecycle`、`DefinitionValidation` 两项 Success；[`Batch04AreaBurstProfileProbe.log`](../../../Saved/Logs/Batch04AreaBurstProfileProbe.log) 记录四个对象、AreaBurst `Scale=0.20` 和 `COMPLETE`。五项集合与后续两项各有版本范围，不合并为一次全套通过。自动化启动有13条 `Condition failed`；Probe 的 NiagaraToolsets Python AttributeError 未阻止其完成。
+
+修正后 DX11 `-game -windowed` 的重载、数字键2/左键选地、`Scale=0.20` 和 `AreaEmpty` 见 [`Batch04AreaBurstVisibleGame.log`](../../../Saved/Logs/Batch04AreaBurstVisibleGame.log)；[截图](../../../Saved/Logs/Batch04AreaBurstVisibleMarker.png)可见局部方形面片，场景其余部分未被覆盖。该证据仅支持空区域释放的覆盖修复，不是 PIE、有效敌人伤害范围、不同视角或其他三技能空间观感验收；生产 Socket 与 Fireball 偏移后近墙/遮挡起点仍未验证。参数及恢复方式留在 [Batch04-01 实现摘要](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/ImplementationSummary.md)，配置规则见 [Skills 模块](SkillLabSkillsRuntime.md#可选空间配置)，代理尺寸/材质语义见 [表现模块](CharacterPresentation.md)。
 
 实际工程 `Saved/Logs/HUDInputDeliveryGame.log` 记录 DX11 `-game` 启动、四技能加载、1–4 绑定、HUD `Skills=4`，以及真实按键 3 的 Mend 动作、提交和完成；[实际游戏窗口截图](../../../Saved/Logs/HUDInputDeliveryWindow.png) 可见 HP、Energy 与四技能槽，用户随后人工确认技能可释放。按键 2/左键当次虽到达输入入口，地面投射失败，不能据此认定 AreaBurst 成功。该材料支持实际工程交付与基础 HUD 可见，不等于全面可见体验或 PIE 验收；交互职责见 [PlayerInteraction](PlayerInteraction.md)。本次只读核对既有源码、日志及截图，未启动或操作项目。
 

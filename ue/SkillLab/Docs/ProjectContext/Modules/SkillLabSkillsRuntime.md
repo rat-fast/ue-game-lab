@@ -17,10 +17,11 @@
 | `SkillLabSkillRuntimeSubmission.cpp`、`SkillLabSkillRuntimeUnconfirmed.cpp`、`SkillLabSkillRuntimeConfirmation.cpp` | 提交事务、有限等待、原身份确认 |
 | `SkillLabSkillDefinitionProvider.*`、`SkillLabLuaDeclarationParsing.cpp`、`SkillLabSkillEntryParsing.cpp`、`SkillLabSkillRuleParsing.cpp`、`SkillLabSubmissionDefinitionParsing.cpp` | 内容目录、Lua 声明、JSON 字段/规则/提交点校验；内部声明见 `SkillLabSkillDefinitionParsing.h` |
 | `SkillLabSkillBehavior.*`、`SkillLabSkillBehaviorLua.cpp`、`SkillLabSubmissionPointExecution.cpp` | 通用 Lua Behavior、受限宿主及每 Cast 点表 |
+| `SkillLabSpatialTransform.*` | Skills 与 Presentation 共用的受控空间来源解析及变换计算；执行路径读取定义快照 |
 | `SkillLabTargetingService.*`、`SkillLabSkillEffectExecutor.*`、`SkillLabSubmittedEffect.cpp`、`SkillLabFireballProjectile.*` | 目标检查、效果执行、已交付投射物命中 |
 | `SkillLabSubmissionResults.*`、`SkillLabUnconfirmedSubmissions.*`、`SkillLabSkillEffectEventAdapter.*` | 生产记录、会话未决/冷却、持续效果来源观察 |
 
-内容入口为 `Config/SkillDefinitions.json` 及四个 `Config/Skill_*.lua`。`SkillLabSkills` 私有依赖 `SkillLabLuaRuntime` facade，不自行编译 Lua 第三方源码。
+内容入口为 `Config/SkillDefinitions.json` 及其 `luaScript` 指向的 `Config/Skill_*.lua`。Lua `SkillLabSkill_Define` 声明技能执行/效果规则；空间配置是按技能、按对象可选的扩展，写法见下文。`SkillLabSkills` 私有依赖 `SkillLabLuaRuntime` facade，不自行编译 Lua 第三方源码。
 
 ## Runtime Entry
 
@@ -35,6 +36,7 @@
 3. 创建 `USkillLabCastExecution`，保存定义/请求快照、生命周期、Ability/Behavior、Timer、窗口及提交状态。完整 token 包含 Runtime 弱引用、RuntimeGeneration、CastId。`USkillLabSkillGameplayAbility` 为 `InstancedPerExecution`、`LocalOnly`，以 spec 和 token 绑定激活；GameplayEvent 还校验 Runtime、Ability、token、Instigator。
 4. 进入 Windup，按 Timer/GameplayEvent 释放并进入 Active；每 Cast Behavior 维护独立点表，按声明派发 Script、Release、Timer、GameplayEvent 点，统一走 Begin/Resolve/Abort 防重。行为完成后进入 Recovery/终态；控制状态和受击规则经同一执行身份处理。
 5. 提交键 `FSkillLabSubmissionKey` 保留稳定 Id、RequestId、Runtime、generation、Cast、点、operation 与 transaction；生产接受、投射物交付、效果应用和命中分别记录。能量预留/结算由 GAS 执行；唯一费用和冷却按已确认提交事实处理，不由 Lua 返回值替代。
+6. 空间对象声明与 JSON 参数在同一有效定义目录解析。Projectile 在正式提交的实际生成点读取当前参照并应用 Spawn 偏移，已交付对象继续独立运行。`MakeResult` 将空间定义和请求的 RelatedActor 带入事件快照，供表现和延迟效果使用；坐标语义与对象类型不改变目标合法性或结算规则。
 
 ## Current Behavior
 
@@ -52,13 +54,33 @@ Reset 在清意图/取消前登记 attempt、原 ASC 与 generation，保持请�
 
 死亡状态由 GAS 的 `USkillLabCombatAttributeSet::PostAttributeChange` 随 Health 最终值同步 `State_Dead` loose tag，覆盖 GE 伤害/治疗及 Reset 直接恢复 Health 的路径；Runtime 消费该状态执行死亡门控与取消，不另行手工清除死亡标签。
 
+### 可选空间配置
+
+**每个技能都可以完全不配置空间项。** 不需要空间行为时，省略 `SkillLabSkill_Spatial` 声明和 JSON `spatial` 属性，沿既有生成和反馈路径运行；无需为每个技能补空对象或默认值。只有需要适配的对象才添加 Lua 声明及 JSON `spatial.<name>` 同名参数对象，其他对象不必声明。内容加载仍走现有 Provider，不另建空间目录。
+
+Lua 声明为 `SkillLabSkill_Spatial(name, object, event, source, offsetSpace, direction, relation, rotationRelation)`，名称在技能内唯一，最多32项；JSON 键与声明必须匹配，多余键或缺少参数对象会拒绝候选目录。
+
+| 声明项 | 当前可用语义 |
+| --- | --- |
+| `object` / `event` | `Projectile` 配 `Release`，仅用于 Projectile 执行且每技能最多一个；`Marker` 配 `TargetSelected`、`Hit` 或 `BuffApplied` |
+| `source` | `Source` / `Target` 使用所选 Actor 原点；`Ground` 使用已有作用位置；`Related` 使用请求者显式给定的独立关联对象 |
+| `offsetSpace` | `Reference` 沿参照旋转轴，`World` 沿世界轴，`ExecutionDirection` 沿既有执行方向；偏移不乘参照缩放 |
+| `direction` | 独立选择 `Reference`、`World` 或 `ExecutionDirection`；模型修正不改 Projectile 瞄准与碰撞规则 |
+| `relation` / `rotationRelation` | `Once` 触发时求值；`Follow` 目前仅用于 `BuffApplied` Marker 的 Source/Target 来源，C++ 持续更新位置。`KeepRotation` 保持初始世界朝向，`FollowRotation` 仅与 Follow 配用 |
+
+JSON 参数均可在同名对象内按需省略：`offset:[x,y,z]`（cm，默认零）、`worldDirection:[pitch,yaw,roll]` 和 `visualRotation:[pitch,yaw,roll]`（度，默认零）、`visualScale`（正数，默认1）、`socket`（可选 bone/Socket 名）、`mesh`（可选 StaticMesh 软路径）。Ground 不允许 Socket；其余 Actor 来源在 SkinnedMesh 中唯一查找指定 bone/Socket，缺失或多组件匹配均报错。`RelatedActor` 由受信任的 C++ 调用方填入 `FSkillLabSkillRequest`，以弱引用进入 Cast/结果快照，不替代 Target，也不向 Lua 提供任意 Actor 访问；缺失、失效或跨 Source World 不回退到目标。Marker 的资源与尺寸消费见 [表现模块](CharacterPresentation.md)。
+
+配置变更通过启动加载或控制台 `SkillReloadDefinitions` 生效；Provider 校验后原子替换目录，失败保留上一份有效定义。新 Cast 捕获新定义，已有 Cast、已交付 Projectile 和已创建表现保留各自快照。声明/参数错误见 `[SkillLabSkills] Definition load rejected`，运行时来源/方向/资源失败见 `[SkillLabSpatial]` 的技能、对象与原因；软路径格式校验不等于资源实际可加载。真实生成点求值失败走现有提交失败；纯表现失败不改变技能结果。
+
+Fireball 的 `visualScale` 乘现有 `projectileVisualScale`，`visualRotation` 只修正子网格；Sphere 碰撞根不随外观缩放。缺省空间配置维持旧起点；显式配置无法求值时不会静默生成在世界原点。
+
 ## Current Responsibilities And Evolution Boundaries
 
 请求与共同仲裁优先查看 Requests/Rules，单 Cast 状态查看 Execution/Ownership 与 `USkillLabCastExecution`，点声明与调度分别查看解析文件和 `SkillLabSubmissionPointExecution.cpp`；不要把每 Cast 状态搬回角色级单例字段。资源写入和回执提供方见 [GAS 模块](SkillLabGAS.md)，表现身份见 [表现模块](CharacterPresentation.md)。新增执行模板、异步语义或联网要求时可调整归属，但需重新明确来源、寿命及验证边界。
 
 ## Verification
 
-当前自动化入口及 B1/多 Cast、重入修复、R+Reset 的分版本通过证据见 [TestAndVerification](TestAndVerification.md)。本次文档同步只做静态核对，未构建或执行测试。
+当前自动化入口及 B1/多 Cast、重入修复、R+Reset 的分版本通过证据见 [TestAndVerification](TestAndVerification.md)。空间解析、Spawn、Related 来源和受限表现生命周期的定向验证也列于该文档。本次文档同步只做静态核对，未构建或执行测试。
 
 实际工程已有四技能定义加载和释放证据；若快捷键到达后出现 `definition missing`，先沿 Provider 加载日志及实际启动工程的 DLL 定位。源码已接受 `combatRules`，旧 DLL 报 `unknown catalog field 'combatRules'` 的交付问题需更新实际工程构建，不应删改生产配置适配旧版。具体证据见测试模块的实际工程交付记录。
 

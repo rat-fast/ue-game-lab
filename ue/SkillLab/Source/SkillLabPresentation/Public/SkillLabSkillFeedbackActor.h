@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "SkillLabSpatialTransform.h"
 #include "SkillLabSkillFeedbackActor.generated.h"
 
 class UMaterialInstanceDynamic;
@@ -29,6 +30,9 @@ public:
 	ASkillLabSkillFeedbackActor();
 	void InitializeShape(ESkillLabFeedbackShape InShape, float Radius, const FColor& Color, float LifeSeconds);
 	void InitializeText(const FString& Text, const FColor& Color, float LifeSeconds);
+	void SetSpatialMesh(UStaticMesh* Mesh);
+	void StartSpatialFollow(const FSkillLabSpatialDefinition& InDefinition, AActor* InSource, AActor* InTarget,
+		const FVector& InGround, const FQuat& InitialRotation);
 
 protected:
 	virtual void Tick(float DeltaSeconds) override;
@@ -53,4 +57,10 @@ private:
 	float InitialLife = 1.0f;
 	float Elapsed = 0.0f;
 	FColor InitialTextColor = FColor::White;
+	bool bSpatialFollow = false;
+	FSkillLabSpatialDefinition SpatialDefinition;
+	TWeakObjectPtr<AActor> SpatialSource;
+	TWeakObjectPtr<AActor> SpatialTarget;
+	FVector SpatialGround = FVector::ZeroVector;
+	FQuat FixedRotation = FQuat::Identity;
 };

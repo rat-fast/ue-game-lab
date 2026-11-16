@@ -61,7 +61,7 @@ namespace SkillLabSkillDefinitionParsing
 			TEXT("projectileInterceptOtherUnits"), TEXT("windup"), TEXT("active"), TEXT("recovery"), TEXT("duration"), TEXT("period"),
 			TEXT("blockedBy"), TEXT("interruptBy"), TEXT("luaScript"), TEXT("castMontage"), TEXT("castAnimation"), TEXT("releaseTrigger"),
 			TEXT("releaseEventTag"), TEXT("releaseEventTimeout"), TEXT("ruleWindows"), TEXT("completionEventTag"),
-			TEXT("submissionPoints"), TEXT("completionMode")
+			TEXT("submissionPoints"), TEXT("completionMode"), TEXT("spatial")
 		};
 		for (const TPair<FString, TSharedPtr<FJsonValue>>& Pair : Json->Values)
 			if (!KnownFields.Contains(Pair.Key)) return Fail(Error, FString::Printf(TEXT("unknown JSON field '%s'"), *Pair.Key));
@@ -85,6 +85,57 @@ namespace SkillLabSkillDefinitionParsing
 		if (!ParseLuaDeclaration(*LuaSource, Out.LuaScript, Out, Error)) return false;
 		Out.RecoveryRules.Dodge = ESkillLabRuleDecision::Buffer;
 		Out.LuaSource = *LuaSource;
+
+		const TSharedPtr<FJsonObject>* Spatial = nullptr;
+		if (Json->HasField(TEXT("spatial")) && (!Json->TryGetObjectField(TEXT("spatial"), Spatial) || !Spatial || !Spatial->IsValid()))
+			return Fail(Error, TEXT("spatial must be an object keyed by Lua object name"));
+		if (Spatial)
+		{
+			for (const auto& Pair : (*Spatial)->Values)
+			{
+				auto* D = Out.SpatialDefinitions.FindByPredicate([&](const auto& Entry) { return Entry.Name == FName(*Pair.Key); });
+				if (!D || !Pair.Value.IsValid() || Pair.Value->Type != EJson::Object)
+					return Fail(Error, FString::Printf(TEXT("spatial.%s has no Lua declaration or is not an object"), *Pair.Key));
+				const auto Obj = Pair.Value->AsObject();
+				const TSet<FString> Allowed = { TEXT("socket"), TEXT("mesh"), TEXT("offset"), TEXT("worldDirection"), TEXT("visualRotation"), TEXT("visualScale") };
+				for (const auto& Field : Obj->Values) if (!Allowed.Contains(FString(Field.Key)))
+					return Fail(Error, FString::Printf(TEXT("spatial.%s: unknown field '%s'"), *Pair.Key, *Field.Key));
+				FString Socket;
+				if (!ReadString(*Obj, TEXT("socket"), Socket, false, Error)) return false;
+				if (!ReadString(*Obj, TEXT("mesh"), D->VisualMesh, false, Error)) return false;
+				if (!D->VisualMesh.IsEmpty() && !FSoftObjectPath(D->VisualMesh).IsValid())
+					return Fail(Error, FString::Printf(TEXT("spatial.%s.mesh must be a valid soft object path"), *Pair.Key));
+				D->Socket = FName(*Socket);
+				if (D->Source == ESkillLabSpatialSource::Ground && !D->Socket.IsNone()) return Fail(Error, TEXT("ground spatial object cannot bind a socket"));
+				auto ReadVector = [&](const TCHAR* Name, FVector& Value)
+				{
+					const TArray<TSharedPtr<FJsonValue>>* Values = nullptr;
+					if (!Obj->HasField(Name)) return true;
+					if (!Obj->TryGetArrayField(Name, Values) || !Values || Values->Num() != 3)
+						return Fail(Error, FString::Printf(TEXT("spatial.%s.%s must be a three-number array"), *Pair.Key, Name));
+					double Components[3];
+					for (int32 I = 0; I < 3; ++I)
+						if (!(*Values)[I].IsValid() || (*Values)[I]->Type != EJson::Number || !(*Values)[I]->TryGetNumber(Components[I])
+							|| !FMath::IsFinite(Components[I]) || FMath::Abs(Components[I]) > MaxContentNumber)
+							return Fail(Error, FString::Printf(TEXT("spatial.%s.%s contains an invalid number"), *Pair.Key, Name));
+					Value = FVector(Components[0], Components[1], Components[2]); return true;
+				};
+				FVector WorldAngles = FVector::ZeroVector, VisualAngles = FVector::ZeroVector;
+				if (!ReadVector(TEXT("offset"), D->Offset) || !ReadVector(TEXT("worldDirection"), WorldAngles)
+					|| !ReadVector(TEXT("visualRotation"), VisualAngles) || !ReadNumber(*Obj, TEXT("visualScale"), D->VisualScale, false, Error)) return false;
+				D->WorldDirection = FRotator(WorldAngles.X, WorldAngles.Y, WorldAngles.Z);
+				D->VisualRotation = FRotator(VisualAngles.X, VisualAngles.Y, VisualAngles.Z);
+				if (D->VisualScale <= 0) return Fail(Error, FString::Printf(TEXT("spatial.%s.visualScale must be positive"), *Pair.Key));
+			}
+		}
+		for (const auto& D : Out.SpatialDefinitions)
+		{
+			if (!Spatial || !(*Spatial)->HasField(D.Name.ToString())) return Fail(Error, FString::Printf(TEXT("spatial.%s is missing JSON parameters"), *D.Name.ToString()));
+			if (D.Object == ESkillLabSpatialObject::Projectile && Out.Execution != ESkillLabExecutionTemplate::Projectile)
+				return Fail(Error, TEXT("Projectile spatial object requires Projectile execution"));
+		}
+		if (Out.SpatialDefinitions.FilterByPredicate([](const auto& D) { return D.Object == ESkillLabSpatialObject::Projectile; }).Num() > 1)
+			return Fail(Error, TEXT("only one Projectile spatial object is allowed"));
 
 		const TSharedPtr<FJsonValue> MontageValue = Json->TryGetField(TEXT("castMontage"));
 		if (MontageValue.IsValid())

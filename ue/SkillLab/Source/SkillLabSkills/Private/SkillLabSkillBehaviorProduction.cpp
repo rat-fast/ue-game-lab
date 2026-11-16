@@ -13,7 +13,25 @@ bool USkillLabLuaSkillBehavior::ExecuteDeclaredAction(FPointExecution& Point)
  AActor* Selected = Point.Declaration.TargetBinding == ESkillLabSubmissionTargetBinding::Source ? Runtime->GetOwner() : Request.Target.Get();
  if (Definition.Execution == ESkillLabExecutionTemplate::Projectile)
  {
-  const auto Start = GetSkillLabProjectileAimPoint(Runtime->GetOwner());
+  FVector Start = GetSkillLabProjectileAimPoint(Runtime->GetOwner());
+  FQuat SpatialRotation = FQuat::Identity;
+  const auto* Spatial = Definition.SpatialDefinitions.FindByPredicate([](const auto& D) { return D.Object == ESkillLabSpatialObject::Projectile; });
+  if (Spatial)
+  {
+   const FVector Destination = IsValid(Selected) ? GetSkillLabProjectileAimPoint(Selected) : Request.TargetLocation;
+   FTransform Placement; FString Error;
+   if (!FSkillLabSpatialTransform::Resolve(*Spatial, Runtime->GetOwner(), Selected, Request.RelatedActor.Get(), Request.TargetLocation,
+    Destination - Start, Placement, Error))
+   {
+    UE_LOG(LogTemp, Error, TEXT("[SkillLabSpatial] Skill=%s Object=%s: %s"), *Definition.SkillId.ToString(), *Spatial->Name.ToString(), *Error);
+    if (Production.Owner.IsValid() && Production.Owner->CanAcceptConfirmedCooldown(Production.Owner->ResourceOwner.Get()))
+     Production.Owner->ProductionResults.Confirm(Production.Key, false, TEXT("ProjectileSpatialInvalid"));
+    Point.Result.Reason = TEXT("ProjectileSpatialInvalid"); Point.State = EPointState::Resolved; return false;
+   }
+   Start = Placement.GetLocation();
+   SpatialRotation = Placement.GetRotation();
+   UE_LOG(LogTemp, Log, TEXT("[SkillLabSpatial] Skill=%s Object=%s Spawn=%s"), *Definition.SkillId.ToString(), *Spatial->Name.ToString(), *Start.ToString());
+  }
   auto* Created = GetWorld() ? GetWorld()->SpawnActorDeferred<ASkillLabFireballProjectile>(
    ASkillLabFireballProjectile::StaticClass(), FTransform(FRotator::ZeroRotator, Start), Runtime->GetOwner(),
    Cast<APawn>(Runtime->GetOwner()), ESpawnActorCollisionHandlingMethod::AlwaysSpawn) : nullptr;
@@ -26,6 +44,7 @@ bool USkillLabLuaSkillBehavior::ExecuteDeclaredAction(FPointExecution& Point)
    return false;
   }
   Point.Projectile = Created;
+  if (Spatial && Spatial->Direction != ESkillLabSpatialDirection::ExecutionDirection) Created->SetSpatialVisualDirection(SpatialRotation);
   Point.State = EPointState::AwaitingAction;
   Point.Result.Reason = TEXT("ProjectilePending");
   Created->OnResolved.BindWeakLambda(this, [this, PointId, Created](AActor* Target, FName Reason)

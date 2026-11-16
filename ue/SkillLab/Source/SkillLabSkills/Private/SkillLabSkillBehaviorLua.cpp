@@ -74,6 +74,8 @@ void USkillLabLuaSkillBehavior::RunScript()
 	// 顶层声明已经在加载期形成快照，运行宿主仅允许原声明语句重放，不修改定义。
 	SkillLabLua::PushCallback(Lua, &LuaDefinitionAlreadyLoaded, this);
 	SkillLabLua::SetGlobal(Lua, "SkillLabSkill_Define");
+	SkillLabLua::PushCallback(Lua, &LuaDefinitionAlreadyLoaded, this);
+	SkillLabLua::SetGlobal(Lua, "SkillLabSkill_Spatial");
 	FTCHARToUTF8 Utf8(*Definition.LuaSource);
 	if (!SkillLabLua::LoadBuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*Definition.LuaScript))
 		|| !SkillLabLua::Call(Lua, 0, 0))

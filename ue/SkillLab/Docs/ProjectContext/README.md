@@ -10,6 +10,8 @@
 4. 当前任务所需的模块文档：技能运行时、GAS、玩家交互/HUD、角色与技能表现或测试验证。
 5. `../Baseline/` 下与当前任务相关的领域基线：核对共享业务语义，不用基线替代源码事实。
 
+空间能力沿现有模块定位：[Skills 的可选空间配置](Modules/SkillLabSkillsRuntime.md#可选空间配置)说明声明、参数和加载；[表现模块](Modules/CharacterPresentation.md)说明事件消费、尺寸与跟随清理；[测试模块](Modules/TestAndVerification.md)记录验证入口和证据范围。
+
 ## 事实来源
 
 角色与技能表现源码集中于独立 Runtime 模块 `Source/SkillLabPresentation/`，定位入口见 [表现模块](Modules/CharacterPresentation.md)；角色组装仍在 `SkillLab`，技能规则仍在 `SkillLabSkills`，战斗结算仍在 `SkillLabGAS`。

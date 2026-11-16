@@ -20,5 +20,6 @@
 
 - [Batch02-LuaCharacterPresentationPilot](Batches/Batch02-LuaCharacterPresentationPilot/README.md)：Lua 角色表现流程试点。
 - [Batch03-MontageNotifyPlacement](Batches/Batch03-MontageNotifyPlacement/README.md)：同一批次内的通用 AnimSequence 动作总览和技能 Notify 自动配置；两份需求正文分别定义动作观察与 Notify 配置，Agent 工作流和动作读取方法由用户与总控另行讨论。
+- [Batch04-OnDemandSpatialAdaptation](Batches/Batch04-OnDemandSpatialAdaptation/README.md)：01 技能空间配置支持已按本次授权实施；02 数据导出、03 独立 Agent 数据读取、04 实际适配配置仍待逐项细化，尚未实施。
 
 此前的 [Batch01-AIAdaptedAnimationPipeline](Batches/Batch01-AIAdaptedAnimationPipeline/README.md) 是先前需求与交接参考，不作为 Lua 试点当前入口；其中仍适用的体验边界由 Batch02 选择性引用。

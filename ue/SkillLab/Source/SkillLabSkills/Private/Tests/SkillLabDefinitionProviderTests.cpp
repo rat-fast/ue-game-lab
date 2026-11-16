@@ -80,6 +80,17 @@ bool FSkillLabDefinitionProviderValidationTest::RunTest(const FString& Parameter
 	};
 
 	const FString UnitLua = MakeLua()[TEXT("fixture.lua")];
+	const FString SpatialLua = UnitLua + TEXT("\nSkillLabSkill_Spatial(\"heal\",\"Marker\",\"Hit\",\"Target\",\"World\",\"Reference\",\"Once\",\"KeepRotation\")");
+	const FString SpatialJson = MakeJson(TEXT("Skill_Test"), TEXT(",\"spatial\":{\"heal\":{\"offset\":[1,2,3],\"visualScale\":2}}"));
+	TestTrue(TEXT("Spatial Lua and JSON normalize together"), ParseFixture(SpatialJson, MakeLua(SpatialLua), Definitions, Error));
+	if (const auto* D = Definitions.Find(TEXT("Skill_Test")))
+	{
+		TestEqual(TEXT("One spatial object"), D->SpatialDefinitions.Num(), 1);
+		if (D->SpatialDefinitions.Num()) TestTrue(TEXT("Configured offset retained"), D->SpatialDefinitions[0].Offset.Equals(FVector(1,2,3)));
+	}
+	ExpectRejected(TEXT("Missing spatial JSON is rejected"), MakeJson(), SpatialLua, TEXT("spatial.heal"));
+	ExpectRejected(TEXT("Invalid spatial scale is rejected"), SpatialJson.Replace(TEXT("\"visualScale\":2"), TEXT("\"visualScale\":0")), SpatialLua, TEXT("visualScale"));
+	ExpectRejected(TEXT("Unknown spatial binding is rejected"), SpatialJson.Replace(TEXT("\"heal\":"), TEXT("\"other\":")), SpatialLua, TEXT("other"));
 	{
 		TMap<FName, FSkillLabSkillDefinition> SeparateStateRules;
 		FString LocalError;

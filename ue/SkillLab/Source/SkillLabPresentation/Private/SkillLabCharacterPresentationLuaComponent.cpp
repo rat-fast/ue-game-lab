@@ -161,7 +161,17 @@ void USkillLabCharacterPresentationLuaComponent::RegisterBridgeFunctions()
 	SkillLabLua::SetField(Lua, -2, "SetLocomotionIntent");
 	SkillLabLua::PushCallback(Lua, &LuaLog, this);
 	SkillLabLua::SetField(Lua, -2, "Log");
+	SkillLabLua::PushCallback(Lua, &LuaShowSpatial, this);
+	SkillLabLua::SetField(Lua, -2, "ShowSpatial");
 	SkillLabLua::SetGlobal(Lua, "SkillLabPresentation");
+}
+
+int32 USkillLabCharacterPresentationLuaComponent::LuaShowSpatial(FSkillLabLuaState* State)
+{
+	auto* Self = static_cast<USkillLabCharacterPresentationLuaComponent*>(SkillLabLua::GetCallbackContext(State));
+	if (Self && Self->CallbackResult && Self->SkillPresentationRouter)
+		Self->SkillPresentationRouter->ShowSpatial(*Self->CallbackResult);
+	return 0;
 }
 
 int32 USkillLabCharacterPresentationLuaComponent::LuaPlaySkillAction(FSkillLabLuaState* State)
@@ -217,6 +227,7 @@ int32 USkillLabCharacterPresentationLuaComponent::LuaLog(FSkillLabLuaState* Stat
 void USkillLabCharacterPresentationLuaComponent::HandleSkillEvent(const FSkillLabSkillResult& Result)
 {
 	TGuardValue<FSkillLabCastExecutionToken> CallbackIdentity(CallbackCastToken, Result.CastToken);
+	TGuardValue<const FSkillLabSkillResult*> CallbackContext(CallbackResult, &Result);
 	const bool bHandled = CallSkillCallback(Result);
 	if (!bHandled || !Lua)
 	{

@@ -19,6 +19,7 @@ function OnBaseStateChanged(state, transitionSerial, bShouldMove, bIsFalling)
 end
 
 function OnSkillEvent(event)
+    SkillLabPresentation.ShowSpatial()
     -- A requested action only follows an authoritative Started event.
     if event.event == "Started" then
         local played = SkillLabPresentation.PlaySkillAction(event.castId, event.skillId)

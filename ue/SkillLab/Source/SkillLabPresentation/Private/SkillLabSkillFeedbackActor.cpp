@@ -7,6 +7,7 @@
 #include "Engine/World.h"
 #include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "SkillLabProjectileTypes.h"
 
 namespace
 {
@@ -133,9 +134,38 @@ void ASkillLabSkillFeedbackActor::InitializeText(const FString& Text, const FCol
 	}
 }
 
+void ASkillLabSkillFeedbackActor::SetSpatialMesh(UStaticMesh* Mesh)
+{
+	ShapeMesh->SetStaticMesh(Mesh);
+	for (UStaticMeshComponent* Piece : FramePieces) Piece->SetStaticMesh(Mesh);
+}
+
+void ASkillLabSkillFeedbackActor::StartSpatialFollow(const FSkillLabSpatialDefinition& InDefinition, AActor* InSource,
+	AActor* InTarget, const FVector& InGround, const FQuat& InitialRotation)
+{
+	SpatialDefinition = InDefinition; SpatialSource = InSource; SpatialTarget = InTarget;
+	SpatialGround = InGround; FixedRotation = InitialRotation; bSpatialFollow = true;
+	SetLifeSpan(0.0f);
+}
+
 void ASkillLabSkillFeedbackActor::Tick(const float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (bSpatialFollow)
+	{
+		AActor* Source = SpatialSource.Get(); AActor* Target = SpatialTarget.Get();
+		if (!IsValid(Source) || Source->IsActorBeingDestroyed() || !IsValid(Target) || Target->IsActorBeingDestroyed()) { Destroy(); return; }
+		FTransform Transform; FString Error;
+		const FVector Direction = GetSkillLabProjectileAimPoint(Target) - GetSkillLabProjectileAimPoint(Source);
+		if (!FSkillLabSpatialTransform::Resolve(SpatialDefinition, Source, Target, nullptr, SpatialGround, Direction, Transform, Error))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("[SkillLabSpatial] Follow object=%s: %s"), *SpatialDefinition.Name.ToString(), *Error);
+			Destroy(); return;
+		}
+		SetActorLocationAndRotation(Transform.GetLocation(), SpatialDefinition.bFollowRotation
+			? Transform.GetRotation() * SpatialDefinition.VisualRotation.Quaternion() : FixedRotation);
+		return;
+	}
 	Elapsed += DeltaSeconds;
 	const float Alpha = FMath::Clamp(Elapsed / InitialLife, 0.0f, 1.0f);
 	if (TextComponent && TextComponent->IsVisible())

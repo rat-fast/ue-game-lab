@@ -2,28 +2,28 @@
 
 ## 职责
 
-本目录记录角色表现可依赖的已确认业务语义、证据等级与当前限制。它不规定程序架构、Lua API、动画资产方案、具体状态机或视觉资源规范。
+本目录记录角色与技能表现的共享业务语义、当前能力和使用边界，不规定程序架构、Lua API、动画资产方案、状态机或视觉资源规范。
 
 ## 当前承诺
 
-- 表现消费技能运行层真实事件；表现不裁定请求是否受理、命中、资源扣除、实际效果、持续状态或施法终态，也不能伪造这些结果。
-- 技能动作与技能运行事实、独立持续效果是不同概念。动作播放/停止不能成为业务结果来源；持续效果以技能系统真实事实为准。
+- 表现消费技能运行层真实事件，不裁定或伪造请求受理、命中、资源扣除、实际效果、持续状态及施法终态。
+- 技能动作、技能运行事实和独立持续效果分别管理；动作播放或停止不能成为业务结果来源。
 - 缺失、延迟或失败的表现资源不能改变权威技能结果。
-- 角色基础移动/行动表现和技能表现服务于玩家可观察反馈；资产存在或代码接线不等于视觉体验已验收。
+- 空间配置按技能对象和既有事件区分真实执行对象与纯表现对象，支持范围见 [技能动作与表现事件](02-SkillActionPresentation.md)。
+- 当前四技能是代表性接入样本，不限制通用能力的适用范围；样本可运行不等于最终空间适配或美术质量已验收。
 
-## 基线版本与证据状态
+## 当前能力与验证状态
 
-- **历史资产/代码快照**：`a2c59695018ca3c0d3e97b70aa8801d087e14534`（`a2c5969`）是原基线进行静态核对的 Git 快照，不再代表当前实现版本。该快照保留的资产和代码事实仅按历史事实理解。
-- **当前程序材料**：CharacterPresentation Batch02 架构交接及模块/验证文档最后修改于 2026-10-22。它们记录 Lua 接入、构建、局部自动化和 NullRHI 观察；相关源码和配置在当前工作树中有未提交修改，故实现状态可能继续变化。交接明确 P0/P1 尚未通过。
-- **玩家观察**：玩家反馈当前游戏内表现与改造前基本一致。这是有限的人工观察，只支持“尚未观察到明显变化”的描述；不等于完整 PIE/视口验收，也不证明所有技能动作、状态迁移、取消恢复、资源降级或新旧 Cast 竞态。
-- 本轮没有重编译、启动 UE、重跑自动化或生成新视口证据。现有程序记录仅按其文档标注的历史/局部范围引用。
+基础角色状态、事件驱动技能动作和可配置空间对象已有接入。空间能力包括真实投射物生成位置，以及适用事件上的表现定位、方向、视觉尺寸和持续效果跟随。
+
+代码与局部运行核验支持这些能力的有限使用范围；AreaBurst 在空区域下已有局部表现可见的确认。基础五态、技能动作质量、生产模型绑定、其他样本空间观感及完整交互仍未全面验收。验证状态与使用限制由 [资产与验证边界](03-AssetsAndVerification.md)集中说明，详细依据见 [空间能力实现摘要](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/ImplementationSummary.md)及 [独立 Review](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/Review.md)。
 
 ## 正文索引
 
-1. `01-CharacterPresentation.md`：基础角色表现概念及历史快照边界；
-2. `02-SkillActionPresentation.md`：技能事件消费、动作和业务事实边界；
-3. `03-AssetsAndVerification.md`：资产/工具证据等级、当前验证缺口和待确认项。
+1. [角色基础表现](01-CharacterPresentation.md)：基础行动状态及其视觉边界；
+2. [技能动作与表现事件](02-SkillActionPresentation.md)：事件、动作和空间配置的业务语义及支持范围；
+3. [资产与验证边界](03-AssetsAndVerification.md)：使用能力时需要保留的验证限制与依据入口。
 
 ## 关系
 
-技能业务语义以 [SkillSystem 基线](../SkillSystem/README.md) 为准；本批玩家体验要求以 [CharacterPresentation Batch02](../../Planning/CharacterPresentation/Batches/Batch02-LuaCharacterPresentationPilot/README.md) 为准；实现状态以 [程序交接](../../ProgramWorkflow/CharacterPresentationLuaPilot/README.md) 及其引用的当前 ProjectContext 为准。策划要求、实现记录和本基线各自承担不同职责。
+目标、结算与效果寿命以 [SkillSystem 基线](../SkillSystem/README.md)为准。基础体验要求见 [角色表现需求](../../Planning/CharacterPresentation/Batches/Batch02-LuaCharacterPresentationPilot/README.md)，空间语义来源见 [空间适配共用边界](../../Planning/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/README.md)及 [空间配置需求](../../Planning/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/01-SkillSpatialConfigurationSupport.md)。需求中的目标不自动成为已实现能力。

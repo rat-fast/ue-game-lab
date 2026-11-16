@@ -116,6 +116,16 @@ void ASkillLabFireballProjectile::Initialize(AActor* InSource, AActor* InTarget,
 	Parameters.VisualScale = FMath::IsFinite(Parameters.VisualScale) ? FMath::Max(0.01f, Parameters.VisualScale) : 0.62f;
 	Collision->SetSphereRadius(Parameters.CollisionRadius, false);
 	Visual->SetRelativeScale3D(FVector(Parameters.VisualScale));
+	if (const auto* Spatial = Definition.SpatialDefinitions.FindByPredicate([](const auto& D) { return D.Object == ESkillLabSpatialObject::Projectile; }))
+	{
+		Visual->SetRelativeScale3D(FVector(Parameters.VisualScale * Spatial->VisualScale));
+		if (!Spatial->VisualMesh.IsEmpty())
+		{
+			UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, *Spatial->VisualMesh);
+			if (!Mesh) UE_LOG(LogTemp, Warning, TEXT("[SkillLabSpatial] Skill=%s Object=%s: mesh %s unavailable"), *Definition.SkillId.ToString(), *Spatial->Name.ToString(), *Spatial->VisualMesh);
+			Visual->SetStaticMesh(Mesh);
+		}
+	}
 	Movement->InitialSpeed = Parameters.Speed;
 	Movement->MaxSpeed = Parameters.Speed;
 	bInitialized = true;
@@ -125,6 +135,13 @@ void ASkillLabFireballProjectile::Initialize(AActor* InSource, AActor* InTarget,
 	}
 	const FVector Destination = Target.IsValid() ? GetSkillLabProjectileAimPoint(Target.Get()) : Request.TargetLocation;
 	const FVector Direction = (Destination - GetActorLocation()).GetSafeNormal();
+	if (const auto* Spatial = Definition.SpatialDefinitions.FindByPredicate([](const auto& D) { return D.Object == ESkillLabSpatialObject::Projectile; }))
+	{
+		const FQuat Relative = bHasSpatialVisualDirection
+			? Direction.Rotation().Quaternion().Inverse() * SpatialVisualDirection * Spatial->VisualRotation.Quaternion()
+			: Spatial->VisualRotation.Quaternion();
+		Visual->SetRelativeRotation(Relative);
+	}
 	Movement->Velocity = Direction * Movement->InitialSpeed;
 	ActivateProjectile();
 	UE_LOG(LogTemp, Log, TEXT("[SkillLabProjectile] Spawned visible fireball Cast=%d Target=%s Distance=%.0f Speed=%.0f"),

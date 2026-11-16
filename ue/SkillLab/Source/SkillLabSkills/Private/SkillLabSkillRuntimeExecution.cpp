@@ -49,6 +49,8 @@ FSkillLabSkillResult USkillLabSkillRuntimeComponent::MakeResult(const USkillLabC
  if (!Execution) return Result;
  Result.CastToken = Execution->Token;
  Result.SkillId = Execution->ActiveDefinition.SkillId;
+ Result.SpatialDefinitions = Execution->ActiveDefinition.SpatialDefinitions;
+ Result.RelatedActor = Execution->ActiveRequest.RelatedActor;
  Result.CastId = Execution->Token.CastId;
  Result.Stage = ToPublicStage(Execution->Lifecycle.GetStage());
  Result.Effect = Execution->ActiveDefinition.Effect;

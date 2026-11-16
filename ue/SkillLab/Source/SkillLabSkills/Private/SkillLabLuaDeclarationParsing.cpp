@@ -13,9 +13,53 @@ namespace SkillLabSkillDefinitionParsing
 		struct FLuaDefinitionCapture
 		{
 			TMap<FString, FString> Fields;
+			TArray<FSkillLabSpatialDefinition> Spatial;
 			FString Error;
 			bool bCalled = false;
 		};
+
+		int32 CaptureSpatial(FSkillLabLuaState* State)
+		{
+			auto* Capture = static_cast<FLuaDefinitionCapture*>(SkillLabLua::GetCallbackContext(State));
+			if (!Capture) return 0;
+			if (SkillLabLua::GetTop(State) != 8 || Capture->Spatial.Num() >= 32)
+			{ Capture->Error = TEXT("SkillLabSkill_Spatial expects eight strings and at most 32 objects"); return 0; }
+			FString V[8];
+			for (int32 I = 0; I < 8; ++I)
+			{
+				if (!SkillLabLua::IsString(State, I + 1)) { Capture->Error = TEXT("spatial arguments must be strings"); return 0; }
+				V[I] = UTF8_TO_TCHAR(SkillLabLua::ToString(State, I + 1));
+				if (V[I].IsEmpty() || V[I] != V[I].TrimStartAndEnd()) { Capture->Error = TEXT("spatial arguments must be nonempty and trimmed"); return 0; }
+			}
+			FSkillLabSpatialDefinition D; D.Name = FName(*V[0]); D.Event = FName(*V[2]);
+			if (D.Name.IsNone() || Capture->Spatial.ContainsByPredicate([&](const auto& Existing) { return Existing.Name == D.Name; }))
+			{ Capture->Error = TEXT("duplicate or invalid spatial object name"); return 0; }
+			if (V[1] == TEXT("Projectile")) D.Object = ESkillLabSpatialObject::Projectile;
+			else if (V[1] != TEXT("Marker")) { Capture->Error = TEXT("spatial object must be Projectile or Marker"); return 0; }
+			if (V[3] == TEXT("Source")) D.Source = ESkillLabSpatialSource::Source;
+			else if (V[3] == TEXT("Target")) D.Source = ESkillLabSpatialSource::Target;
+			else if (V[3] == TEXT("Ground")) D.Source = ESkillLabSpatialSource::Ground;
+			else if (V[3] == TEXT("Related")) D.Source = ESkillLabSpatialSource::Related;
+			else { Capture->Error = TEXT("invalid spatial source"); return 0; }
+			if (V[4] == TEXT("Reference")) D.OffsetSpace = ESkillLabSpatialOffsetSpace::Reference;
+			else if (V[4] == TEXT("World")) D.OffsetSpace = ESkillLabSpatialOffsetSpace::World;
+			else if (V[4] == TEXT("ExecutionDirection")) D.OffsetSpace = ESkillLabSpatialOffsetSpace::ExecutionDirection;
+			else { Capture->Error = TEXT("invalid spatial offset space"); return 0; }
+			if (V[5] == TEXT("Reference")) D.Direction = ESkillLabSpatialDirection::Reference;
+			else if (V[5] == TEXT("World")) D.Direction = ESkillLabSpatialDirection::World;
+			else if (V[5] == TEXT("ExecutionDirection")) D.Direction = ESkillLabSpatialDirection::ExecutionDirection;
+			else { Capture->Error = TEXT("invalid spatial direction"); return 0; }
+			if (V[6] == TEXT("Follow")) D.bFollow = true;
+			else if (V[6] != TEXT("Once")) { Capture->Error = TEXT("spatial relation must be Once or Follow"); return 0; }
+			if (V[7] == TEXT("FollowRotation")) D.bFollowRotation = true;
+			else if (V[7] != TEXT("KeepRotation")) { Capture->Error = TEXT("spatial rotation relation invalid"); return 0; }
+			if ((D.Object == ESkillLabSpatialObject::Projectile && (V[2] != TEXT("Release") || D.bFollow))
+				|| (D.Object == ESkillLabSpatialObject::Marker && V[2] != TEXT("TargetSelected") && V[2] != TEXT("Hit") && V[2] != TEXT("BuffApplied"))
+				|| (D.bFollow && (D.Source == ESkillLabSpatialSource::Ground || D.Source == ESkillLabSpatialSource::Related))
+				|| (D.bFollowRotation && !D.bFollow) || (D.bFollow && V[2] != TEXT("BuffApplied")))
+			{ Capture->Error = TEXT("invalid spatial object, event, or follow combination"); return 0; }
+			Capture->Spatial.Add(D); return 0;
+		}
 
 		bool Fail(FString& Error, const FString& Message)
 		{
@@ -78,6 +122,8 @@ namespace SkillLabSkillDefinitionParsing
 		FLuaDefinitionCapture Capture;
 		SkillLabLua::PushCallback(Lua, &CaptureLuaDefinition, &Capture);
 		SkillLabLua::SetGlobal(Lua, "SkillLabSkill_Define");
+		SkillLabLua::PushCallback(Lua, &CaptureSpatial, &Capture);
+		SkillLabLua::SetGlobal(Lua, "SkillLabSkill_Spatial");
 		FTCHARToUTF8 Utf8(*Source);
 		const bool bLoaded = SkillLabLua::LoadBuffer(Lua, Utf8.Get(), Utf8.Length(), TCHAR_TO_UTF8(*SourceName));
 		const bool bExecuted = bLoaded && SkillLabLua::Call(Lua, 0, 0);
@@ -95,6 +141,7 @@ namespace SkillLabSkillDefinitionParsing
 		if (!Capture.Error.IsEmpty()) return Fail(OutError, FString::Printf(TEXT("%s: %s"), *SourceName, *Capture.Error));
 		if (!Capture.bCalled) return Fail(OutError, FString::Printf(TEXT("%s: missing SkillLabSkill_Define declaration"), *SourceName));
 		if (!bHasRuntimeEntry) return Fail(OutError, FString::Printf(TEXT("%s: missing OnSkillCast function"), *SourceName));
+		Out.SpatialDefinitions = MoveTemp(Capture.Spatial);
 
 		static const TSet<FString> RequiredFields = { TEXT("targetShape"), TEXT("relation"), TEXT("effect"), TEXT("execution") };
 		for (const FString& Field : RequiredFields)

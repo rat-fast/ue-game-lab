@@ -41,7 +41,7 @@ namespace
 				|| !SkillLabSkillDefinitionParsing::ParseSkillEntry(Value->AsObject(), LuaSources, Definition, Error))
 			{
 				if (Error.IsEmpty()) Error = FString::Printf(TEXT("invalid skill entry at skills[%d]"), Index);
-				Error = FString::Printf(TEXT("skills[%d]: %s"), Index, *Error);
+				Error = FString::Printf(TEXT("skills[%d] skill=%s: %s"), Index, *Definition.SkillId.ToString(), *Error);
 				return false;
 			}
 			if (Candidate.Contains(Definition.SkillId))

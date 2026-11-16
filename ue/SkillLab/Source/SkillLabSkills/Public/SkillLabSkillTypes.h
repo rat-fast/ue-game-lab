@@ -4,6 +4,7 @@
 #include "GameplayTagContainer.h"
 #include "SkillLabProjectileTypes.h"
 #include "SkillLabSubmissionResults.h"
+#include "SkillLabSpatialTransform.h"
 #include "SkillLabSkillTypes.generated.h"
 
 class UGameplayAbility;
@@ -125,6 +126,8 @@ struct SKILLLABSKILLS_API FSkillLabSkillRequest
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) FName SkillId = NAME_None;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) TObjectPtr<AActor> Caster = nullptr;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) TObjectPtr<AActor> Target = nullptr;
+	/** Optional spatial reference supplied by the native request owner; never a gameplay target. */
+	UPROPERTY(Transient) TWeakObjectPtr<AActor> RelatedActor;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) FVector TargetLocation = FVector::ZeroVector;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) bool bHasLocation = false;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite) int32 RequestId = 0;
@@ -143,6 +146,7 @@ USTRUCT(BlueprintType)
 struct SKILLLABSKILLS_API FSkillLabSkillResult
 {
 	GENERATED_BODY()
+	TArray<FSkillLabSpatialDefinition> SpatialDefinitions;
 	UPROPERTY(BlueprintReadOnly) bool bSuccess = false;
 	/** True only when the authoritative effect request was accepted by GAS. */
 	UPROPERTY(BlueprintReadOnly) bool bEffectApplied = false;
@@ -164,6 +168,8 @@ struct SKILLLABSKILLS_API FSkillLabSkillResult
 	UPROPERTY(BlueprintReadOnly) int32 TargetUnitId = 0;
 	UPROPERTY(BlueprintReadOnly) TObjectPtr<AActor> SourceActor = nullptr;
 	UPROPERTY(BlueprintReadOnly) TObjectPtr<AActor> TargetActor = nullptr;
+	/** Borrowed spatial context; does not extend the related actor's lifetime. */
+	UPROPERTY(Transient) TWeakObjectPtr<AActor> RelatedActor;
 	UPROPERTY(BlueprintReadOnly) FVector TargetLocation = FVector::ZeroVector;
 	UPROPERTY(BlueprintReadOnly) float VisualRadius = 0.0f;
 	UPROPERTY(BlueprintReadOnly) float RequestedAmount = 0.0f;
@@ -180,6 +186,7 @@ USTRUCT(BlueprintType)
 struct SKILLLABSKILLS_API FSkillLabSkillDefinition
 {
 	GENERATED_BODY()
+	TArray<FSkillLabSpatialDefinition> SpatialDefinitions;
 	UPROPERTY(BlueprintReadOnly) FName SkillId = NAME_None;
 	UPROPERTY(BlueprintReadOnly) ESkillLabTargetShape TargetShape = ESkillLabTargetShape::Unit;
 	UPROPERTY(BlueprintReadOnly) ESkillLabTargetRelation Relation = ESkillLabTargetRelation::Enemy;

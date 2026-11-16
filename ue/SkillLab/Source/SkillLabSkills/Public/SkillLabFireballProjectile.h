@@ -25,6 +25,7 @@ class SKILLLABSKILLS_API ASkillLabFireballProjectile : public AActor
 
 public:
 	ASkillLabFireballProjectile();
+	void SetSpatialVisualDirection(const FQuat& Rotation) { SpatialVisualDirection = Rotation; bHasSpatialVisualDirection = true; }
 	void Initialize(AActor* InSource, AActor* InTarget, const FSkillLabSkillDefinition& InDefinition, const FSkillLabSkillRequest& InRequest, int32 InCastId, const FSkillLabProjectileParameters& InParameters = FSkillLabProjectileParameters(), const FSkillLabProductionHandle& Delivery = {});
 	// FinishSpawning 完成后记录交付，再开放碰撞；同步 overlap 自毁不改变交付事实。
 	bool ConfirmDelivery();
@@ -84,6 +85,8 @@ private:
 	bool bInitialized = false;
 	bool bActivationStarted = false;
 	bool bDeliveryPending = false;
+	bool bHasSpatialVisualDirection = false;
+	FQuat SpatialVisualDirection = FQuat::Identity;
 	FSkillLabProductionHandle Delivery;
 	FTimerHandle ExpireTimerHandle;
 };

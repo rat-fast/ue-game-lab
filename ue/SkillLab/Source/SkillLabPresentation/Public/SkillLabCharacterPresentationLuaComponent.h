@@ -29,6 +29,7 @@ private:
 	static int32 LuaStopSkillAction(FSkillLabLuaState* State);
 	static int32 LuaSetLocomotionIntent(FSkillLabLuaState* State);
 	static int32 LuaLog(FSkillLabLuaState* State);
+	static int32 LuaShowSpatial(FSkillLabLuaState* State);
 	void HandleSkillEvent(const FSkillLabSkillResult& Result);
 	void HandleBaseStateChanged(ESkillLabCharacterAnimationState State, int32 TransitionSerial);
 	bool LoadScript();
@@ -49,4 +50,5 @@ private:
 	TObjectPtr<USkillLabSkillPresentationRouter> SkillPresentationRouter;
 	FSkillLabLuaState* Lua = nullptr;
 	FSkillLabCastExecutionToken CallbackCastToken;
+	const FSkillLabSkillResult* CallbackResult = nullptr;
 };

@@ -43,9 +43,10 @@ Runtime 管理角色级执行集合、单槽 latest-wins 意图和会话屏障�
 ## 配置、资产和内容来源
 
 - `Config/SkillDefinitions.json` 提供数值、阶段、动画软路径、规则 profile、提交点声明及 `luaScript` 绑定；绑定 Lua 的 `SkillLabSkill_Define` 提供目标、关系、效果、执行模板和规则声明。Provider 统一解析并原子替换有效候选目录；`FSkillLabSkillBehaviorRegistry::ApplySharedRuntimeClasses` 只设置共享 Ability/Behavior 类。解析分工见 Skills 模块。
-- 当前四技能为 `Skill_Fireball`、`Skill_AreaBurst`、`Skill_Mend`、`Skill_BurningBuff`，均使用通用 Lua Behavior；生产 JSON 未显式配置多提交点，沿用隐式 Script 点。运行宿主提供受限 `SkillLabSkill_RequestAction`、`SkillLabSkill_ApplyEffect`、`SkillLabSkill_Finish`，不支持常驻协程。
+- 当前四技能为 `Skill_Fireball`、`Skill_AreaBurst`、`Skill_Mend`、`Skill_BurningBuff`，均使用通用 Lua Behavior；生产 JSON 未显式配置多提交点，沿用隐式 Script 点。运行宿主提供受限 `SkillLabSkill_RequestAction`、`SkillLabSkill_ApplyEffect`、`SkillLabSkill_Finish`，不支持常驻协程。每个技能都可以省略空间配置；仅需空间行为的对象添加 Lua `SkillLabSkill_Spatial` 声明和 JSON `spatial` 同名参数。写法、缺省兼容及重载快照规则见 [Skills 模块](Modules/SkillLabSkillsRuntime.md#可选空间配置)。
 - 四技能当前均以 `castMontage` 绑定 `/Game/SkillLab/Animations/AM_Skill_*`。`castAnimation` 是兼容解析路径；当前生产 Montage 同属 `DefaultGroup/DefaultSlot`，不能据多 Cast token 隔离宣称已完成可见双 Montage 验收。
 - `Config/CharacterPresentation.lua` 编排 locomotion 与技能 Started/终态动作；`Config/AnimationDefinitions.json` 用于独立原生 `USkillLabAnimInstance` 路径的移动阈值/方向范围。角色表现链使用 `USkillLabCharacterAnimInstance` 桥接，二者不混用。
+- `FSkillLabSpatialTransform` 提供 Skills 与 Presentation 共用的受控参照解析和变换；Projectile 正式提交消费真实 Spawn 偏移，Presentation Router 通过受限 Lua 事件宿主创建无碰撞反馈代理，持续效果代理按 EffectInstance 身份跟随并清理。Related 来源由原生请求方显式提供，与目标独立。Batch04-01 四技能的 `TEMP-SPATIAL-VALIDATION` 仅为临时验证配置，参数和恢复方式见[实现摘要](../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/ImplementationSummary.md)，局部可见验收范围见测试模块，不是正式适配结论。
 - Lua 5.4.8 唯一第三方源码位于 `Source/SkillLabLuaRuntime/ThirdParty/lua-5.4.8/`，由该模块统一编译维护。
 - 输入资产位于 `Content/SkillLab/Input/`；槽位与确认/取消键默认值由 `USkillLabSkillShortcutComponent` 提供。入口资产位于 `Content/SkillLab/`：`BP_SkillLabGameMode`、`BP_SkillLabPlayerController`、`BP_SkillLabCharacter`、`L_SkillLab_NavTest`，另有 `L_SkillLab_Test_Box`。
 - `DefaultEngine.ini` 的 `[CoreRedirects]` 保留表现反射类型迁移兼容；添加重定向不等于旧 Blueprint/AnimBP 已完成可见验收。
@@ -56,7 +57,7 @@ Runtime 管理角色级执行集合、单槽 latest-wins 意图和会话屏障�
 
 实际启动工程必须构建其自身的 `SkillLabEditor` 二进制；隔离工程验证通过不代表实际工程 `Binaries/Win64` 已更新。2026-11-12 已完成实际工程构建与加载核对，DX11 `-game` 截图确认 HP、Energy 和四技能槽可见，用户人工确认技能可释放；证据见测试模块。此结论不覆盖完整键鼠组合、PIE 或双 Montage 并播验收。
 
-Exec、RuntimeProbe、自动化注册名、构建/运行复现方式与当前证据统一见 [TestAndVerification](Modules/TestAndVerification.md)。B1/多 Cast、P2-CE-1、R 资源修复及 Reset 专项的通过结论各有版本范围；文档同步未重新构建或运行，不把旧测试数量合并为当前全套通过。可见 PIE、双 Montage 与未覆盖资产范围仍按测试模块的限制处理。
+Exec、RuntimeProbe、自动化注册名、构建/运行复现方式与当前证据统一见 [TestAndVerification](Modules/TestAndVerification.md)。B1/多 Cast、P2-CE-1、R 资源修复、Reset 专项及 Batch04 空间能力的通过结论各有版本范围；不把不同版本的测试数量合并为当前全套通过。可见 PIE、双 Montage、Batch04 近墙起点及未覆盖资产范围仍按测试模块的限制处理。
 
 ## 维护入口
 

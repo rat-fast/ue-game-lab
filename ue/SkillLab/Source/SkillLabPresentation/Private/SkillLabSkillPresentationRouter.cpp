@@ -4,6 +4,8 @@
 #include "SkillLabSkillFeedbackActor.h"
 #include "SkillLabSkillRuntimeComponent.h"
 #include "SkillLabSkillTypes.h"
+#include "SkillLabProjectileTypes.h"
+#include "Engine/StaticMesh.h"
 
 UWorld* USkillLabSkillPresentationRouter::GetWorld() const
 {
@@ -13,6 +15,8 @@ UWorld* USkillLabSkillPresentationRouter::GetWorld() const
 void USkillLabSkillPresentationRouter::Bind(USkillLabSkillRuntimeComponent* InSource)
 {
 	if (Source == InSource) return;
+	for (const auto& Pair : PersistentMarkers) if (Pair.Value.IsValid()) Pair.Value->Destroy();
+	PersistentMarkers.Reset();
 	if (Source) Source->OnNativeSkillEvent.RemoveAll(this);
 	Source = InSource;
 	if (Source) Source->OnNativeSkillEvent.AddUObject(this, &USkillLabSkillPresentationRouter::HandleEvent);
@@ -20,10 +24,18 @@ void USkillLabSkillPresentationRouter::Bind(USkillLabSkillRuntimeComponent* InSo
 
 void USkillLabSkillPresentationRouter::HandleEvent(const FSkillLabSkillResult& Result)
 {
+	if (Result.Event == ESkillLabSkillEvent::BuffRemoved && !Result.EffectInstanceId.IsNone())
+	{
+		const FString Prefix = Result.EffectInstanceId.ToString() + TEXT(":");
+		for (auto It = PersistentMarkers.CreateIterator(); It; ++It)
+			if (It.Key().StartsWith(Prefix)) { if (It.Value().IsValid()) It.Value()->Destroy(); It.RemoveCurrent(); }
+	}
+	TGuardValue<bool> ProducedGuard(bSpatialProduced, false);
 	OnPresentationEvent.Broadcast(Result);
 	UWorld* World = GetWorld();
 	if (!World) return;
 	ShowScreenMessage(Result);
+	if (bSpatialProduced) return;
 	if (Result.Event == ESkillLabSkillEvent::TargetSelected && Result.VisualRadius > 0.0f)
 	{
 		SpawnWorldMarker(Result.TargetLocation + FVector(0.0f, 0.0f, 3.0f), Result.VisualRadius, FColor::Orange, 1.5f, true);
@@ -47,6 +59,44 @@ void USkillLabSkillPresentationRouter::HandleEvent(const FSkillLabSkillResult& R
 	{
 		SpawnWorldMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 125.0f), 90.0f, FColor::Purple, 4.0f, false);
 		SpawnTextMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 205.0f), TEXT("BURNING"), FColor::Purple, 2.0f);
+	}
+}
+
+void USkillLabSkillPresentationRouter::ShowSpatial(const FSkillLabSkillResult& Result)
+{
+	const FName Event = Result.Event == ESkillLabSkillEvent::TargetSelected ? FName(TEXT("TargetSelected"))
+		: Result.Event == ESkillLabSkillEvent::Hit ? FName(TEXT("Hit"))
+		: Result.Event == ESkillLabSkillEvent::BuffApplied ? FName(TEXT("BuffApplied")) : NAME_None;
+	if (Event.IsNone() || !Result.bSuccess || !GetWorld()) return;
+	for (const auto& D : Result.SpatialDefinitions)
+	{
+		if (D.Object != ESkillLabSpatialObject::Marker || D.Event != Event) continue;
+		if (D.bFollow && Result.EffectInstanceId.IsNone())
+		{ UE_LOG(LogTemp, Warning, TEXT("[SkillLabSpatial] Skill=%s Object=%s: missing effect identity"), *Result.SkillId.ToString(), *D.Name.ToString()); continue; }
+		const FVector Destination = IsValid(Result.TargetActor) ? GetSkillLabProjectileAimPoint(Result.TargetActor) : Result.TargetLocation;
+		const FVector Direction = Destination - GetSkillLabProjectileAimPoint(Result.SourceActor);
+		FTransform Transform; FString Error;
+		if (!FSkillLabSpatialTransform::Resolve(D, Result.SourceActor, Result.TargetActor, Result.RelatedActor.Get(), Result.TargetLocation, Direction, Transform, Error))
+		{ UE_LOG(LogTemp, Warning, TEXT("[SkillLabSpatial] Skill=%s Object=%s: %s"), *Result.SkillId.ToString(), *D.Name.ToString(), *Error); continue; }
+		FActorSpawnParameters Params; Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		UStaticMesh* Mesh = D.VisualMesh.IsEmpty() ? nullptr : LoadObject<UStaticMesh>(nullptr, *D.VisualMesh);
+		if (!D.VisualMesh.IsEmpty() && !Mesh)
+		{ UE_LOG(LogTemp, Warning, TEXT("[SkillLabSpatial] Skill=%s Object=%s: mesh %s unavailable"), *Result.SkillId.ToString(), *D.Name.ToString(), *D.VisualMesh); continue; }
+		const FQuat Rotation = Transform.GetRotation() * D.VisualRotation.Quaternion();
+		auto* Marker = GetWorld()->SpawnActor<ASkillLabSkillFeedbackActor>(ASkillLabSkillFeedbackActor::StaticClass(), Transform.GetLocation(), Rotation.Rotator(), Params);
+		if (!Marker) { UE_LOG(LogTemp, Warning, TEXT("[SkillLabSpatial] Skill=%s Object=%s: spawn failed"), *Result.SkillId.ToString(), *D.Name.ToString()); continue; }
+		Marker->InitializeShape(Event == TEXT("TargetSelected") ? ESkillLabFeedbackShape::Ring : ESkillLabFeedbackShape::TargetFrame,
+			(Result.VisualRadius > 0 ? Result.VisualRadius : 70.0f) * D.VisualScale, FColor::Purple, 1.5f);
+		if (Mesh) Marker->SetSpatialMesh(Mesh);
+		bSpatialProduced = true;
+		if (D.bFollow)
+		{
+			const FString Key = Result.EffectInstanceId.ToString() + TEXT(":") + D.Name.ToString();
+			if (auto* Existing = PersistentMarkers.Find(Key); Existing && Existing->IsValid()) (*Existing)->Destroy();
+			Marker->StartSpatialFollow(D, Result.SourceActor, Result.TargetActor, Result.TargetLocation, Rotation);
+			PersistentMarkers.Add(Key, Marker);
+		}
+		UE_LOG(LogTemp, Log, TEXT("[SkillLabSpatial] Skill=%s Object=%s Event=%s Location=%s Scale=%.2f"), *Result.SkillId.ToString(), *D.Name.ToString(), *Event.ToString(), *Transform.GetLocation().ToString(), D.VisualScale);
 	}
 }
 

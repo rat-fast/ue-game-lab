@@ -7,6 +7,7 @@
 #include "SkillLabGASTags.h"
 #include "GameplayEffect.h"
 #include "UObject/UObjectIterator.h"
+#include "Components/StaticMeshComponent.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FSkillLabSubmittedActionLifetimeTest, "SkillLab.Skills.SubmittedActionLifetime", EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
 bool FSkillLabSubmittedActionLifetimeTest::RunTest(const FString&)
@@ -15,11 +16,15 @@ bool FSkillLabSubmittedActionLifetimeTest::RunTest(const FString&)
  const FString Json = TEXT(R"({"combatRules":[{"id":"Open","skill":"Allow","dodge":"CancelAndActivate","movement":"Continue","userCancel":"Continue","normalHit":"Continue","heavyHit":"Interrupt","unknownHit":"Continue"}],"skills":[
  {"id":"Shot","luaScript":"shot.lua","cost":7,"cooldown":0,"magnitude":3,"range":5000,"active":4,"projectileSpeed":500,"projectileCollisionRadius":18,"projectileLifetime":2,"projectileVisualScale":0.62,"projectileInterceptOtherUnits":true,"completionMode":"AllSubmissionPointsResolved","submissionPoints":[{"id":1,"trigger":"Release","target":"RequestTarget"},{"id":2,"trigger":"Timer","delay":0.05,"target":"RequestTarget"}]},
  {"id":"ShortShot","luaScript":"shot.lua","cost":7,"cooldown":0,"magnitude":3,"range":5000,"active":4,"projectileSpeed":1,"projectileCollisionRadius":18,"projectileLifetime":0.1,"projectileVisualScale":0.62,"projectileInterceptOtherUnits":true},
+ {"id":"SpatialShot","luaScript":"spatial.lua","cost":7,"cooldown":0,"magnitude":3,"range":5000,"active":4,"projectileSpeed":500,"projectileCollisionRadius":18,"projectileLifetime":2,"projectileVisualScale":0.62,"projectileInterceptOtherUnits":true,"spatial":{"muzzle":{"offset":[0,50,0],"visualScale":2}}},
+ {"id":"RelatedShot","luaScript":"related.lua","cost":7,"cooldown":0,"magnitude":3,"range":5000,"active":4,"projectileSpeed":500,"projectileCollisionRadius":18,"projectileLifetime":2,"projectileVisualScale":0.62,"projectileInterceptOtherUnits":true,"spatial":{"muzzle":{"offset":[0,25,0]}}},
  {"id":"Burn","luaScript":"burn.lua","cost":5,"cooldown":0,"magnitude":2,"range":5000,"active":3,"duration":0.5,"period":0.1,"completionEventTag":"SkillLab.Event.Cast.Complete"}]})");
  const FString Rules = TEXT(",\"combatRules\",\"Open\",\"recoveryRules\",\"Open\"");
  const FString Shot = TEXT("SkillLabSkill_Define(\"targetShape\",\"Unit\",\"relation\",\"Enemy\",\"effect\",\"Damage\",\"execution\",\"Projectile\"") + Rules + TEXT(")\nfunction OnSkillCast(context) SkillLabSkill_RequestAction() end");
  const FString Burn = TEXT("SkillLabSkill_Define(\"targetShape\",\"Unit\",\"relation\",\"Enemy\",\"effect\",\"DamageOverTime\",\"execution\",\"InstantTarget\"") + Rules + TEXT(")\nfunction OnSkillCast(context) SkillLabSkill_RequestAction() end");
- if (!F.LoadCatalog(Json, {{TEXT("shot.lua"),Shot},{TEXT("burn.lua"),Burn}})) return false;
+ const FString SpatialShot = Shot + TEXT("\nSkillLabSkill_Spatial(\"muzzle\",\"Projectile\",\"Release\",\"Source\",\"World\",\"ExecutionDirection\",\"Once\",\"KeepRotation\")");
+ const FString RelatedShot = Shot + TEXT("\nSkillLabSkill_Spatial(\"muzzle\",\"Projectile\",\"Release\",\"Related\",\"World\",\"ExecutionDirection\",\"Once\",\"KeepRotation\")");
+ if (!F.LoadCatalog(Json, {{TEXT("shot.lua"),Shot},{TEXT("spatial.lua"),SpatialShot},{TEXT("related.lua"),RelatedShot},{TEXT("burn.lua"),Burn}})) return false;
  auto Source = F.MakeUnit(), Target = F.MakeUnit(FVector(600,0,0)); Target.Runtime->TeamId = 2;
  auto BeginShot = [&](FName Id)
  {
@@ -28,6 +33,46 @@ bool FSkillLabSubmittedActionLifetimeTest::RunTest(const FString&)
   auto* B = E ? Cast<USkillLabLuaSkillBehavior>(E->ActiveBehavior) : nullptr;
   return TPair<FSkillLabSkillResult,USkillLabLuaSkillBehavior*>(R,B);
  };
+ auto Spatial = BeginShot(TEXT("SpatialShot"));
+ if (!TestNotNull(TEXT("Spatial fixture behavior"), Spatial.Value)) return false;
+ auto* SpatialProjectile = Spatial.Value->GetPointProjectile(1);
+ if (!TestNotNull(TEXT("Spatial fixture delivers projectile"), SpatialProjectile)) return false;
+ TestTrue(TEXT("Real spawn consumes configured world offset"), SpatialProjectile->GetActorLocation().Equals(Source.Actor->GetActorLocation() + FVector(0,50,0), 0.1f));
+ const auto* Sphere = Cast<USphereComponent>(SpatialProjectile->GetRootComponent());
+ TestTrue(TEXT("Visual scaling leaves collision radius unchanged"), Sphere && FMath::IsNearlyEqual(Sphere->GetUnscaledSphereRadius(), 18.f));
+ const auto* Mesh = SpatialProjectile->FindComponentByClass<UStaticMeshComponent>();
+ TestTrue(TEXT("Visual mesh receives scale"), Mesh && FMath::IsNearlyEqual(Mesh->GetRelativeScale3D().X, 1.24f));
+ SpatialProjectile->Destroy(); Source.Runtime->ResetSkills();
+ auto Related = F.MakeUnit(FVector(0,200,0));
+ Related.Actor->SetActorEnableCollision(false);
+ FSkillLabSkillRequest RelatedRequest;
+ RelatedRequest.Caster = Source.Actor; RelatedRequest.Target = Target.Actor; RelatedRequest.RelatedActor = Related.Actor;
+ RelatedRequest.SkillId = TEXT("RelatedShot"); RelatedRequest.TargetLocation = Target.Actor->GetActorLocation(); RelatedRequest.bHasLocation = true;
+ TArray<FSkillLabSkillResult> RelatedEvents;
+ const auto RelatedHandle = Source.Runtime->OnNativeSkillEvent.AddLambda([&](const auto& Event) { RelatedEvents.Add(Event); });
+ const auto RelatedCast = Source.Runtime->SubmitSkillRequest(RelatedRequest);
+ const auto* RelatedExecution = Source.Runtime->FindExecution(RelatedCast.CastToken);
+ auto* RelatedBehavior = RelatedExecution ? Cast<USkillLabLuaSkillBehavior>(RelatedExecution->ActiveBehavior) : nullptr;
+ auto* RelatedProjectile = RelatedBehavior ? RelatedBehavior->GetPointProjectile(1) : nullptr;
+ if (!TestNotNull(TEXT("Related request delivers a projectile"), RelatedProjectile)) return false;
+ TestTrue(TEXT("actual spawn uses distinct related actor"), RelatedProjectile->GetActorLocation().Equals(FVector(0,225,0), 0.1f));
+ TestTrue(TEXT("formal target event preserves distinct related actor"), RelatedEvents.ContainsByPredicate([&](const auto& Event)
+  { return Event.Event == ESkillLabSkillEvent::TargetSelected && Event.TargetActor == Target.Actor && Event.RelatedActor.Get() == Related.Actor; }));
+ RelatedProjectile->Destroy(); Source.Runtime->OnNativeSkillEvent.Remove(RelatedHandle); Source.Runtime->ResetSkills();
+
+ FSkillLabSpatialDefinition Reference; Reference.OffsetSpace = ESkillLabSpatialOffsetSpace::World;
+ FTransform ReferenceResult; FString ReferenceError; const FVector Ground(10,20,30);
+ for (const auto& Case : {TPair<ESkillLabSpatialSource,FVector>(ESkillLabSpatialSource::Source, Source.Actor->GetActorLocation()),
+  TPair<ESkillLabSpatialSource,FVector>(ESkillLabSpatialSource::Target, Target.Actor->GetActorLocation()),
+  TPair<ESkillLabSpatialSource,FVector>(ESkillLabSpatialSource::Ground, Ground),
+  TPair<ESkillLabSpatialSource,FVector>(ESkillLabSpatialSource::Related, Related.Actor->GetActorLocation())})
+ {
+  Reference.Source = Case.Key;
+  TestTrue(TEXT("reference resolves"), FSkillLabSpatialTransform::Resolve(Reference, Source.Actor, Target.Actor, Related.Actor, Ground, FVector::ForwardVector, ReferenceResult, ReferenceError));
+  TestTrue(TEXT("reference selects expected actor or ground"), ReferenceResult.GetLocation().Equals(Case.Value, 0.1f));
+ }
+ Reference.Source = ESkillLabSpatialSource::Related;
+ TestFalse(TEXT("missing related actor never falls back to target"), FSkillLabSpatialTransform::Resolve(Reference, Source.Actor, Target.Actor, nullptr, Ground, FVector::ForwardVector, ReferenceResult, ReferenceError));
  auto First = BeginShot(TEXT("Shot"));
  if (!TestNotNull(TEXT("Formal projectile behavior exists"), First.Value)) return false;
  auto* Projectile = First.Value->GetPointProjectile(1);
