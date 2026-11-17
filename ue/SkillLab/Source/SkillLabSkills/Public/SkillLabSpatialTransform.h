@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 
+class USkinnedMeshComponent;
+
 enum class ESkillLabSpatialOffsetSpace : uint8
 {
 	Reference,
@@ -37,9 +39,21 @@ struct SKILLLABSKILLS_API FSkillLabSpatialDefinition
 	float VisualScale = 1.0f;
 };
 
+struct SKILLLABSKILLS_API FSkillLabSpatialResolvedReference
+{
+	TWeakObjectPtr<AActor> Actor;
+	TWeakObjectPtr<USkinnedMeshComponent> Component;
+	FName Name = NAME_None;
+	FName ParentReference = NAME_None;
+	FTransform WorldTransform = FTransform::Identity;
+	bool bIsBone = false;
+};
+
 /** Pure spatial calculation. Reference selection and object lifetime belong to the caller. */
 struct SKILLLABSKILLS_API FSkillLabSpatialTransform
 {
+	static bool ResolveReference(const FSkillLabSpatialDefinition& Definition, AActor* Source, AActor* Target,
+		AActor* Related, const FVector& Ground, FSkillLabSpatialResolvedReference& Out, FString& Error);
 	static bool Evaluate(const FTransform& Reference, const FVector& ExecutionDirection,
 		const FVector& Offset, ESkillLabSpatialOffsetSpace OffsetSpace,
 		ESkillLabSpatialDirection DirectionSource, const FRotator& WorldDirection,

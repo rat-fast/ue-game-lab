@@ -52,6 +52,21 @@ bool FSkillLabPresentationSubmissionIdentityTest::RunTest(const FString&)
 	Result.CastToken = NewPlayback.Token; Result.Event = ESkillLabSkillEvent::Completed;
 	Host->HandleSkillEvent(Result);
 	TestTrue(TEXT("Matching complete callback removes only its own playback binding"),Animation->Playbacks.IsEmpty());
+	FSkillLabCastAnimationPlayback NotifyPlayback;
+	NotifyPlayback.Token = NewPlayback.Token;
+	NotifyPlayback.NotifyAnimation = nullptr;
+	Animation->Playbacks.Add(NotifyPlayback);
+	bool bObservedOriginalToken = false;
+	const FDelegateHandle NotifyHandle = Animation->OnNotifyObserved.AddLambda(
+		[&](const FSkillLabCastExecutionToken& Token, UAnimSequenceBase*, FGameplayTag, bool, bool)
+		{
+			bObservedOriginalToken = Token == NewPlayback.Token;
+			Animation->Playbacks.Reset();
+		});
+	const bool bForwarded = Animation->ForwardCastEvent(NewPlayback.Token.CastId, FGameplayTag::RequestGameplayTag(TEXT("SkillLab.Event.Cast")));
+	Animation->OnNotifyObserved.Remove(NotifyHandle);
+	TestFalse(TEXT("Uninitialized runtime rejects the Notify without mutation"), bForwarded);
+	TestTrue(TEXT("Synchronous observer cleanup still receives the frozen original token"), bObservedOriginalToken && Animation->Playbacks.IsEmpty());
 	return true;
 }
 #endif

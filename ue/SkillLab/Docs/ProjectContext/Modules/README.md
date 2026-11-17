@@ -6,5 +6,6 @@
 - [SkillLabLuaRuntime 公共 Lua 运行时](SkillLabLuaRuntime.md)：集中 Lua 5.4.8 唯一源码，提供业务无关的 VM/facade 能力；只依赖 `Core`，由需要 Lua 的项目模块按需通过 Private dependency 接入。
 - [SkillLabGAS 战斗属性与效果](SkillLabGAS.md)：ASC、属性集、即时效果、持续伤害和纯结算测试。
 - [PlayerInteraction 玩家交互与 HUD](PlayerInteraction.md)：角色、控制器、Enhanced Input、技能选点、快捷键和 HUD。
+- [SpatialDataExportTool 空间数据导出工具](SpatialDataExportTool.md)：工作区 Python CLI 与 SkillLab 运行时采集宿主的边界、请求入口和导出产物。
 - [TestAndVerification 测试入口与验证](TestAndVerification.md)：训练场、Exec 命令、自动化测试、日志证据和未验证项。
 - [SkillLabPresentation 角色与技能表现](CharacterPresentation.md)：角色 Mesh、AnimBP、动画播放、表现接线和当前验证入口。

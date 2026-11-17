@@ -31,12 +31,14 @@ C++ 提供受控空间求值、正式对象创建、跟随和清理；Lua 选择
 
 实现及局部运行核验依据见 [实现摘要](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/ImplementationSummary.md)、[独立 Review](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/Review.md)及 [表现模块](../../ProjectContext/Modules/CharacterPresentation.md)。这些依据不代表全部动作体验或四技能空间适配通过。
 
+另有实际技能释放空间数据导出工具，可启动 SkillLab 运行并采集有效配置、运行事件、空间样本和同步场景画面，供人或 Agent 查看。该工具属于采集能力，不裁定采集数据的空间含义，不改变技能或表现运行结果，也不承诺下游自动读解和适配。一次导出只反映该请求实际读取到的内容和指定参照，不证明全资产覆盖或骨骼/Socket 精度。工具实现及验收边界见[工具实现摘要](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/02-SpatialDataExportTools/ImplementationSummary.md)和[独立 Review](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/02-SpatialDataExportTools/Review.md)；完整需求场景验收仍未完成。
+
 ## 当前限制与待确认
 
 - 当前没有地面或关联对象持续跟随、Niagara 或材质参数配置能力，也未建设任意事件与对象的通用演出系统。
 - 生产骨骼/Socket、真实释放前移动后采样、Fireball 偏移后的近墙/遮挡与重叠出生，以及不同模型/资源替换的完整复用仍未充分验证。
 - 技能动作质量、Notify 与释放事件视觉时点、取消/完成后的姿势恢复、缺资源降级可读性、旧/新动作竞态及完整差异化反馈仍未全面验收。
-- 空间资料导出、独立读取、AI 自主选点与调整未实现；正式动作、VFX/音频方案及最终适配参数不属于当前承诺。
+- 空间资料导出工具已有实现；独立读取、AI 自主选点与调整未实现。导出结果或工具自身的 `complete` 状态不证明技能命中、空间数据解释正确、表现适配完成或最终视觉质量通过。正式动作、VFX/音频方案及最终适配参数不属于当前承诺。
 
 ## 关系
 

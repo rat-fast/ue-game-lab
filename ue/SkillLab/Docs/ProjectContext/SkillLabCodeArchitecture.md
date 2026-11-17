@@ -18,6 +18,7 @@ SkillLab 是单机技能系统实验项目。`SkillLab` 组装角色、控制器
 | 属性、效果与资源 | `Source/SkillLabGAS/` | [GAS 模块](Modules/SkillLabGAS.md)：伤害/治疗、actual/reserved/available、资源写入队列与最终回执 |
 | 角色与技能表现 | `Source/SkillLabPresentation/` | [表现模块](Modules/CharacterPresentation.md)：状态采集、Lua 意图、AnimBP 适配、完整 Cast token、Montage/Notify |
 | 公共 Lua 运行时 | `Source/SkillLabLuaRuntime/`、`SkillLabLua.h` | Lua 5.4.8 唯一源码、VM、受保护调用、指令预算和 opaque facade；只依赖 `Core` |
+| 空间数据导出采集 | `Source/SkillLab/Private/SpatialExport/`、`tools/export_skill_spatial.py` | [空间导出工具模块](Modules/SpatialDataExportTool.md)：Python 编排与 UE `USkillLabSpatialExportSubsystem` 运行采集边界；不替代正式技能请求或空间求值 |
 | 测试场与验证 | `SkillLabTestCommandsComponent.*`、`SkillLabTestArenaSubsystem.*`、各模块 `Private/Tests/` | [测试模块](Modules/TestAndVerification.md)：命令、自动化入口、分版本证据与验收限制 |
 
 ## 代码到运行链
@@ -40,6 +41,8 @@ Runtime 管理角色级执行集合、单槽 latest-wins 意图和会话屏障�
 
 角色表现另走 `CharacterMovement -> CharacterAnimationStateComponent -> CharacterPresentation.lua -> CharacterAnimInstance -> ABP_Unarmed`；技能事件由 Lua 表现组件创建并绑定的 Router 转发，再按完整 token 播放/停止动作。`SkillLabSkills` 不依赖表现模块、不创建表现对象。公共 Lua facade 由 Skills 与 Presentation 按需私有依赖；Lua 不直接拥有 ASC、Actor 或动画求值。
 
+空间导出通过工作区 `tools/export_skill_spatial.py` 启动真实 `-game` 工程；仅带导出请求参数时，`USkillLabSpatialExportSubsystem` 在原 World 读取实际 Runtime/对象状态、订阅运行事实并采集 RHI PNG。工具模式跳过 TestArena 准备，保留场景障碍和原角色组装。其协议、文件和复现入口见空间导出工具模块。
+
 ## 配置、资产和内容来源
 
 - `Config/SkillDefinitions.json` 提供数值、阶段、动画软路径、规则 profile、提交点声明及 `luaScript` 绑定；绑定 Lua 的 `SkillLabSkill_Define` 提供目标、关系、效果、执行模板和规则声明。Provider 统一解析并原子替换有效候选目录；`FSkillLabSkillBehaviorRegistry::ApplySharedRuntimeClasses` 只设置共享 Ability/Behavior 类。解析分工见 Skills 模块。
@@ -57,7 +60,7 @@ Runtime 管理角色级执行集合、单槽 latest-wins 意图和会话屏障�
 
 实际启动工程必须构建其自身的 `SkillLabEditor` 二进制；隔离工程验证通过不代表实际工程 `Binaries/Win64` 已更新。2026-11-12 已完成实际工程构建与加载核对，DX11 `-game` 截图确认 HP、Energy 和四技能槽可见，用户人工确认技能可释放；证据见测试模块。此结论不覆盖完整键鼠组合、PIE 或双 Montage 并播验收。
 
-Exec、RuntimeProbe、自动化注册名、构建/运行复现方式与当前证据统一见 [TestAndVerification](Modules/TestAndVerification.md)。B1/多 Cast、P2-CE-1、R 资源修复、Reset 专项及 Batch04 空间能力的通过结论各有版本范围；不把不同版本的测试数量合并为当前全套通过。可见 PIE、双 Montage、Batch04 近墙起点及未覆盖资产范围仍按测试模块的限制处理。
+Exec、RuntimeProbe、自动化注册名、构建/运行复现方式、空间导出工具入口与当前证据统一见 [TestAndVerification](Modules/TestAndVerification.md)。B1/多 Cast、P2-CE-1、R 资源修复、Reset 专项及 Batch04 空间能力的通过结论各有版本范围；不把不同版本的测试数量合并为当前全套通过。可见 PIE、双 Montage、Batch04 近墙起点及未覆盖资产范围仍按测试模块的限制处理。
 
 ## 维护入口
 

@@ -38,27 +38,27 @@ void USkillLabSkillPresentationRouter::HandleEvent(const FSkillLabSkillResult& R
 	if (bSpatialProduced) return;
 	if (Result.Event == ESkillLabSkillEvent::TargetSelected && Result.VisualRadius > 0.0f)
 	{
-		SpawnWorldMarker(Result.TargetLocation + FVector(0.0f, 0.0f, 3.0f), Result.VisualRadius, FColor::Orange, 1.5f, true);
+		SpawnWorldMarker(Result.TargetLocation + FVector(0.0f, 0.0f, 3.0f), Result.VisualRadius, FColor::Orange, 1.5f, true, Result);
 	}
 	else if ((Result.Event == ESkillLabSkillEvent::Hit || Result.Event == ESkillLabSkillEvent::DamageTick)
 		&& Result.bSuccess && Result.SourceActor && Result.TargetActor)
 	{
 		const FColor Color = Result.Effect == ESkillLabEffectKind::Healing ? FColor::Green : FColor::Red;
 		// A short-lived white target frame makes the final hit location legible even with no assets.
-		SpawnWorldMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 125.0f), 76.0f, FColor::White, 0.28f, false);
-		SpawnWorldMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 125.0f), 70.0f, Color, 0.65f, false);
+		SpawnWorldMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 125.0f), 76.0f, FColor::White, 0.28f, false, Result);
+		SpawnWorldMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 125.0f), 70.0f, Color, 0.65f, false, Result);
 		const FString Label = Result.Effect == ESkillLabEffectKind::Healing
 			? (Result.ActualAmount > 0.0f
 				? FString::Printf(TEXT("HEAL +%.0f"), Result.ActualAmount)
 				: FString(TEXT("HEAL FULL")))
 			: FString::Printf(TEXT("DAMAGE -%.0f"), Result.ActualAmount);
 		SpawnTextMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 190.0f), Label, Color,
-			Result.Event == ESkillLabSkillEvent::DamageTick ? 0.9f : 1.5f);
+			Result.Event == ESkillLabSkillEvent::DamageTick ? 0.9f : 1.5f, Result);
 	}
 	else if (Result.Event == ESkillLabSkillEvent::BuffApplied && Result.TargetActor)
 	{
-		SpawnWorldMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 125.0f), 90.0f, FColor::Purple, 4.0f, false);
-		SpawnTextMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 205.0f), TEXT("BURNING"), FColor::Purple, 2.0f);
+		SpawnWorldMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 125.0f), 90.0f, FColor::Purple, 4.0f, false, Result);
+		SpawnTextMarker(Result.TargetActor->GetActorLocation() + FVector(0.0f, 0.0f, 205.0f), TEXT("BURNING"), FColor::Purple, 2.0f, Result);
 	}
 }
 
@@ -87,12 +87,17 @@ void USkillLabSkillPresentationRouter::ShowSpatial(const FSkillLabSkillResult& R
 		if (!Marker) { UE_LOG(LogTemp, Warning, TEXT("[SkillLabSpatial] Skill=%s Object=%s: spawn failed"), *Result.SkillId.ToString(), *D.Name.ToString()); continue; }
 		Marker->InitializeShape(Event == TEXT("TargetSelected") ? ESkillLabFeedbackShape::Ring : ESkillLabFeedbackShape::TargetFrame,
 			(Result.VisualRadius > 0 ? Result.VisualRadius : 70.0f) * D.VisualScale, FColor::Purple, 1.5f);
+		Marker->SetObservationSource(Result, D.Name, Result.VisualRadius > 0 ? Result.VisualRadius : 70.0f, D.VisualScale);
 		if (Mesh) Marker->SetSpatialMesh(Mesh);
 		bSpatialProduced = true;
 		if (D.bFollow)
 		{
 			const FString Key = Result.EffectInstanceId.ToString() + TEXT(":") + D.Name.ToString();
-			if (auto* Existing = PersistentMarkers.Find(Key); Existing && Existing->IsValid()) (*Existing)->Destroy();
+			if (auto* Existing = PersistentMarkers.Find(Key); Existing && Existing->IsValid())
+			{
+				(*Existing)->SetObservedRemovalCause(TEXT("ReplacedByNewEffect"));
+				(*Existing)->Destroy();
+			}
 			Marker->StartSpatialFollow(D, Result.SourceActor, Result.TargetActor, Result.TargetLocation, Rotation);
 			PersistentMarkers.Add(Key, Marker);
 		}
@@ -137,7 +142,7 @@ void USkillLabSkillPresentationRouter::ShowScreenMessage(const FSkillLabSkillRes
 	if (!Message.IsEmpty()) GEngine->AddOnScreenDebugMessage(-1, 2.0f, Color, Message);
 }
 
-void USkillLabSkillPresentationRouter::SpawnWorldMarker(const FVector& Location, const float Radius, const FColor& Color, const float LifeSeconds, const bool bFlat)
+void USkillLabSkillPresentationRouter::SpawnWorldMarker(const FVector& Location, const float Radius, const FColor& Color, const float LifeSeconds, const bool bFlat, const FSkillLabSkillResult& Context)
 {
 	UWorld* World = GetWorld();
 	if (!World) return;
@@ -150,15 +155,16 @@ void USkillLabSkillPresentationRouter::SpawnWorldMarker(const FVector& Location,
 			? ESkillLabFeedbackShape::Ring
 			: (Color == FColor::White ? ESkillLabFeedbackShape::TargetFrame : ESkillLabFeedbackShape::Target);
 		Marker->InitializeShape(Shape, Radius, Color, LifeSeconds);
+		Marker->SetObservationSource(Context, NAME_None, Radius);
 	}
 }
 
-void USkillLabSkillPresentationRouter::SpawnTextMarker(const FVector& Location, const FString& Text, const FColor& Color, const float LifeSeconds)
+void USkillLabSkillPresentationRouter::SpawnTextMarker(const FVector& Location, const FString& Text, const FColor& Color, const float LifeSeconds, const FSkillLabSkillResult& Context)
 {
 	UWorld* World = GetWorld();
 	if (!World) return;
 	FActorSpawnParameters SpawnParameters;
 	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	ASkillLabSkillFeedbackActor* Marker = World->SpawnActor<ASkillLabSkillFeedbackActor>(ASkillLabSkillFeedbackActor::StaticClass(), Location, FRotator::ZeroRotator, SpawnParameters);
-	if (Marker) Marker->InitializeText(Text, Color, LifeSeconds);
+	if (Marker) { Marker->InitializeText(Text, Color, LifeSeconds); Marker->SetObservationSource(Context); }
 }

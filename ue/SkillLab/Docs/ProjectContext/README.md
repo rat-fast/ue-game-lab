@@ -7,10 +7,10 @@
 1. `SkillLabCodeArchitecture.md`：项目角色、模块地图、正式入口、运行链、配置/资产来源和验证边界。
 2. 程序架构、实现、集成或 Review 任务读取 `ProgramArchitectureContract.md`：SkillLab 程序分层和跨层职责约定。
 3. `Modules/README.md`：按稳定职责选择模块文档。
-4. 当前任务所需的模块文档：技能运行时、GAS、玩家交互/HUD、角色与技能表现或测试验证。
+4. 当前任务所需的模块文档：技能运行时、GAS、玩家交互/HUD、角色与技能表现、[空间数据导出工具](Modules/SpatialDataExportTool.md)或测试验证。
 5. `../Baseline/` 下与当前任务相关的领域基线：核对共享业务语义，不用基线替代源码事实。
 
-空间能力沿现有模块定位：[Skills 的可选空间配置](Modules/SkillLabSkillsRuntime.md#可选空间配置)说明声明、参数和加载；[表现模块](Modules/CharacterPresentation.md)说明事件消费、尺寸与跟随清理；[测试模块](Modules/TestAndVerification.md)记录验证入口和证据范围。
+空间能力沿现有模块定位：[Skills 的可选空间配置](Modules/SkillLabSkillsRuntime.md#可选空间配置)说明声明、参数和加载；[表现模块](Modules/CharacterPresentation.md)说明事件消费、尺寸与跟随清理；[空间数据导出工具模块](Modules/SpatialDataExportTool.md)说明运行数据采集入口与 Python/UE 职责；[测试模块](Modules/TestAndVerification.md)记录复现方式和证据范围。
 
 ## 事实来源
 

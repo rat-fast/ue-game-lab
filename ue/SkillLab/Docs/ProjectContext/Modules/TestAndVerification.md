@@ -14,6 +14,26 @@
 
 默认槽位命令为 `SkillTest`→0/Fireball、`SkillArea`→1/AreaBurst、`SkillTestRecover`→2/Mend、`SkillBurn`→3/BurningBuff，经 Shortcut 进入玩家选点链。`SkillAnimationSmoke` 转发 `AnimationStateSmoke`，`SkillPresentationSmoke` 则直接按序请求四技能，序列结束后主动 `RequestExit(false)`；后者不验证真实键鼠选点。
 
+### 空间数据导出工具
+
+独立 CLI、UE Runtime 接入与输出协议见[空间数据导出工具模块](SpatialDataExportTool.md)。从工作区根目录调用：
+
+```powershell
+python tools/export_skill_spatial.py inspect --request 'E:/agent/game/tools/examples/spatial-inspect-request.json' --engine 'D:/Epic/UE_5.8/Engine/Binaries/Win64/UnrealEditor.exe'
+python tools/export_skill_spatial.py capture --request 'E:/agent/game/tools/examples/spatial-capture-self-request.json' --engine 'D:/Epic/UE_5.8/Engine/Binaries/Win64/UnrealEditor.exe'
+python tools/export_skill_spatial.py configure --output-root 'E:/agent/game/ue/SkillLab/Saved/SpatialExports' --save-default
+python -m unittest tools.tests.test_export_skill_spatial -v
+```
+
+UE 定向入口新增 `SkillLab.SpatialExport.AnimationNotifyGeneration`，覆盖旧 Runtime generation 的 Notify 不落盘及匹配 generation 恰好记录一次。从工作区根目录重建并运行该自动化：
+
+```powershell
+& 'D:/Epic/UE_5.8/Engine/Build/BatchFiles/Build.bat' SkillLabEditor Win64 Development 'E:/agent/game/ue/SkillLab/SkillLab.uproject' -WaitMutex -NoHotReloadFromIDE
+& 'D:/Epic/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe' 'E:/agent/game/ue/SkillLab/SkillLab.uproject' -unattended -nop4 -NullRHI -nosplash -nosound '-ExecCmds=Automation RunTests SkillLab.SpatialExport.AnimationNotifyGeneration' '-TestExit=Automation Test Queue Empty' '-abslog=E:/agent/game/ue/SkillLab/Saved/Logs/SpatialExportR2NotifyGeneration.log'
+```
+
+2026-11-17 实际工程 `SkillLabEditor Win64 Development` 构建和该测试通过，日志为 [`SpatialExportR2NotifyGeneration.log`](../../../Saved/Logs/SpatialExportR2NotifyGeneration.log)。Batch04-02 原 Review 的 R1—R9 实现问题均经定向复查确认关闭；真实 inspect/capture、Python 与其他 UE 回归及当前缺少的端到端场景范围见[实现摘要](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/02-SpatialDataExportTools/ImplementationSummary.md)。
+
 ## Runtime Flow
 
 控制器占有 Pawn 后，测试命令初始化训练场并走正式请求路径；reload 调用 `FSkillLabSkillDefinitionProvider::ReloadDefinitions`。`SkillReset` 进入 Runtime 的 attempt/屏障和资源最终回执链，可能受未决阻塞、排队或失败，不能描述为调用后所有状态立即恢复。详细行为见 [Skills](SkillLabSkillsRuntime.md) 与 [GAS](SkillLabGAS.md)。

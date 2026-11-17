@@ -11,6 +11,8 @@
 #include "SkillLabSkillRuntimeComponent.h"
 #include "SkillLabSkillEffectExecutor.h"
 #include "SkillLabSkillEffectEventAdapter.h"
+#include "SkillLabSkillObservation.h"
+#include "HAL/PlatformTime.h"
 
 ASkillLabFireballProjectile::ASkillLabFireballProjectile()
 {
@@ -68,6 +70,32 @@ void ASkillLabFireballProjectile::EndPlay(const EEndPlayReason::Type EndPlayReas
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(ExpireTimerHandle);
+		if (bInitialized)
+		{
+			FSkillLabProjectileObservation Observation;
+			Observation.Projectile = this;
+			Observation.Caster = Source;
+			Observation.Target = Target;
+			Observation.Runtime = OriginRuntime;
+			Observation.World = World;
+			Observation.SkillId = Origin.SkillId;
+			Observation.CastToken = Origin.CastToken;
+			Observation.SubmissionKey = Delivery.Key;
+			Observation.SubmissionPointId = Delivery.Key.Point;
+			Observation.ActorPath = GetPathName();
+			Observation.RequestId = Origin.RequestId;
+			Observation.CastId = CastId;
+			Observation.SpawnTransform = GetActorTransform();
+			Observation.ObservationWorldTime = World->GetTimeSeconds();
+			Observation.ObservationWallTime = FPlatformTime::Seconds();
+			Observation.bDelivered = true;
+			Observation.bDeliveryAccepted = bDeliveryConfirmed;
+			Observation.bRemoved = true;
+			Observation.Reason = !LastRemovalReason.IsNone() ? LastRemovalReason
+				: EndPlayReason == EEndPlayReason::Destroyed ? FName(TEXT("Destroyed"))
+				: FName(TEXT("WorldTeardown"));
+			FSkillLabSkillObservationBus::BroadcastProjectile(Observation);
+		}
 	}
 	// Teardown of a world is not a gameplay failure; external destruction is.
 	if (EndPlayReason == EEndPlayReason::Destroyed && bInitialized && !bResolved)
@@ -213,6 +241,7 @@ void ASkillLabFireballProjectile::ResolveImpact(AActor* HitActor, const FName Re
 		return;
 	}
 	bResolved = true;
+	LastRemovalReason = ResolveReason;
 	if (UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(ExpireTimerHandle);

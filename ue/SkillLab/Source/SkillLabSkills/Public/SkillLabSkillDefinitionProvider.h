@@ -12,6 +12,8 @@ public:
 	static bool ResolvePresentationBinding(FName SkillId, FSkillLabSkillPresentationBinding& OutBinding);
 	/** Loads and validates an entire candidate catalog before replacing the current one. */
 	static bool ReloadDefinitions();
+	/** Fingerprint of the exact JSON and Lua sources atomically accepted by the current catalog. */
+	static FString GetAcceptedCatalogSourceFingerprint();
 	/** Pure catalog validation entry used by editor tooling and automation tests. */
 	static bool ValidateJsonText(const FString& JsonText, FString& OutError);
 	/** Parses a complete candidate catalog; Lua sources are keyed by their JSON luaScript path. */

@@ -18,6 +18,8 @@
 
 代码与局部运行核验支持这些能力的有限使用范围；AreaBurst 在空区域下已有局部表现可见的确认。基础五态、技能动作质量、生产模型绑定、其他样本空间观感及完整交互仍未全面验收。验证状态与使用限制由 [资产与验证边界](03-AssetsAndVerification.md)集中说明，详细依据见 [空间能力实现摘要](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/ImplementationSummary.md)及 [独立 Review](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/Review.md)。
 
+Batch04-02 已提供从实际 SkillLab 运行采集配置、事件、空间样本和同步画面的导出工具，作为人和 Agent 获取观察材料的入口。它不扩展上述运行时表现承诺，也不代表空间数据读解、适配或完整场景验收已完成；范围与证据见[工具实现摘要](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/02-SpatialDataExportTools/ImplementationSummary.md)及[独立 Review](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/02-SpatialDataExportTools/Review.md)。
+
 ## 正文索引
 
 1. [角色基础表现](01-CharacterPresentation.md)：基础行动状态及其视觉边界；

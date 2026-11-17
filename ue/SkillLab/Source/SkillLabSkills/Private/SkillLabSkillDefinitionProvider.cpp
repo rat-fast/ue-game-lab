@@ -3,6 +3,7 @@
 #include "Dom/JsonObject.h"
 #include "Misc/FileHelper.h"
 #include "Misc/Paths.h"
+#include "Misc/SecureHash.h"
 #include "Serialization/JsonReader.h"
 #include "Serialization/JsonSerializer.h"
 #include "SkillLabSkillBehaviorRegistry.h"
@@ -12,6 +13,7 @@ namespace
 {
 	TMap<FName, FSkillLabSkillDefinition> Definitions;
 	bool bLoadAttempted = false;
+	FString AcceptedCatalogSourceFingerprint;
 
 	bool Fail(FString& Error, const FString& Message)
 	{
@@ -96,7 +98,7 @@ namespace
 		return ParseCatalog(Root, LuaSources, OutCandidates, Error);
 	}
 
-	bool LoadCandidate(TMap<FName, FSkillLabSkillDefinition>& OutCandidates)
+	bool LoadCandidate(TMap<FName, FSkillLabSkillDefinition>& OutCandidates, FString& OutFingerprint)
 	{
 		const FString Path = FPaths::Combine(FPaths::ProjectConfigDir(), TEXT("SkillDefinitions.json"));
 		FString Contents;
@@ -112,6 +114,20 @@ namespace
 			UE_LOG(LogTemp, Error, TEXT("[SkillLabSkills] Definition load rejected: %s; previous definitions retained"), *Error);
 			return false;
 		}
+		FString FingerprintSource = Contents;
+		TMap<FString, FString> LuaSources;
+		for (const TPair<FName, FSkillLabSkillDefinition>& Pair : Candidate)
+			LuaSources.Add(Pair.Value.LuaScript, Pair.Value.LuaSource);
+		TArray<FString> LuaPaths;
+		LuaSources.GetKeys(LuaPaths);
+		LuaPaths.Sort();
+		for (const FString& LuaPath : LuaPaths)
+		{
+			FingerprintSource += TEXT("\n-- ") + LuaPath + TEXT("\n") + LuaSources.FindChecked(LuaPath);
+		}
+		FTCHARToUTF8 Utf8(*FingerprintSource);
+		const FSHAHash Signature = FSHA1::HashBuffer(Utf8.Get(), Utf8.Length());
+		OutFingerprint = TEXT("sha1:") + Signature.ToString().ToLower();
 		OutCandidates = MoveTemp(Candidate);
 		return true;
 	}
@@ -159,10 +175,18 @@ bool FSkillLabSkillDefinitionProvider::ReloadDefinitions()
 {
 	bLoadAttempted = true;
 	TMap<FName, FSkillLabSkillDefinition> Candidates;
-	if (!LoadCandidate(Candidates)) return false;
+	FString CandidateFingerprint;
+	if (!LoadCandidate(Candidates, CandidateFingerprint)) return false;
 	Definitions = MoveTemp(Candidates);
+	AcceptedCatalogSourceFingerprint = MoveTemp(CandidateFingerprint);
 	UE_LOG(LogTemp, Log, TEXT("[SkillLabSkills] Definition load accepted: %d skills"), Definitions.Num());
 	return true;
+}
+
+FString FSkillLabSkillDefinitionProvider::GetAcceptedCatalogSourceFingerprint()
+{
+	EnsureLoaded();
+	return AcceptedCatalogSourceFingerprint;
 }
 
 bool FSkillLabSkillDefinitionProvider::ParseCatalogText(const FString& JsonText, const TMap<FString, FString>& LuaSources,

@@ -89,7 +89,11 @@ bool USkillLabSkillAnimationComponent::ForwardCastEvent(const int32 CastId, cons
   Match = &P;
  }
  if (!Match || !Match->Token.Runtime.IsValid()) return false;
- return Match->Token.Runtime->ForwardValidatedNotify(Match->Token, EventTag);
+	const auto Token = Match->Token;
+	UAnimSequenceBase* NotifyAnimation = Match->NotifyAnimation;
+	const bool bForwarded = Token.Runtime->ForwardValidatedNotify(Token, EventTag);
+	OnNotifyObserved.Broadcast(Token, NotifyAnimation, EventTag, false, bForwarded);
+	return bForwarded;
 }
 bool USkillLabSkillAnimationComponent::ForwardAnimNotify(UAnimSequenceBase* Animation, const FGameplayTag EventTag,
  const FAnimNotifyEventReference& Reference, const bool bStateEnd, USkeletalMeshComponent* NotifyMesh)
@@ -104,8 +108,11 @@ bool USkillLabSkillAnimationComponent::ForwardAnimNotify(UAnimSequenceBase* Anim
   if (!Instance || !Instance->IsPlaying() || Instance->Montage != P.Montage) continue;
   // 同一 Notify 还须归属实际 Mesh 的 AnimInstance，不能跨角色借相同 InstanceId。
   if (NotifyMesh && NotifyMesh != P.AnimInstance->GetSkelMeshComponent()) continue;
-  const auto Token = P.Token;
-  return bStateEnd ? Token.Runtime->ForwardValidatedNotifyStateEnd(Token, EventTag) : Token.Runtime->ForwardValidatedNotify(Token, EventTag);
+		const auto Token = P.Token;
+		UAnimSequenceBase* ObservedAnimation = Animation;
+		const bool bForwarded = bStateEnd ? Token.Runtime->ForwardValidatedNotifyStateEnd(Token, EventTag) : Token.Runtime->ForwardValidatedNotify(Token, EventTag);
+		OnNotifyObserved.Broadcast(Token, ObservedAnimation, EventTag, bStateEnd, bForwarded);
+		return bForwarded;
  }
  return false;
 }

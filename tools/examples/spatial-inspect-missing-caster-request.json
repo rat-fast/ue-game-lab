@@ -1,0 +1,8 @@
+{
+  "map": "/Game/SkillLab/L_SkillLab_NavTest",
+  "caster": {"player_index": 99},
+  "duration_seconds": 0,
+  "warmup_seconds": 1,
+  "views": [{"id": "game", "type": "game"}],
+  "resolution": [1280, 720]
+}

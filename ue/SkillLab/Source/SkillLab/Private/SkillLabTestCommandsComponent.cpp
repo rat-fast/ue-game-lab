@@ -5,6 +5,7 @@
 #include "HAL/PlatformMisc.h"
 #include "HAL/FileManager.h"
 #include "Misc/Paths.h"
+#include "Misc/CommandLine.h"
 #include "SkillLabCharacterAnimationStateComponent.h"
 #include "GameFramework/Pawn.h"
 #include "GameFramework/Character.h"
@@ -34,6 +35,9 @@ void USkillLabTestCommandsComponent::InitializeForPawn(APawn* Pawn, USkillLabSki
 	ShortcutComponent = InShortcuts;
 	SkillRuntime = Pawn ? Pawn->FindComponentByClass<USkillLabSkillRuntimeComponent>() : nullptr;
 	if (!bEnableTestCommands || !bInitializeTrainingArena || !Pawn) return;
+	FString SpatialExportRequestPath;
+	if (FParse::Value(FCommandLine::Get(), TEXT("SkillLabSpatialExportRequest="), SpatialExportRequestPath)
+		&& !SpatialExportRequestPath.IsEmpty()) return;
 	if (USkillLabTestArenaSubsystem* Arena = GetWorld() ? GetWorld()->GetSubsystem<USkillLabTestArenaSubsystem>() : nullptr)
 	{
 		Arena->PrepareForSkillTesting(Pawn);

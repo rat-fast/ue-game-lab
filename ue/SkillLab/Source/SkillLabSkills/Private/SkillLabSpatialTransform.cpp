@@ -1,10 +1,22 @@
 #include "SkillLabSpatialTransform.h"
 #include "Components/SkinnedMeshComponent.h"
+#include "Engine/SkeletalMesh.h"
 #include "GameFramework/Actor.h"
 
 bool FSkillLabSpatialTransform::Resolve(const FSkillLabSpatialDefinition& Definition, AActor* Source, AActor* Target,
 	AActor* Related, const FVector& Ground, const FVector& ExecutionDirection, FTransform& Out, FString& Error)
 {
+	FSkillLabSpatialResolvedReference Resolved;
+	if (!ResolveReference(Definition, Source, Target, Related, Ground, Resolved, Error)) return false;
+	return Evaluate(Resolved.WorldTransform, ExecutionDirection, Definition.Offset, Definition.OffsetSpace,
+		Definition.Direction, Definition.WorldDirection, Out, Error);
+}
+
+bool FSkillLabSpatialTransform::ResolveReference(const FSkillLabSpatialDefinition& Definition, AActor* Source, AActor* Target,
+	AActor* Related, const FVector& Ground, FSkillLabSpatialResolvedReference& Out, FString& Error)
+{
+	Out = FSkillLabSpatialResolvedReference();
+	Error.Reset();
 	AActor* Actor = nullptr;
 	switch (Definition.Source)
 	{
@@ -39,10 +51,25 @@ bool FSkillLabSpatialTransform::Resolve(const FSkillLabSpatialDefinition& Defini
 				}
 			if (!Found) { Error = FString::Printf(TEXT("socket or bone '%s' not found"), *Definition.Socket.ToString()); return false; }
 			Reference = Found->GetSocketTransform(Definition.Socket, RTS_World);
+			Out.Component = Found;
+			Out.Name = Definition.Socket;
+			const int32 BoneIndex = Found->GetBoneIndex(Definition.Socket);
+			Out.bIsBone = BoneIndex != INDEX_NONE;
+			if (Out.bIsBone)
+			{
+				if (const USkeletalMesh* SkeletalMesh = Cast<USkeletalMesh>(Found->GetSkinnedAsset()))
+				{
+					const FReferenceSkeleton& Skeleton = SkeletalMesh->GetRefSkeleton();
+					const int32 ParentIndex = Skeleton.GetParentIndex(BoneIndex);
+					Out.ParentReference = ParentIndex == INDEX_NONE ? NAME_None : Skeleton.GetBoneName(ParentIndex);
+				}
+			}
+			else Out.ParentReference = Found->GetSocketBoneName(Definition.Socket);
 		}
+		Out.Actor = Actor;
 	}
-	return Evaluate(Reference, ExecutionDirection, Definition.Offset, Definition.OffsetSpace,
-		Definition.Direction, Definition.WorldDirection, Out, Error);
+	Out.WorldTransform = Reference;
+	return true;
 }
 
 bool FSkillLabSpatialTransform::Evaluate(const FTransform& Reference, const FVector& ExecutionDirection,

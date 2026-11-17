@@ -18,7 +18,7 @@ public class SkillLab : ModuleRules
 		PrivateDependencyModuleNames.AddRange(new string[]
 		{
 			"EnhancedInput", "AIModule", "NavigationSystem", "Niagara", "Slate", "SlateCore",
-			"GameplayTags", "GameplayTasks", "AnimGraphRuntime", "SkillLabGAS", "SkillLabSkills", "SkillLabPresentation", "Json"
+			"GameplayTags", "GameplayTasks", "AnimGraphRuntime", "SkillLabGAS", "SkillLabSkills", "SkillLabPresentation", "Json", "RenderCore", "RHI", "ImageWrapper"
 		});
 
 		// Uncomment if you are using Slate UI

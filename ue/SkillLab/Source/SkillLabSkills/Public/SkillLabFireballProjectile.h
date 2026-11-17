@@ -32,6 +32,11 @@ public:
 	FSkillLabProjectileResolved OnResolved;
 	bool IsDeliveryConfirmed() const { return bDeliveryConfirmed; }
 	const FSkillLabSkillResult& GetImpactResult() const { return ImpactResult; }
+	const USphereComponent* GetCollisionShape() const { return Collision; }
+	const UProjectileMovementComponent* GetProjectileMovement() const { return Movement; }
+	const UStaticMeshComponent* GetProjectileVisual() const { return Visual; }
+	AActor* GetSourceActor() const { return Source.Get(); }
+	AActor* GetTargetActor() const { return Target.Get(); }
 
 protected:
 	virtual void BeginPlay() override;
@@ -89,4 +94,5 @@ private:
 	FQuat SpatialVisualDirection = FQuat::Identity;
 	FSkillLabProductionHandle Delivery;
 	FTimerHandle ExpireTimerHandle;
+	FName LastRemovalReason = NAME_None;
 };

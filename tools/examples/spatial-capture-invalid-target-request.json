@@ -1,0 +1,14 @@
+{
+  "map": "/Game/SkillLab/L_SkillLab_NavTest",
+  "caster": {"player_index": 0},
+  "skill_id": "Skill_Fireball",
+  "target": {"actor": {"level_actor_path": "/Game/SkillLab/L_SkillLab_NavTest.L_SkillLab_NavTest:PersistentLevel.MissingTarget"}},
+  "duration_seconds": 1,
+  "pre_request_seconds": 0.25,
+  "warmup_seconds": 1,
+  "sample_hz": 1,
+  "views": [{"id": "game", "type": "game"}],
+  "reference_queries": [],
+  "resolution": [1280, 720],
+  "markers": false
+}

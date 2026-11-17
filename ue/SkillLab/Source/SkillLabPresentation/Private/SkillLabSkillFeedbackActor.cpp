@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "SkillLabProjectileTypes.h"
+#include "HAL/PlatformTime.h"
 
 namespace
 {
@@ -57,6 +58,7 @@ ASkillLabSkillFeedbackActor::ASkillLabSkillFeedbackActor()
 void ASkillLabSkillFeedbackActor::InitializeShape(const ESkillLabFeedbackShape InShape, const float Radius, const FColor& Color, const float LifeSeconds)
 {
 	Shape = InShape;
+	ObservedRadiusCm = FMath::Max(1.0f, Radius);
 	InitialLife = FMath::Max(0.05f, LifeSeconds);
 	Elapsed = 0.0f;
 	SetLifeSpan(InitialLife);
@@ -68,7 +70,7 @@ void ASkillLabSkillFeedbackActor::InitializeShape(const ESkillLabFeedbackShape I
 	}
 	ShapeMesh->SetStaticMesh(LoadObject<UStaticMesh>(nullptr, MeshPathForShape(Shape)));
 	ShapeMesh->SetVisibility(Shape != ESkillLabFeedbackShape::TargetFrame);
-	const float SafeRadius = FMath::Max(1.0f, Radius);
+	const float SafeRadius = ObservedRadiusCm;
 	if (Shape == ESkillLabFeedbackShape::TargetFrame)
 	{
 		const float Half = SafeRadius / 50.0f;
@@ -140,6 +142,64 @@ void ASkillLabSkillFeedbackActor::SetSpatialMesh(UStaticMesh* Mesh)
 	for (UStaticMeshComponent* Piece : FramePieces) Piece->SetStaticMesh(Mesh);
 }
 
+void ASkillLabSkillFeedbackActor::SetObservationSource(const FSkillLabSkillResult& Result, const FName BindingName, const float RadiusBasisCm, const float VisualScale)
+{
+	ObservedSkillId = Result.SkillId;
+	ObservedEventName = FName(*UEnum::GetValueAsString(Result.Event));
+	ObservedEffectInstanceId = Result.EffectInstanceId;
+	ObservedBindingName = BindingName;
+	ObservedSourceActor = Result.SourceActor;
+	ObservedTargetActor = Result.TargetActor;
+	ObservedRequestId = Result.RequestId;
+	ObservedCastId = Result.CastId;
+	ObservedCastToken = Result.CastToken;
+	ObservedSubmissionKey = Result.SubmissionKey;
+	ObservedSubmissionPointId = Result.SubmissionPointId;
+	ObservedRadiusBasisCm = RadiusBasisCm;
+	ObservedVisualScale = VisualScale;
+	ObservedSizeBasisKind = RadiusBasisCm > 0.0f ? (Result.VisualRadius > 0.0f ? FName(TEXT("event_visual_radius_cm")) : FName(TEXT("fallback_or_explicit_radius_cm"))) : NAME_None;
+	FSkillLabFeedbackObservation Observation;
+	Observation.Actor = this;
+	Observation.Event = TEXT("feedback_created");
+	Observation.Transform = GetActorTransform();
+	Observation.WorldTimeSeconds = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+	Observation.WallTimeSeconds = FPlatformTime::Seconds();
+	ObservationCreatedWorldTime = Observation.WorldTimeSeconds;
+	FSkillLabFeedbackObservationBus::Broadcast(Observation);
+}
+
+FName ASkillLabSkillFeedbackActor::GetObservedShapeName() const
+{
+	switch (Shape)
+	{
+	case ESkillLabFeedbackShape::Ring: return TEXT("Ring");
+	case ESkillLabFeedbackShape::Target: return TEXT("Target");
+	case ESkillLabFeedbackShape::TargetFrame: return TEXT("TargetFrame");
+	case ESkillLabFeedbackShape::Buff: return TEXT("Buff");
+	case ESkillLabFeedbackShape::ProjectileImpact: return TEXT("ProjectileImpact");
+	default: return NAME_None;
+	}
+}
+
+void ASkillLabSkillFeedbackActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	if (ObservedCastToken.IsValid() || ObservedRequestId != 0)
+	{
+		FSkillLabFeedbackObservation Observation;
+		Observation.Actor = this;
+		Observation.Event = TEXT("feedback_removed");
+		Observation.Transform = GetActorTransform();
+		Observation.WorldTimeSeconds = GetWorld() ? GetWorld()->GetTimeSeconds() : 0.0;
+		Observation.WallTimeSeconds = FPlatformTime::Seconds();
+		Observation.Reason = !PendingRemovalReason.IsNone() ? PendingRemovalReason
+			: EndPlayReason != EEndPlayReason::Destroyed ? FName(TEXT("WorldTeardown"))
+			: InitialLife > 0.0f && Elapsed >= InitialLife - 0.05f ? FName(TEXT("LifeSpanExpired"))
+			: FName(TEXT("Destroyed"));
+		FSkillLabFeedbackObservationBus::Broadcast(Observation);
+	}
+	Super::EndPlay(EndPlayReason);
+}
+
 void ASkillLabSkillFeedbackActor::StartSpatialFollow(const FSkillLabSpatialDefinition& InDefinition, AActor* InSource,
 	AActor* InTarget, const FVector& InGround, const FQuat& InitialRotation)
 {
@@ -154,13 +214,14 @@ void ASkillLabSkillFeedbackActor::Tick(const float DeltaSeconds)
 	if (bSpatialFollow)
 	{
 		AActor* Source = SpatialSource.Get(); AActor* Target = SpatialTarget.Get();
-		if (!IsValid(Source) || Source->IsActorBeingDestroyed() || !IsValid(Target) || Target->IsActorBeingDestroyed()) { Destroy(); return; }
+		if (!IsValid(Source) || Source->IsActorBeingDestroyed() || !IsValid(Target) || Target->IsActorBeingDestroyed())
+		{ PendingRemovalReason = TEXT("FollowReferenceLost"); Destroy(); return; }
 		FTransform Transform; FString Error;
 		const FVector Direction = GetSkillLabProjectileAimPoint(Target) - GetSkillLabProjectileAimPoint(Source);
 		if (!FSkillLabSpatialTransform::Resolve(SpatialDefinition, Source, Target, nullptr, SpatialGround, Direction, Transform, Error))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("[SkillLabSpatial] Follow object=%s: %s"), *SpatialDefinition.Name.ToString(), *Error);
-			Destroy(); return;
+			PendingRemovalReason = TEXT("FollowReferenceResolveFailed"); Destroy(); return;
 		}
 		SetActorLocationAndRotation(Transform.GetLocation(), SpatialDefinition.bFollowRotation
 			? Transform.GetRotation() * SpatialDefinition.VisualRotation.Quaternion() : FixedRotation);
@@ -184,4 +245,15 @@ void ASkillLabSkillFeedbackActor::Tick(const float DeltaSeconds)
 	{
 		DynamicMaterial->SetScalarParameterValue(TEXT("Opacity"), 0.75f * (1.0f - Alpha));
 	}
+}
+
+FSkillLabFeedbackObserved& FSkillLabFeedbackObservationBus::OnObserved()
+{
+	static FSkillLabFeedbackObserved Delegate;
+	return Delegate;
+}
+
+void FSkillLabFeedbackObservationBus::Broadcast(const FSkillLabFeedbackObservation& Observation)
+{
+	OnObserved().Broadcast(Observation);
 }

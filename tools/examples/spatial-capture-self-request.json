@@ -1,0 +1,31 @@
+{
+  "map": "/Game/SkillLab/L_SkillLab_NavTest",
+  "caster": {
+    "player_index": 0
+  },
+  "skill_id": "Skill_Mend",
+  "duration_seconds": 3,
+  "warmup_seconds": 1,
+  "pre_request_seconds": 0.25,
+  "sample_hz": 10,
+  "timeout_seconds": 120,
+  "views": [
+    {
+      "id": "game",
+      "type": "game"
+    }
+  ],
+  "reference_queries": [
+    {
+      "source": "caster",
+      "component_path": "/Game/SkillLab/L_SkillLab_NavTest.L_SkillLab_NavTest:PersistentLevel.BP_SkillLabCharacter_C_0.CharacterMesh0",
+      "kind": "socket",
+      "name": "weapon_r_muzzle"
+    }
+  ],
+  "resolution": [
+    1280,
+    720
+  ],
+  "markers": false
+}

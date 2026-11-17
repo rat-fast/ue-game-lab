@@ -64,6 +64,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="SkillLab|Skill") void CancelActiveCast(FName Reason);
 	UFUNCTION(BlueprintCallable, Category="SkillLab|Skill") void ResetSkills();
 	UFUNCTION(BlueprintPure, Category="SkillLab|Skill") int32 GetUnitId() const { return UnitId; }
+	uint64 GetRuntimeGeneration() const { return RuntimeGeneration; }
 	UFUNCTION(BlueprintPure, Category="SkillLab|Skill") bool IsInitialized() const { return bInitialized; }
 	UFUNCTION(BlueprintPure, Category="SkillLab|Skill") bool IsAlive() const;
 	UFUNCTION(BlueprintPure, Category="SkillLab|Skill") bool IsEnemy(const USkillLabSkillRuntimeComponent* Other) const;

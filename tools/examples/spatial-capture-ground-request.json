@@ -1,0 +1,14 @@
+{
+  "map": "/Game/SkillLab/L_SkillLab_NavTest",
+  "caster": {"player_index": 0},
+  "skill_id": "Skill_AreaBurst",
+  "target": {"ground_location": [250, 0, 0]},
+  "duration_seconds": 2,
+  "pre_request_seconds": 0.25,
+  "warmup_seconds": 1,
+  "sample_hz": 2,
+  "views": [{"id": "game", "type": "game"}],
+  "reference_queries": [],
+  "resolution": [1280, 720],
+  "markers": false
+}

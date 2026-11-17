@@ -18,6 +18,7 @@
 | 基础角色表现 | 已有基础行动状态采集和表现接入 | 完整五态视觉及迁移仍未验收 |
 | 技能动作 | 已有真实事件消费、按施法身份播放/停止及局部身份核验 | 不代表动作质量、视觉时点、姿势恢复或全部竞态已验收 |
 | 空间配置与对象执行 | 已有配置解析、空间变换、真实生成点、视觉与碰撞隔离、独立关联来源和持续效果表现跟随/清理的局部核验 | 不代表生产模型绑定、全部错误边界或不同内容复用已充分验证 |
+| 空间数据采集工具 | 已可从实际 SkillLab 运行读取配置和参照、提交指定技能请求并导出事件、空间样本及同步画面；定向 Review 确认原实现问题已修复 | 完整需求场景验收仍未完成，尤其没有有效单位目标、真实投射物链、持续效果和 RelatedActor 的完整端到端证据；单次请求不证明全资产覆盖或骨骼/Socket 精度，工具采集状态不代表命中、数据读解、适配或表现质量通过 |
 | 玩家可见空间表现 | AreaBurst 在空区域下已有局部表现可见的确认 | 不覆盖有效敌人伤害范围、不同遮挡/摄像机距离、其他三技能空间观感或完整 PIE |
 
 ## 当前限制
@@ -30,6 +31,6 @@
 
 ## 依据入口与关系
 
-空间配置的实现、详细验证范围及剩余风险见 [实现摘要](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/ImplementationSummary.md)与 [独立 Review](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/Review.md)；当前表现职责见 [表现模块](../../ProjectContext/Modules/CharacterPresentation.md)，项目验证材料由 [测试与验证文档](../../ProjectContext/Modules/TestAndVerification.md)定位。
+空间配置的实现、详细验证范围及剩余风险见 [实现摘要](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/ImplementationSummary.md)与 [独立 Review](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/Review.md)；空间数据采集工具的范围及未完成验收见[工具实现摘要](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/02-SpatialDataExportTools/ImplementationSummary.md)与[工具独立 Review](../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/02-SpatialDataExportTools/Review.md)。当前表现职责见 [表现模块](../../ProjectContext/Modules/CharacterPresentation.md)，项目验证材料由 [测试与验证文档](../../ProjectContext/Modules/TestAndVerification.md)定位。
 
 基础表现交付见 [角色表现程序入口](../../ProgramWorkflow/CharacterPresentationLuaPilot/README.md)，体验要求见 [角色表现需求](../../Planning/CharacterPresentation/Batches/Batch02-LuaCharacterPresentationPilot/README.md)。本篇只保留功能状态和限制，不由单项交付推定全部体验完成。

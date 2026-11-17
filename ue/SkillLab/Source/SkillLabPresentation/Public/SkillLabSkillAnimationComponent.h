@@ -13,6 +13,8 @@ class USkillLabSkillRuntimeComponent;
 struct FSkillLabSkillResult;
 struct FAnimNotifyEventReference;
 
+DECLARE_MULTICAST_DELEGATE_FiveParams(FSkillLabAnimationNotifyObserved, const FSkillLabCastExecutionToken&, UAnimSequenceBase*, FGameplayTag, bool, bool);
+
 USTRUCT()
 struct FSkillLabCastAnimationPlayback
 {
@@ -58,6 +60,9 @@ public:
 	bool PlayCastAction(const FSkillLabCastExecutionToken& Token, FName SkillId);
 	void StopCastAction(const FSkillLabCastExecutionToken& Token);
 	void StopAllCastActions();
+	/** 当前实际播放绑定的只读副本，不推进或更改动画。 */
+	TArray<FSkillLabCastAnimationPlayback> GetPlaybackSnapshot() const { return Playbacks; }
+	FSkillLabAnimationNotifyObserved OnNotifyObserved;
 
 private:
 	friend class FSkillLabPresentationSubmissionIdentityTest;

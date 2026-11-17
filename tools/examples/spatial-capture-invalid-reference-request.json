@@ -1,0 +1,15 @@
+{
+  "map": "/Game/SkillLab/L_SkillLab_NavTest",
+  "caster": {"player_index": 0},
+  "skill_id": "Skill_Mend",
+  "duration_seconds": 1,
+  "pre_request_seconds": 0.25,
+  "warmup_seconds": 1,
+  "sample_hz": 1,
+  "views": [{"id": "game", "type": "game"}],
+  "reference_queries": [
+    {"source": "caster", "component_path": "/Game/Invalid.Mesh", "kind": "socket", "name": "missing_socket"}
+  ],
+  "resolution": [1280, 720],
+  "markers": false
+}

@@ -4,14 +4,14 @@
 
 面向大量角色与技能的俯视角 ARPG，在内容已有基本功能、动作和大致释放时点后，让 AI 按具体任务完成空间适配与表现细化。对象包括实际投射物、特效、武器等，不限于当前四技能。
 
-本批拆为四项独立任务。01 已形成第一版细化需求，并按本次授权完成配置支持实现；四技能当前值仅为临时验证样本。02—04 保持粗略初稿，后续逐项讨论，尚未实施。01 的程序实现与证据见 [Batch04-01 程序工作流](../../../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/README.md)。
+本批拆为四项独立任务。01 已完成配置支持实现；四技能当前值仅为临时验证样本。02 正依据[当前空间配置基线](../../../../Baseline/CharacterPresentation/02-SkillActionPresentation.md)反推并细化导出需求，03—04 保持粗略初稿，均尚未实施。01 的程序实现与证据见 [Batch04-01 程序工作流](../../../../ProgramWorkflow/CharacterPresentation/Batches/Batch04-OnDemandSpatialAdaptation/README.md)。
 
 ## 四项任务
 
 | 文档 | 任务与交付 |
 | --- | --- |
 | [01 技能系统空间配置支持](01-SkillSpatialConfigurationSupport.md) | 在既有系统上补齐可复用空间能力，明确 C++ 机制、Lua 组合/计算、JSON 参数/绑定；四技能用于接入验证。 |
-| [02 空间数据与观察工具](02-SpatialDataExportTools.md) | 程序提供按需查询、画面获取和导出工具，交付有来源的观察材料。 |
+| [02 实际技能释放采集与导出工具](02-SpatialDataExportTools.md) | 脚本自动运行指定场景、角色与技能，导出本次实际配置、运行空间数据及 PNG 序列，无需手动 PIE。 |
 | [03 空间数据读取](03-SpatialDataReading.md) | 独立读取 Agent 理解材料，留下可复用的结构化空间说明。 |
 | [04 空间适配配置](04-SpatialAdaptationConfiguration.md) | 配置 Agent 消费说明，自主配置并观察、调整实际结果。 |
 

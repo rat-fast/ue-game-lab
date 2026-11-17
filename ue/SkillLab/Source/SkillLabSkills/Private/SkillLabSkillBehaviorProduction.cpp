@@ -3,6 +3,8 @@
 #include "SkillLabUnconfirmedSubmissions.h"
 #include "SkillLabTargetingService.h"
 #include "SkillLabFireballProjectile.h"
+#include "SkillLabSkillObservation.h"
+#include "HAL/PlatformTime.h"
 #include "Engine/World.h"
 #include "GameFramework/Pawn.h"
 
@@ -51,7 +53,36 @@ bool USkillLabLuaSkillBehavior::ExecuteDeclaredAction(FPointExecution& Point)
   { OnProjectileResolved(PointId, Created, Target, Reason); });
   Created->Initialize(Runtime->GetOwner(), Selected, Definition, Request, CastId, Definition.ProjectileParameters, Production);
   Created->FinishSpawning(FTransform(FRotator::ZeroRotator, Start));
+  FSkillLabProjectileObservation Observation;
+  Observation.Projectile = Created;
+  Observation.Caster = Runtime->GetOwner();
+  Observation.Target = Selected;
+  Observation.Runtime = Runtime;
+  Observation.World = GetWorld();
+  Observation.SkillId = Definition.SkillId;
+  Observation.CastToken.Runtime = Runtime;
+  Observation.CastToken.RuntimeGeneration = Runtime->GetRuntimeGeneration();
+  Observation.CastToken.CastId = CastId;
+
+  Observation.RequestId = Request.RequestId;
+  Observation.CastId = CastId;
+  Observation.SubmissionKey = Production.Key;
+  Observation.SubmissionPointId = Production.Key.Point;
+  Observation.ActorPath = Created->GetPathName();
+  Observation.SpawnTransform = Created->GetActorTransform();
+  Observation.ObservationWorldTime = GetWorld()->GetTimeSeconds();
+  Observation.ObservationWallTime = FPlatformTime::Seconds();
+  FSkillLabSkillObservationBus::BroadcastProjectile(Observation);
   const bool bDelivered = Created->ConfirmDelivery();
+  Observation.Projectile = Created;
+  Observation.SpawnTransform = IsValid(Created) ? Created->GetActorTransform() : Observation.SpawnTransform;
+  Observation.bDelivered = true;
+  Observation.bDeliveryAccepted = bDelivered;
+  Observation.World = GetWorld();
+  Observation.ObservationWorldTime = GetWorld()->GetTimeSeconds();
+  Observation.ObservationWallTime = FPlatformTime::Seconds();
+  Observation.Reason = bDelivered ? NAME_None : FName(TEXT("DeliveryRejected"));
+  FSkillLabSkillObservationBus::BroadcastProjectile(Observation);
   if (!bDelivered) Point.State = EPointState::Resolved;
   return bDelivered;
  }
